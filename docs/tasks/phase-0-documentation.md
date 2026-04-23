@@ -4,7 +4,7 @@
 
 **Estimate:** ~30-45 minutes
 
-**Status:** 🟡 In Progress (2026-04-23)
+**Status:** ✅ Complete (2026-04-23)
 
 ## Tasks
 
@@ -30,40 +30,54 @@
 
 - [x] `tasks/index.md` — overview + status table
 - [x] `tasks/phase-0-documentation.md` — this file
-- [ ] `tasks/phase-1-foundation.md`
-- [ ] `tasks/phase-2-survival.md`
-- [ ] `tasks/phase-3-hunting.md`
-- [ ] `tasks/phase-4-learning.md`
-- [ ] `tasks/phase-5-death.md`
-- [ ] `tasks/phase-6-polish.md`
+- [x] `tasks/phase-1-foundation.md`
+- [x] `tasks/phase-2-survival.md`
+- [x] `tasks/phase-3-hunting.md`
+- [x] `tasks/phase-4-learning.md`
+- [x] `tasks/phase-5-death.md`
+- [x] `tasks/phase-6-polish.md`
 
 ### Dev log
 
-- [ ] `dev-log/index.md`
-- [ ] `dev-log/2026-04-23.md` — planning session + docs init
+- [x] `dev-log/index.md`
+- [x] `dev-log/2026-04-23.md` — planning session + docs init
 
 ### Session context
 
-- [ ] Root `SESSION_CONTEXT.md` (file-read access for fast onboard)
-- [ ] `docs/context.md` (web-accessible mirror via docs.udu.loodee.art)
+- [x] Root `SESSION_CONTEXT.md` (file-read access for fast onboard)
+- [x] `docs/context.md` (web-accessible mirror via udu-docs.loodee.art)
 
 ### Git + deploy
 
-- [ ] Create `.gitignore` (node_modules, data/, logs/, dist/)
-- [ ] Create root `README.md` (quick start + onboard pointer)
-- [ ] `git init` + first commit
-- [ ] Create GitHub repo `nzib-id/udu` via `gh repo create`
-- [ ] Push to GitHub
+- [x] Create `.gitignore` (node_modules, data/, logs/, dist/)
+- [x] Create root `README.md` (quick start + onboard pointer)
+- [x] `git init` + first commit
+- [x] Create GitHub repo `nzib-id/udu` via `gh repo create`
+- [x] Push to GitHub
 
 ### VitePress deploy
 
-- [ ] Build VitePress (`npx vitepress build docs`)
-- [ ] Setup `npx serve` via pm2 pada port 4245
-- [ ] Add `docs.udu.loodee.art` to cloudflared ingress config
-- [ ] Reload cloudflared
-- [ ] Verify `docs.udu.loodee.art` loads
+- [x] Build VitePress (`npx vitepress build docs`)
+- [x] Setup `npx serve` via pm2 pada port 4245 (pm2 process name: `udu-docs`)
+- [x] Add `udu-docs.loodee.art` to cloudflared ingress config (pivoted from `docs.udu.loodee.art` — 2-level subdomain outside Cloudflare Universal SSL coverage)
+- [x] Reload cloudflared (via `pm2 restart cloudflare-tunnel`)
+- [x] Verify `udu-docs.loodee.art` loads (SSL ✅, serves VitePress content ✅)
+
+### Known followups (not blocking Phase 1)
+
+- [ ] CF Access bypass policy untuk `udu-docs.loodee.art` + `udu.loodee.art` (manual di CF Zero Trust dashboard — Nzib action)
+- [ ] Add `udu/data/*.db` to `~/backup-loodee.sh` cron include path (saat DB udah exist di Phase 1+)
 
 ### Cleanup
 
-- [ ] Save docs URL to project memory
-- [ ] Move to Phase 1
+- [x] Save docs URL to project memory
+- [x] Move to Phase 1
+
+## Outcome
+
+- Repo: https://github.com/nzib-id/udu
+- Docs live: https://udu-docs.loodee.art (behind CF Access until bypass policy added)
+- Docs source: all spec locked di `docs/guide/`, phase checklists di `docs/tasks/`, dev log di `docs/dev-log/`
+- Onboarding: `SESSION_CONTEXT.md` di root = fast file-read for Loodee sessions
+- pm2 process: `udu-docs` (port 4245, stays alive via `pm2 save`)
+- Cloudflared ingress: updated di `~/.cloudflared/config.yml`

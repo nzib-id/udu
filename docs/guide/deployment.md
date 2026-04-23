@@ -14,7 +14,9 @@
 | `udu.loodee.art` | localhost:4246 | Game frontend (Phaser) |
 | `udu.loodee.art/ws` | localhost:4247/ws | WebSocket endpoint (proxied by frontend server, same origin) |
 | `udu.loodee.art/api` | localhost:4247/api | REST admin endpoints |
-| `docs.udu.loodee.art` | localhost:4245 | VitePress documentation |
+| `udu-docs.loodee.art` | localhost:4245 | VitePress documentation |
+
+**Note:** Naming pivot — awalnya rencana `docs.udu.loodee.art` (2-level subdomain), tapi Cloudflare Universal SSL cuma cover `*.loodee.art` (1-level). Pivot ke `udu-docs.loodee.art` untuk stay dalam SSL coverage tanpa bayar Advanced Certificate Manager.
 
 ## Ports (internal)
 
@@ -73,7 +75,7 @@ ingress:
   # ... existing entries ...
   - hostname: udu.loodee.art
     service: http://127.0.0.1:4246
-  - hostname: docs.udu.loodee.art
+  - hostname: udu-docs.loodee.art
     service: http://127.0.0.1:4245
   - service: http_status:404
 ```
@@ -91,15 +93,19 @@ Cloudflare DNS (loodee.art zone):
 | Type | Name | Content | Proxy |
 |------|------|---------|-------|
 | CNAME | udu | `<tunnel-uuid>.cfargotunnel.com` | Proxied |
-| CNAME | docs.udu | `<tunnel-uuid>.cfargotunnel.com` | Proxied |
+| CNAME | udu-docs | `<tunnel-uuid>.cfargotunnel.com` | Proxied |
 
 Tunnel UUID: `db112951-567c-439c-880e-3b651de13023` (shared dengan service lain)
 
 Add via:
 ```bash
 cloudflared tunnel route dns <tunnel-id> udu.loodee.art
-cloudflared tunnel route dns <tunnel-id> docs.udu.loodee.art
+cloudflared tunnel route dns <tunnel-id> udu-docs.loodee.art
 ```
+
+**CF Access note:** Default policy di `*.loodee.art` adalah browser-login + service token (internal). Untuk bikin `udu.loodee.art` benar-benar public, Nzib harus tambahin Bypass Policy via Cloudflare Zero Trust dashboard:
+- Applications → Self-hosted → `udu.loodee.art` → Policies → Add "Allow Everyone" policy first
+- (Optional) Same for `udu-docs.loodee.art` jika mau docs public juga
 
 ## Build & deploy flow
 

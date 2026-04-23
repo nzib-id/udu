@@ -4,7 +4,7 @@
 
 **Live (once deployed):**
 - Game: https://udu.loodee.art
-- Docs: https://docs.udu.loodee.art
+- Docs: https://udu-docs.loodee.art
 
 ## What is this
 

@@ -6,7 +6,7 @@ Tiap phase adalah granular checklist yang bisa di-execute step-by-step. Session 
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| [0 — Documentation](./phase-0-documentation) | 🟡 In Progress | VitePress + all spec docs (2026-04-23) |
+| [0 — Documentation](./phase-0-documentation) | ✅ Complete | VitePress + all spec docs (2026-04-23) |
 | [1 — Foundation](./phase-1-foundation) | ⏳ Pending | Scaffold frontend/backend, WS handshake, empty map |
 | [2 — Core Survival](./phase-2-survival) | ⏳ Pending | Character, stats, forage, Utility AI |
 | [3 — Hunting & Cooking](./phase-3-hunting) | ⏳ Pending | Animals, combat, fire cook mechanic |

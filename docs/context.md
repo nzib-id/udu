@@ -8,7 +8,7 @@ This page mirrors `SESSION_CONTEXT.md` at the project root, accessible via docs 
 
 - **Name:** Udu — Tribal Survival AI Sim
 - **Domain:** https://udu.loodee.art
-- **Docs:** https://docs.udu.loodee.art
+- **Docs:** https://udu-docs.loodee.art
 - **Repo:** https://github.com/nzib-id/udu
 
 ## Ownership rule

@@ -5,7 +5,7 @@
 ## Project
 
 **Name:** Udu — Tribal Survival AI Sim
-**Domain:** https://udu.loodee.art (game), https://docs.udu.loodee.art (docs)
+**Domain:** https://udu.loodee.art (game), https://udu-docs.loodee.art (docs)
 **Repo:** https://github.com/nzib-id/udu
 **Local path:** `/home/nzib/.openclaw/workspace/projects/udu/`
 
@@ -79,7 +79,7 @@ Loodee memory (di `~/.claude/projects/-home-nzib--openclaw-workspace/memory/`):
 ## Quick links
 
 - Game (once live): https://udu.loodee.art
-- Docs (once live): https://docs.udu.loodee.art
+- Docs (once live): https://udu-docs.loodee.art
 - GitHub: https://github.com/nzib-id/udu
 - Ollama: http://172.21.160.1:11434 (check from WSL)
 - pm2 status: `pm2 status` (look for `udu-*`)
