@@ -33,3 +33,4 @@ logs/
 # OS
 Thumbs.db
 *.tsbuildinfo
+data/*.db.bak*
