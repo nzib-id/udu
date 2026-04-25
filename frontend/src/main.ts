@@ -55,6 +55,7 @@ const hud = bindHud({
     bladder: document.getElementById('bar-bladder')!,
     energy: document.getElementById('bar-energy')!,
     sickness: document.getElementById('bar-sickness')!,
+    health: document.getElementById('bar-health')!,
   },
   vals: {
     hunger: document.getElementById('val-hunger')!,
@@ -62,6 +63,7 @@ const hud = bindHud({
     bladder: document.getElementById('val-bladder')!,
     energy: document.getElementById('val-energy')!,
     sickness: document.getElementById('val-sickness')!,
+    health: document.getElementById('val-health')!,
   },
 });
 

@@ -453,6 +453,15 @@
       .stat-bar-fill.crit {
         background: #ea6a6a;
       }
+      .stat-bar-fill.bar-hp {
+        background: #e25555;
+      }
+      .stat-bar-fill.bar-hp.warn {
+        background: #c93333;
+      }
+      .stat-bar-fill.bar-hp.crit {
+        background: #8e1010;
+      }
       .stat-val {
         width: 26px;
         text-align: right;
@@ -548,6 +557,7 @@
           <div class="stat"><span class="stat-label">Bladder</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-bladder"></div></div><span class="stat-val" id="val-bladder">—</span></div>
           <div class="stat"><span class="stat-label">Energy</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-energy"></div></div><span class="stat-val" id="val-energy">—</span></div>
           <div class="stat"><span class="stat-label">Sick</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-sickness"></div></div><span class="stat-val" id="val-sickness">—</span></div>
+          <div class="stat"><span class="stat-label">HP</span><div class="stat-bar"><div class="stat-bar-fill bar-hp" id="bar-health"></div></div><span class="stat-val" id="val-health">—</span></div>
         </div>
         <div id="hud-goal"></div>
         <div id="hud-goal-daily"></div>

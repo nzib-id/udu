@@ -51,7 +51,7 @@ ${SYSTEM_BLOCK}
 ${goalLine}${dailyBlock}
 Current state:
 - position=(${character.position.x.toFixed(1)},${character.position.y.toFixed(1)})
-- hunger=${Math.round(s.hunger)}, thirst=${Math.round(s.thirst)}, energy=${Math.round(s.energy)}, sickness=${Math.round(s.sickness ?? 0)}
+- hunger=${Math.round(s.hunger)}, thirst=${Math.round(s.thirst)}, energy=${Math.round(s.energy)}, sickness=${Math.round(s.sickness ?? 0)}, health=${Math.round(s.health)}
 - remembered: ${rememberedSummary}
 
 Available options:

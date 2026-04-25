@@ -14,6 +14,7 @@ type CharacterRow = {
   bladder: number;
   energy: number;
   sickness: number;
+  health: number;
   inventory: string;
   current_action: string;
   is_alive: number;
@@ -72,7 +73,7 @@ export class CharacterRepo {
   recordDeath(
     characterId: number,
     deathTime: number,
-    reason: 'starvation' | 'dehydration' | 'admin',
+    reason: 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'admin',
     lifespanGameHours: number,
   ): void {
     this.db
@@ -92,7 +93,7 @@ export class CharacterRepo {
       .prepare(
         `UPDATE character SET
            x = ?, y = ?,
-           hunger = ?, thirst = ?, bladder = ?, energy = ?, sickness = ?,
+           hunger = ?, thirst = ?, bladder = ?, energy = ?, sickness = ?, health = ?,
            inventory = ?, current_action = ?, is_alive = ?,
            life_goal_text = ?, life_goal_reason = ?,
            life_goal_priority = ?, life_goal_set_at_day = ?
@@ -106,6 +107,7 @@ export class CharacterRepo {
         c.stats.bladder,
         c.stats.energy,
         c.stats.sickness ?? 0,
+        c.stats.health,
         JSON.stringify(c.inventory),
         JSON.stringify(c.currentAction),
         c.isAlive ? 1 : 0,
@@ -139,6 +141,7 @@ function rowToCharacter(row: CharacterRow): Character {
       bladder: row.bladder,
       energy: row.energy,
       sickness: row.sickness,
+      health: row.health,
     },
     inventory: safeJsonArray(row.inventory),
     currentAction: safeJsonAction(row.current_action),

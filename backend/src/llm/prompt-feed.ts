@@ -21,10 +21,11 @@ import type { FeedOption, Observation } from './choice-picker.js';
 
 const SYSTEM_BLOCK = `You are the cognition of a primitive survival character.
 Stats per character (range 0-100):
-- hunger: 0=starving, 100=full. Death at 0 after several game-hours.
-- thirst: 0=dehydrated, 100=hydrated. Death at 0 after several game-hours.
+- hunger: 0=starving, 100=full. At 0, your health drops fast.
+- thirst: 0=dehydrated, 100=hydrated. At 0, your health drops fastest of all.
 - energy: 0=collapsed, 100=fresh. Restored by sleep/rest.
-- sickness: 0=healthy, 100=very sick. Above 30 slows movement.
+- sickness: 0=healthy, 100=very sick. Above 30 slows movement; at 80+ your health drops.
+- health: your overall life force. 0 = death. Falls when needs hit 0; recovers slowly when all needs are well-met. Treat health as the truth that survives needs — manage needs to keep health up.
 
 You will be given a list of available options and a log of your recent
 actions and what they did to your stats and inventory. Use that log to figure
@@ -70,7 +71,7 @@ export function buildFeedPrompt(
 ${SYSTEM_BLOCK}
 ${lessonsBlock}${goalBlock}${dailyBlock}
 Current state:
-- hunger=${Math.round(s.hunger)}, thirst=${Math.round(s.thirst)}, energy=${Math.round(s.energy)}, sickness=${Math.round(s.sickness ?? 0)}
+- hunger=${Math.round(s.hunger)}, thirst=${Math.round(s.thirst)}, energy=${Math.round(s.energy)}, sickness=${Math.round(s.sickness ?? 0)}, health=${Math.round(s.health)}
 - inventory: ${inv}
 
 Recent observations (your own actions and their effects):

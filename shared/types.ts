@@ -4,6 +4,10 @@ export type Stats = {
   bladder: number;
   energy: number;
   sickness?: number;
+  // HP — central death funnel. Drives at 0 drain HP at distinct rates,
+  // sickness ≥80 drains HP, regen when thriving (all drives satisfied + low
+  // sickness + awake). Death = HP=0. Reserved for future damage sources.
+  health: number;
 };
 
 export type Position = { x: number; y: number };

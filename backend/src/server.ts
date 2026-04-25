@@ -102,13 +102,13 @@ const http = createServer((req: IncomingMessage, res: ServerResponse) => {
         const parsed = JSON.parse(body || '{}') as { stat?: string; value?: number };
         const stat = parsed.stat;
         const value = parsed.value;
-        const valid = ['hunger', 'thirst', 'bladder', 'energy', 'sickness'];
+        const valid = ['hunger', 'thirst', 'bladder', 'energy', 'sickness', 'health'];
         if (!stat || !valid.includes(stat) || typeof value !== 'number') {
           res.writeHead(400, { 'content-type': 'application/json' });
           res.end(JSON.stringify({ ok: false, error: 'expected {stat, value}', valid }));
           return;
         }
-        const ok = loop.setStat(stat as 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness', value);
+        const ok = loop.setStat(stat as 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness' | 'health', value);
         res.writeHead(ok ? 200 : 409, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ ok, stat, value }));
       } catch {

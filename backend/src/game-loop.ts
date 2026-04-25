@@ -7,6 +7,7 @@ import {
   DEATH_CONFIG,
   DECAY_RATES,
   FIRE_CONFIG,
+  HEALTH_CONFIG,
   MAP_CONFIG,
   NUTRITION,
   REGEN_CONFIG,
@@ -40,8 +41,10 @@ import { generateDailyGoal } from './llm/daily-goal.js';
 import type { OllamaOptions } from './llm/ollama-client.js';
 import { scanVision, visionRangeForHour } from './vision.js';
 
+export type DeathReason = 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'admin';
+
 export type LineageEvent =
-  | { event: 'death'; deceasedCharacterId: number; reason: 'starvation' | 'dehydration' | 'admin'; lifespanGameHours: number }
+  | { event: 'death'; deceasedCharacterId: number; reason: DeathReason; lifespanGameHours: number }
   | { event: 'respawn'; newIteration: number; characterId: number };
 
 export type LineageListener = (e: LineageEvent) => void;
@@ -76,7 +79,9 @@ export class GameLoop {
   // broadcast window so one-shot anims (man_shake, man_bow, etc.) play.
   private pendingFinal: Action | null = null;
   private nextResourceId = 0;
-  private deathStatZeroSinceMs: number | null = null;
+  // Most-recent dominant cause of HP drain — used as death narration when HP
+  // hits 0. Starvation default if HP somehow reaches 0 without recorded cause.
+  private lastHpCause: DeathReason = 'starvation';
   private respawnAt: number | null = null;
   private deathPosition: Position | null = null;
   private lineageListener: LineageListener | null = null;
@@ -367,7 +372,6 @@ export class GameLoop {
       this.tickCount++;
       this.maybeRespawn();
       this.applyHourlyDecay();
-      this.applyDeathWatch();
       this.applyDailyRegen();
       this.applyWoodDrop();
       this.applyAnimalRespawn();
@@ -437,16 +441,17 @@ export class GameLoop {
   }
 
   /** Public admin trigger — instant kill for testing. */
-  kill(reason: 'starvation' | 'dehydration' | 'admin' = 'admin'): boolean {
+  kill(reason: DeathReason = 'admin'): boolean {
     if (!this.character || !this.character.isAlive) return false;
     this.triggerDeath(reason);
     return true;
   }
 
   /** Mutate a stat value directly (admin/test). Returns false if no live character or unknown stat. */
-  setStat(stat: 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness', value: number): boolean {
+  setStat(stat: 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness' | 'health', value: number): boolean {
     if (!this.character || !this.character.isAlive) return false;
-    const v = clamp(value);
+    const max = stat === 'health' ? HEALTH_CONFIG.max : 100;
+    const v = Math.max(0, Math.min(max, value));
     this.character.stats[stat] = v;
     this.repo.persist(this.character);
     return true;
@@ -526,34 +531,58 @@ export class GameLoop {
       s.bladder = clamp(s.bladder + DECAY_RATES.bladderPerGameHour * CIRCADIAN.bladderDecay[phase] * restMul);
       s.energy = clamp(s.energy - energyRate);
       s.sickness = clamp((s.sickness ?? 0) - SICKNESS_CONFIG.decayPerGameHour);
+
+      // HP processing — drives at 0 drain at distinct rates, sickness ≥80
+      // drains, regen kicks in when thriving and awake. Multiple drains stack
+      // so neglecting two needs at once kills faster than one.
+      this.applyHpForOneGameHour(sleeping);
+      if (s.health <= 0) break;
+    }
+
+    if (s.health <= 0 && this.character.isAlive) {
+      this.triggerDeath(this.lastHpCause);
     }
   }
 
-  /** Per-tick death watch — finer grained than hourly decay. */
-  private applyDeathWatch(): void {
-    if (!this.character || !this.character.isAlive) return;
+  /** Apply one game-hour of HP drain or regen based on current stats. */
+  private applyHpForOneGameHour(sleeping: boolean): void {
+    if (!this.character) return;
     const s = this.character.stats;
-    const starving = s.hunger <= 0;
-    const dehydrated = s.thirst <= 0;
-    if (!starving && !dehydrated) {
-      this.deathStatZeroSinceMs = null;
+    const drainHunger = s.hunger <= 0 ? HEALTH_CONFIG.drainPerGameHour.hunger0 : 0;
+    const drainThirst = s.thirst <= 0 ? HEALTH_CONFIG.drainPerGameHour.thirst0 : 0;
+    const drainEnergy = s.energy <= 0 ? HEALTH_CONFIG.drainPerGameHour.energy0 : 0;
+    const drainSickness = (s.sickness ?? 0) >= HEALTH_CONFIG.sicknessDrainThreshold
+      ? HEALTH_CONFIG.drainPerGameHour.sickness80
+      : 0;
+    const totalDrain = drainHunger + drainThirst + drainEnergy + drainSickness;
+
+    if (totalDrain > 0) {
+      s.health = Math.max(0, s.health - totalDrain);
+      const causes: { name: DeathReason; drain: number }[] = [
+        { name: 'starvation', drain: drainHunger },
+        { name: 'dehydration', drain: drainThirst },
+        { name: 'exhaustion', drain: drainEnergy },
+        { name: 'illness', drain: drainSickness },
+      ];
+      causes.sort((a, b) => b.drain - a.drain);
+      this.lastHpCause = causes[0].name;
       return;
     }
-    const now = Date.now();
-    if (this.deathStatZeroSinceMs === null) {
-      this.deathStatZeroSinceMs = now;
-      return;
-    }
-    const elapsedGameHours =
-      (now - this.deathStatZeroSinceMs) /
-      (this.effectiveMsPerGameMinute() * TIME_CONFIG.gameMinutesPerHour);
-    if (elapsedGameHours >= DEATH_CONFIG.graceGameHours) {
-      const reason: 'starvation' | 'dehydration' = starving ? 'starvation' : 'dehydration';
-      this.triggerDeath(reason);
+
+    if (sleeping) return;
+    const r = HEALTH_CONFIG.regen;
+    if (
+      s.hunger >= r.needsFloor &&
+      s.thirst >= r.needsFloor &&
+      s.energy >= r.needsFloor &&
+      s.bladder <= r.bladderCeil &&
+      (s.sickness ?? 0) < r.sicknessCeil
+    ) {
+      s.health = Math.min(HEALTH_CONFIG.max, s.health + r.perGameHour);
     }
   }
 
-  private triggerDeath(reason: 'starvation' | 'dehydration' | 'admin'): void {
+  private triggerDeath(reason: DeathReason): void {
     if (!this.character || !this.character.isAlive) return;
     const c = this.character;
     const deathTime = Date.now();
@@ -592,7 +621,7 @@ export class GameLoop {
     this.chunkVisits.clear();
     this.lastChunkKey = null;
     this.respawnAt = Date.now() + DEATH_CONFIG.respawnDelayMs;
-    this.deathStatZeroSinceMs = null;
+    this.lastHpCause = 'starvation';
   }
 
   private maybeRespawn(): void {
@@ -607,7 +636,7 @@ export class GameLoop {
 
     this.respawnAt = null;
     this.deathPosition = null;
-    this.deathStatZeroSinceMs = null;
+    this.lastHpCause = 'starvation';
     this.observations = [];
     // New generation inherits the latest rules — pick up anything reflection
     // emitted during the previous life or in the gap between death and respawn.

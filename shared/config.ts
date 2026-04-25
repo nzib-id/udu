@@ -161,9 +161,37 @@ export const SICKNESS_CONFIG = {
 } as const;
 
 export const DEATH_CONFIG = {
-  graceGameHours: 6,                // continuous game-hours at hunger=0 or thirst=0 before death
+  // graceGameHours retained for legacy reference; new HP funnel makes it the
+  // *expected* time-to-death from a single drive at 0 (HP100 / 15HP/h ≈ 6.67h).
+  graceGameHours: 6,
   respawnDelayMs: 3000,             // dramatic pause before new character spawns
   minRespawnDistanceTiles: 20,      // new spawn must be at least this far from death site
+} as const;
+
+// HP — central death funnel.
+// Drain (HP/game-hour) when source condition holds:
+//   hunger=0       -15
+//   thirst=0       -20
+//   energy=0       -10
+//   sickness>=80   -10
+// Regen (HP/game-hour) ONLY when all comfort conditions hold simultaneously.
+// Multiple drains stack — neglecting two drives at once kills faster.
+export const HEALTH_CONFIG = {
+  max: 100,
+  initial: 100,
+  drainPerGameHour: {
+    hunger0: 15,
+    thirst0: 20,
+    energy0: 10,
+    sickness80: 10,
+  },
+  regen: {
+    perGameHour: 1,
+    needsFloor: 60,         // hunger/thirst/energy must be >= this
+    bladderCeil: 40,        // bladder must be <= this
+    sicknessCeil: 30,       // sickness must be < this
+  },
+  sicknessDrainThreshold: 80,
 } as const;
 
 export const CAMERA_CONFIG = {

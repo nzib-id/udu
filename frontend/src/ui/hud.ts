@@ -18,6 +18,7 @@ type HudElements = {
     bladder: HTMLElement;
     energy: HTMLElement;
     sickness: HTMLElement;
+    health: HTMLElement;
   };
   vals: {
     hunger: HTMLElement;
@@ -25,6 +26,7 @@ type HudElements = {
     bladder: HTMLElement;
     energy: HTMLElement;
     sickness: HTMLElement;
+    health: HTMLElement;
   };
 };
 
@@ -155,16 +157,19 @@ export function bindHud(el: HudElements) {
         const b = Math.round(s.bladder);
         const e = Math.round(s.energy);
         const sk = Math.round(s.sickness ?? 0);
+        const hp = Math.round(s.health);
         applyBar(el.bars.hunger, h, tierLow(h));
         applyBar(el.bars.thirst, t, tierLow(t));
         applyBar(el.bars.bladder, b, tierHigh(b));
         applyBar(el.bars.energy, e, tierLow(e));
         applyBar(el.bars.sickness, sk, tierHigh(sk));
+        applyBar(el.bars.health, hp, tierLow(hp));
         el.vals.hunger.textContent = String(h);
         el.vals.thirst.textContent = String(t);
         el.vals.bladder.textContent = String(b);
         el.vals.energy.textContent = String(e);
         el.vals.sickness.textContent = String(sk);
+        el.vals.health.textContent = String(hp);
         el.inv.innerHTML = formatInventory(character.inventory ?? []);
         if (character.lifeGoal) {
           el.goal.innerHTML =
