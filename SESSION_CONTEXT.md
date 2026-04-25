@@ -17,7 +17,7 @@
 
 Update this section tiap phase transition.
 
-**Active phase:** **Phase 4.7 Layer 1 COMPLETE (2026-04-25) — Life Goal system shipped end-to-end. Layer 2 (Daily Goal via reflection) + Layer 3 (Momentum) pending.**
+**Active phase:** **Phase 4.7 Layer 2 COMPLETE (2026-04-25) — Daily Goal + Hybrid AC shipped end-to-end. Debug speed multiplier (1×/2×/3×) also live. Layer 3 (Momentum) + life-goal satisfaction/completion pending.**
 
 - **Goal System Layer 1 (2026-04-25 14:50):** characters now form a long-horizon life goal on spawn, grounded in their current world state. New files: `data/migrations/006_life_goal.sql` (4 cols on `character`), `shared/types.ts` extended with `LifeGoal` type, `backend/src/llm/{world-summary,prompt-life-goal,life-goal}.ts`. World summary aggregates known resources by type, explored/total chunk counts, recent death reasons, inventory, and cached lessons. The LLM emits `{goal, reason, priority 1-10, referenced_entities}` — every entity must appear in the allowed-set or the goal is rejected (one retry, then no-goal fallback). Goal injected into `prompt-wander` + `prompt-feed` as a tie-breaker, *never* overrides survival pressure. HUD chip at `#hud-goal` shows priority badge + reason on hover. **Verified end-to-end:** char id=1 picked *"Explore all unexplored areas to find resources"* (priority 9) — DB row populated, WS `state_update.character.lifeGoal` field present, subsequent wander reasoning literally cites *"aligning with the priority to explore uncharted areas for essential resources"*.
 
