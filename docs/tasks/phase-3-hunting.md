@@ -18,7 +18,7 @@
 ### Wood pickup
 
 - [ ] `pickup_wood(wood_id)` action — karakter di wood tile, pick up, add to inventory
-- [ ] Wood spawn di random spots, respawn tiap 12 game-hours
+- [ ] Wood spawn dari tree: tiap 12 game-hours setiap pohon drop ranting ke random adjacent tile (skip kalau tile occupied)
 - [ ] Inventory state visible di UI (show held items)
 
 ### Hunt mechanic

@@ -58,8 +58,8 @@
 ### Production hardening
 
 - [ ] Enable HTTPS verification on cloudflared (automatic)
-- [ ] pm2 `max_memory_restart: 500M` buat prevent memory leak crash
-- [ ] Log rotation: pm2-logrotate module atau cron cleanup
+- [ ] Docker `mem_limit: 500m` per service di `docker-compose.yml` buat prevent memory leak OOM-kill
+- [ ] Log rotation: Docker log driver `json-file` dengan `max-size=10m` + `max-file=3` di compose
 - [ ] Backup `data/udu.db` include di `~/backup-loodee.sh`
 
 ### Documentation update

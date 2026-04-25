@@ -9,15 +9,35 @@ Nzib's input — semua sprite di-draw manual. AI (Loodee) ngerjain semua code da
 - **Larger objects** (pohon, api unggun) bisa 16×32 atau 32×32 — spesifik di list
 - **Palette**: limited ~8-16 colors, konsisten antar asset
 - **Style reference**: cute chunky pixel art (ala Stardew Valley / Terraria)
-- **Save location**: `frontend/public/assets/sprites/<category>/<name>.png`
+- **Save location**: `frontend/public/sprites/<category>/<name>.png`
 
 ## Mandatory (MVP)
 
-### Karakter (character/)
-| File | Size | Notes |
-|------|------|-------|
-| `idle.png` | 16×16 | 1 frame |
-| `walk.png` | 48×16 (or 64×16) | 3-4 frames horizontal strip |
+### Karakter (`frontend/public/sprites/char/`) — ✅ delivered 2026-04-24
+
+| File | Size | Frames | Used for |
+|------|------|--------|----------|
+| `man_idle.png` | 64×16 | 4 | Default standing loop |
+| `man_walk.png` | 64×16 | 4 | Walking (right-facing; left via horizontal flip) |
+| `man_bow.png` | 96×16 | 6 | Menunduk — transition idle↔sit↔sleep, pickup ground item, place meat on fire |
+| `man_sit.png` | 64×16 | 4 | Duduk (defecate, rest, wait-cooking) |
+| `man_use.png` | 32×16 | 2 | Eat / drink / use consumable |
+| `man_reach_up.png` | 64×16 | 4 | Pick berry bush, pick fruit direct from tree |
+| `man_shake.png` | 32×16 | 2 | Shake pohon (fruit drop) |
+| `man_swing.png` | 64×16 | 4 | Swing ke bawah — hunt ayam, fish |
+| `man_sleep.png` | 64×16 | 4 | Rebahan tidur |
+| `man_die.png` | 96×16 | 6 | Collapse (Phase 5 death) |
+
+**Mapping action → sprite:**
+- `walk_to` → `walk`
+- `eat_berry` / `eat_fruit` / `eat_meat` / `drink` → `reach_up` (pick from bush/tree) or `bow` (pick from ground) + `use` (to mouth)
+- `shake_tree` → `shake`
+- `pickup_wood` / `pickup_fruit_ground` → `bow`
+- `hunt` / `fish` → `swing`
+- `defecate` / `rest` → `bow` (in) + `sit` (hold) + `bow` (out)
+- `sleep` → `bow` (in) + `sleep` (hold) + `bow` (out)
+- `cook_place` → `bow`; `cook_wait` → `sit`; `cook_collect` → `bow`; `eat_cooked` → `use`
+- `die` → `die`
 
 ### Terrain (terrain/)
 | File | Size | Notes |

@@ -18,7 +18,7 @@
 - 🌿 Semak (dengan berry)
 - 🌊 Sungai (air infinite, spot mancing)
 - 🔥 Api unggun (cook station)
-- 🪵 Kayu (tergeletak, random spots)
+- 🪵 Ranting kayu (jatuh dari pohon tiap X game-hours, tergeletak di tile adjacent)
 - 🐔 Ayam hutan (land protein)
 - 🐟 Ikan di sungai (water protein)
 
@@ -44,7 +44,7 @@ Decay rates bisa di-tune di `game-config.ts`.
 | Air (sungai) | Infinite | Thirst +30 |
 | Ayam hutan | Spawn random, butuh kill | Meat → cook atau eat raw |
 | Ikan | Spawn di spot sungai tertentu | Meat → cook atau eat raw |
-| Kayu (tool) | Spawn random, persistent | No durability; digunakan untuk hunt |
+| Kayu (tool) | Ranting jatuh dari pohon tiap X game-hours, persistent di tanah sampai diambil | No durability; digunakan untuk hunt |
 
 ### Meat mechanic (hybrid cook)
 

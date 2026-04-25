@@ -1,0 +1,20 @@
+{
+  "name": "udu-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc -b && vite build",
+    "serve": "node server.mjs"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1",
+    "phaser": "^3.87.0"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.15",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  }
+}

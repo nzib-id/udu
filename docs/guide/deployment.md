@@ -3,7 +3,7 @@
 ## Hosting target
 
 - **Server**: Nzib's local server (same as Loodee Studio, Kimai, etc.)
-- **Process manager**: pm2
+- **Process manager**: Docker Compose (konsisten dengan stack Loodee Studio)
 - **Public access**: via cloudflared tunnel → `*.loodee.art` DNS
 - **CF Access**: **public** (no auth policy) — anyone with URL can view
 
@@ -18,53 +18,72 @@
 
 **Note:** Naming pivot — awalnya rencana `docs.udu.loodee.art` (2-level subdomain), tapi Cloudflare Universal SSL cuma cover `*.loodee.art` (1-level). Pivot ke `udu-docs.loodee.art` untuk stay dalam SSL coverage tanpa bayar Advanced Certificate Manager.
 
-## Ports (internal)
+## Ports
 
-| Port | pm2 name | Service |
-|------|----------|---------|
-| 4245 | `udu-docs` | VitePress static serve |
-| 4246 | `udu-frontend` | Phaser frontend static serve (+ `/ws` & `/api` reverse proxy to 4247) |
-| 4247 | `udu-backend` | Node simulation engine + WebSocket + REST |
+Semua service jalan di dalam Docker network `udu` (bridge). Host binding cuma `127.0.0.1` — public reach lewat cloudflared.
 
-Backend port 4247 TIDAK exposed via CF tunnel directly — semua traffic masuk via 4246 yang reverse-proxy ke 4247 untuk `/ws` dan `/api`.
+| Host port | Container | Service |
+|-----------|-----------|---------|
+| 127.0.0.1:4245 | `udu-docs` (nginx:80) | VitePress static |
+| 127.0.0.1:4246 | `udu-frontend` (:4246) | Phaser static + proxy `/ws` & `/api` → backend |
+| — (internal only) | `udu-backend` (:4247) | Node simulation + WS + REST |
 
-## pm2 ecosystem
+Backend TIDAK exposed ke host — frontend container nge-proxy ke `http://backend:4247` via Docker network.
 
-File: `projects/udu/ecosystem.config.js`
+## Docker stack
 
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: 'udu-backend',
-      script: './backend/dist/server.js',
-      cwd: '/home/nzib/.openclaw/workspace/projects/udu',
-      env: {
-        NODE_ENV: 'production',
-        PORT: '4247',
-        OLLAMA_URL: 'http://172.21.160.1:11434',
-        OLLAMA_MODEL: 'qwen3:8b',
-        DB_PATH: './data/udu.db',
-      },
-      max_memory_restart: '500M',
-      error_file: './logs/backend-err.log',
-      out_file: './logs/backend-out.log',
-    },
-    {
-      name: 'udu-frontend',
-      script: 'npx',
-      args: 'serve -s frontend/dist -l 4246 --no-port-switching',
-      cwd: '/home/nzib/.openclaw/workspace/projects/udu',
-    },
-    {
-      name: 'udu-docs',
-      script: 'npx',
-      args: 'serve -s docs/.vitepress/dist -l 4245 --no-port-switching',
-      cwd: '/home/nzib/.openclaw/workspace/projects/udu',
-    },
-  ],
-}
+File: `projects/udu/docker-compose.yml` + 3 Dockerfiles.
+
+```yaml
+name: udu
+
+services:
+  backend:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    container_name: udu-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "4247"
+      OLLAMA_URL: "http://172.21.160.1:11434"
+      OLLAMA_MODEL: "qwen3:8b"
+    volumes:
+      - ./data:/app/data       # SQLite DB + migrations persist
+    networks: [udu]
+    expose: ["4247"]
+
+  frontend:
+    build: { context: ., dockerfile: frontend/Dockerfile }
+    container_name: udu-frontend
+    restart: unless-stopped
+    environment:
+      PORT: "4246"
+      BACKEND_URL: "http://backend:4247"
+    depends_on: [backend]
+    networks: [udu]
+    ports: ["127.0.0.1:4246:4246"]
+
+  docs:
+    build: { context: ., dockerfile: docs/Dockerfile }
+    container_name: udu-docs
+    restart: unless-stopped
+    networks: [udu]
+    ports: ["127.0.0.1:4245:80"]
+
+networks:
+  udu: { driver: bridge }
 ```
+
+### Dockerfile summaries
+
+- **backend/Dockerfile** — 2-stage `node:22-bookworm-slim`. Stage 1 install deps (incl. `python3 make g++` for `better-sqlite3` native build). Stage 2 copy `node_modules` + `src` + `/app/shared` + `/app/data/migrations`. Runtime: `./node_modules/.bin/tsx src/server.ts`.
+- **frontend/Dockerfile** — 2-stage. Stage 1 `vite build` → `dist/`. Stage 2 slim runtime with `server.mjs` + http-proxy + bundled dist. Binds `0.0.0.0:4246`.
+- **docs/Dockerfile** — 2-stage. Stage 1 `vitepress build docs`. Stage 2 `nginx:alpine` serving `.vitepress/dist`.
+
+### Gotchas kept in repo
+
+- `shared/package.json` exists with `"type": "module"`. Tanpa ini, tsx di container-nya default ke CJS dan named exports hilang (`import { MAP_CONFIG }` cuma dapet `default`).
+- `frontend/server.mjs` bind ke `0.0.0.0` (bukan `127.0.0.1`) supaya Docker port forward bisa jalan.
 
 ## Cloudflared ingress
 
@@ -109,37 +128,25 @@ cloudflared tunnel route dns <tunnel-id> udu-docs.loodee.art
 
 ## Build & deploy flow
 
-### Backend
+### Any service — build image & restart
 ```bash
-cd backend
-npm run build      # tsc → dist/
-pm2 restart udu-backend
+cd /home/nzib/.openclaw/workspace/projects/udu
+docker compose build <service>      # <service> = backend | frontend | docs
+docker compose up -d <service>
 ```
 
-### Frontend
+### All services
 ```bash
-cd frontend
-npm run build      # vite build → dist/
-pm2 restart udu-frontend
-```
-
-### Docs
-```bash
-cd docs
-npx vitepress build
-pm2 restart udu-docs
+docker compose build
+docker compose up -d
 ```
 
 ## Initial setup (run once)
 
 ```bash
 cd /home/nzib/.openclaw/workspace/projects/udu
-npm install                           # root deps (shared)
-cd frontend && npm install && npm run build && cd ..
-cd backend && npm install && npm run build && cd ..
-cd docs && npx vitepress build && cd ..
-pm2 start ecosystem.config.js
-pm2 save
+docker compose build
+docker compose up -d
 ```
 
 ## Updates (git pull + redeploy)
@@ -147,10 +154,8 @@ pm2 save
 ```bash
 cd /home/nzib/.openclaw/workspace/projects/udu
 git pull
-(cd backend && npm install && npm run build)
-(cd frontend && npm install && npm run build)
-(cd docs && npx vitepress build)
-pm2 restart udu-backend udu-frontend udu-docs
+docker compose build
+docker compose up -d         # recreates any container whose image changed
 ```
 
 ## Backup
@@ -161,9 +166,10 @@ pm2 restart udu-backend udu-frontend udu-docs
 
 ## Monitoring
 
-- pm2 logs: `pm2 logs udu-backend --lines 100`
+- Live logs: `docker compose logs -f backend` (tail with `--tail=100` for last N lines)
+- All services status: `docker compose ps`
 - Health: `curl https://udu.loodee.art/api/status`
-- DB size: `ls -lh data/udu.db`
+- DB size: `ls -lh data/udu.db` (host path, bind-mounted to `/app/data/udu.db` in container)
 - Ollama connectivity: backend logs warning jika call gagal (fallback: skip reflection that day)
 
 ## Troubleshooting
@@ -174,9 +180,9 @@ pm2 restart udu-backend udu-frontend udu-docs
 - Fallback: backend logs skip, reflection gak jalan hari itu, rules frozen — gameplay tetep jalan
 
 ### Frontend shows "connecting..." forever
-- Check backend running: `pm2 status udu-backend`
+- Check backend running: `docker compose ps backend`
 - Check WebSocket endpoint: `wscat -c wss://udu.loodee.art/ws`
-- Check reverse proxy config di frontend server
+- Check backend reachable dari frontend container: `docker exec udu-frontend node -e "fetch('http://backend:4247/api/status').then(r=>r.text()).then(console.log)"`
 
 ### High Ollama latency
 - Check GPU usage on Windows

@@ -16,7 +16,7 @@
                         │ (state push, ~500ms-1s throttle)
                         ▼
 ┌──────────────────────────────────────────────────────────────┐
-│                    Node.js Backend (pm2)                      │
+│              Node.js Backend (Docker container)               │
 │  ┌────────────────────────────────────────────────────────┐  │
 │  │  Simulation Engine                                     │  │
 │  │  - Game loop (tick ~500ms)                             │  │
@@ -65,7 +65,7 @@
 | Runtime | **Node.js** | 22.x |
 | Language | TypeScript | latest |
 | WebSocket | `ws` package | ^8.x |
-| Process manager | pm2 | existing |
+| Process manager | Docker Compose | multi-stage build, `node:22-bookworm-slim` + `tsx` runtime |
 | DB | **better-sqlite3** | ^11.x (sync API, ideal untuk game loop) |
 | HTTP (optional) | Fastify atau raw `http` | TBD |
 
@@ -81,21 +81,21 @@
 ## Documentation
 
 - **VitePress** (static site generator, MIT)
-- Deployed to `docs.udu.loodee.art`
-- Auto-build on commit (manual rebuild via pm2 untuk MVP)
+- Deployed to `udu-docs.loodee.art`
+- Build dilakukan di dalam Docker image (`docs/Dockerfile` stage 1 `vitepress build` → stage 2 `nginx:alpine`). Rebuild via `docker compose build docs && docker compose up -d docs`.
 
 ## Infrastructure
 
-- **pm2** untuk backend + docs static serve
+- **Docker Compose** untuk backend + frontend + docs (3 services, bridge network `udu`, volume `./data:/app/data`)
 - **cloudflared** tunnel di `~/.cloudflared/config.yml` untuk public HTTPS
-- **DNS:** `udu.loodee.art`, `docs.udu.loodee.art`
+- **DNS:** `udu.loodee.art`, `udu-docs.loodee.art`
 - **Access:** Public (no CF Access policy) — game bebas ditonton siapa aja
 
 ## Ports (internal, localhost)
 
 | Port | Service |
 |------|---------|
-| 4245 | VitePress docs static serve (`docs.udu.loodee.art`) |
+| 4245 | VitePress docs via `nginx:alpine` (`udu-docs.loodee.art`) |
 | 4246 | Udu game frontend static serve (`udu.loodee.art`) |
 | 4247 | Udu backend WebSocket + HTTP API (behind frontend reverse proxy / direct WS path) |
 

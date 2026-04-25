@@ -10,13 +10,13 @@
 
 ### Death condition
 
-- [ ] Backend track: jika `hunger == 0` atau `thirst == 0` terus-menerus selama **6 game-hours** (6 min real), karakter dies
-- [ ] Death event logged dengan reason: `starvation` atau `dehydration`
-- [ ] Record `lifespan_game_hours`, `death_age`, `final_rules_count`
+- [x] Backend track: jika `hunger == 0` atau `thirst == 0` terus-menerus selama **6 game-hours** (6 min real), karakter dies
+- [x] Death event logged dengan reason: `starvation` atau `dehydration`
+- [x] Record `lifespan_game_hours` (col added in migration 002, persisted via `recordDeath`). `death_age` deferred — same as lifespan for now. `final_rules_count` deferred until Phase 4.
 
 ### Respawn logic
 
-- [ ] On death:
+- [x] On death:
   - Mark current character `is_alive = 0`
   - Emit `lineage_event` WebSocket message (death)
   - Wait 3 seconds (dramatic pause)
@@ -36,9 +36,9 @@
 
 ### Lineage tracking
 
-- [ ] `lineage.current_iteration` incremented on each respawn
-- [ ] `character.iteration` matches the lineage iteration at spawn time
-- [ ] API `GET /api/status` includes current iteration
+- [x] `lineage.current_iteration` incremented on each respawn
+- [x] `character.iteration` matches the lineage iteration at spawn time
+- [x] API `GET /api/status` includes current iteration
 
 ### UI additions
 
@@ -48,14 +48,17 @@
 
 ### Admin debug
 
-- [ ] `POST /api/admin/kill` — instantly kill current character (triggers respawn with inheritance)
-- [ ] Useful untuk test spirit memory tanpa nunggu natural death
+- [x] `POST /api/admin/kill` — instantly kill current character (triggers respawn with inheritance)
+- [x] `POST /api/admin/set-stat` — direct mutate stat (test natural starvation/dehydration without waiting on AI to fail)
+- [x] Useful untuk test spirit memory tanpa nunggu natural death
 
 ### Verify
 
-- [ ] Kill character via admin endpoint
-- [ ] Verify new character spawns within 3 seconds
-- [ ] Verify all rules from previous generation applied
-- [ ] Check utility scoring: new character should AVOID known-bad actions from start (e.g. skip berry_red)
-- [ ] Reflection history preserved across generations
-- [ ] UI shows correct lineage counter
+- [x] Kill character via admin endpoint (verified: id=4 admin lifespan=0.65gh)
+- [x] Verify new character spawns within 3 seconds (verified across iter 2→3→4→5)
+- [x] Natural starvation triggers (verified with grace=0.1: id=3 starvation lifespan=17.43gh)
+- [x] WS `lineage_event` broadcast for both death + respawn (verified via WS tap)
+- [ ] Verify all rules from previous generation applied (Phase 4 dep)
+- [ ] Check utility scoring: new character should AVOID known-bad actions from start (Phase 4 dep)
+- [ ] Reflection history preserved across generations (Phase 4 dep)
+- [ ] UI shows correct lineage counter (frontend HUD work — Option B next)

@@ -17,7 +17,7 @@ Nzib = observer murni. Tidak ada player control, quest, atau interaksi.
 - **Frontend:** Phaser 3 + TypeScript (Vite)
 - **Backend:** Node.js 22 + TypeScript + better-sqlite3 + ws
 - **LLM:** Ollama `qwen3:8b` (lokal, via Windows host 172.21.160.1:11434)
-- **Host:** pm2 + cloudflared tunnel
+- **Host:** Docker Compose + cloudflared tunnel
 - **Docs:** VitePress
 
 ## Onboarding for Loodee sessions
@@ -29,20 +29,22 @@ Then navigate to the active phase in `docs/tasks/` dan execute unchecked tasks.
 ## Development
 
 ```bash
-# Install deps
-npm install
-(cd frontend && npm install)
-(cd backend && npm install)
+# --- Dev (iteration mode, native Node on host) ---
+(cd backend && npm install && npm run dev)      # :4247 (ws + api, tsx watch)
+(cd frontend && npm install && npm run dev)     # :5173 (Vite proxies /ws + /api → :4247)
 
-# Dev mode (all services)
-# TODO: Phase 1 setup
-
-# Docs preview
-npx vitepress dev docs
-
-# Build all
-npm run build
+# --- Production (Docker, what actually runs on server) ---
+docker compose build
+docker compose up -d            # backend + frontend + docs
+docker compose logs -f backend  # tail
+docker compose ps
+docker compose down             # stop
 ```
+
+Ports (localhost only, behind cloudflared):
+- `127.0.0.1:4245` → docs (VitePress via nginx:alpine)
+- `127.0.0.1:4246` → frontend (Phaser static + `/ws` & `/api` proxy)
+- backend runs container-internal at `:4247`, not exposed to host
 
 ## Repository structure
 
@@ -59,8 +61,11 @@ udu/
 ├── backend/                # Node simulation engine (Phase 1+)
 ├── shared/                 # Shared types (Phase 1+)
 ├── data/                   # SQLite DB (gitignored)
-├── logs/                   # pm2 logs (gitignored)
-└── ecosystem.config.js     # pm2 config
+├── logs/                   # local logs (gitignored, mostly unused in Docker)
+├── docker-compose.yml     # 3 services: backend, frontend, docs
+├── backend/Dockerfile
+├── frontend/Dockerfile
+└── docs/Dockerfile
 ```
 
 ## License
@@ -69,4 +74,5 @@ Personal project. No license.
 
 ## Status
 
-🟡 Phase 0 — Documentation Foundation (in progress)
+- ✅ Phase 0 — Documentation Foundation
+- 🟡 Phase 1 — Foundation (in progress)

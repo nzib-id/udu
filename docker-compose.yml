@@ -1,0 +1,52 @@
+name: udu
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: udu-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "4247"
+      UDU_AI_MODE: "llm"
+      OLLAMA_URL: "http://172.21.160.1:11434"
+      OLLAMA_MODEL: "qwen3:8b"
+    volumes:
+      - ./data:/app/data
+    networks:
+      - udu
+    expose:
+      - "4247"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: udu-frontend
+    restart: unless-stopped
+    environment:
+      PORT: "4246"
+      BACKEND_URL: "http://backend:4247"
+    depends_on:
+      - backend
+    networks:
+      - udu
+    ports:
+      - "127.0.0.1:4246:4246"
+
+  docs:
+    build:
+      context: .
+      dockerfile: docs/Dockerfile
+    container_name: udu-docs
+    restart: unless-stopped
+    networks:
+      - udu
+    ports:
+      - "127.0.0.1:4245:80"
+
+networks:
+  udu:
+    driver: bridge

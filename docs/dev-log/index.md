@@ -4,6 +4,7 @@ Catatan harian tiap session development — konteks, yang dikerjain, decisions, 
 
 ## Entries
 
+- [2026-04-24 — Phase 1 Foundation](./2026-04-24)
 - [2026-04-23 — Planning & Docs Init](./2026-04-23)
 
 ## How to use

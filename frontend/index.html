@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Udu — Tribal Survival AI Sim</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100vh;
+        height: 100dvh;
+        background: #0a0a0a;
+        color: #e5e5e5;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        overflow: hidden;
+      }
+      #game {
+        position: absolute;
+        inset: 0;
+      }
+      #hud-panel {
+        position: absolute;
+        top: 12px;
+        left: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        z-index: 6;
+        transition: transform 0.25s ease;
+        will-change: transform;
+        max-height: calc(100vh - 24px);
+      }
+      #hud-panel.dragging {
+        transition: none;
+      }
+      #hud-panel.panel-collapsed {
+        transform: translateX(calc(-100% + 32px));
+      }
+      #hud-panel.panel-open {
+        transform: translateX(0);
+      }
+      #hud {
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: none;
+        border-radius: 0 6px 6px 0;
+        padding: 10px 12px;
+        font-size: 12px;
+        line-height: 1.4;
+        pointer-events: none;
+        width: 220px;
+        max-height: calc(100vh - 24px);
+        overflow-y: auto;
+      }
+      #hud-handle {
+        flex: 0 0 auto;
+        width: 32px;
+        background: rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-left: none;
+        border-radius: 0 6px 6px 0;
+        margin-left: -1px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: grab;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      #hud-handle:active { cursor: grabbing; }
+      .handle-grip {
+        width: 4px;
+        height: 36px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.35);
+      }
+      .handle-label {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #8a96a8;
+      }
+      #camera-controls {
+        position: absolute;
+        bottom: calc(var(--drawer-offset, 0px) + 12px);
+        left: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        z-index: 5;
+        transition: bottom 0.25s ease;
+      }
+      .cam-btn {
+        width: 44px;
+        height: 44px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: #e5e5e5;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .cam-btn:hover {
+        background: rgba(0, 0, 0, 0.75);
+      }
+      .cam-btn:active {
+        transform: scale(0.92);
+      }
+      #hud h1 {
+        margin: 0 0 6px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #c7c7c7;
+      }
+      #hud .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: #9aa0a6;
+      }
+      #hud .row span:last-child {
+        color: #e5e5e5;
+        font-variant-numeric: tabular-nums;
+      }
+      #stats {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: none;
+      }
+      #stats.show {
+        display: block;
+      }
+      #hud-reasoning {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: none;
+        font-size: 11px;
+        color: #a8c0e0;
+        font-style: italic;
+        max-width: 240px;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+      #hud-reasoning.show {
+        display: block;
+      }
+      #hud-goal {
+        margin-top: 8px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: rgba(140, 110, 200, 0.14);
+        border: 1px solid rgba(168, 144, 224, 0.30);
+        display: none;
+        font-size: 11px;
+        color: #d6c8f0;
+        max-width: 240px;
+        line-height: 1.45;
+        word-wrap: break-word;
+      }
+      #hud-goal.show {
+        display: block;
+      }
+      #hud-goal .goal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      #hud-goal .goal-label {
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #a890d8;
+        font-weight: 600;
+      }
+      #hud-goal .goal-priority {
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+        color: #b89ce8;
+        background: rgba(168, 144, 224, 0.18);
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-weight: 600;
+      }
+      #hud-goal .goal-text {
+        color: #ece4ff;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      #hud-goal .goal-reason {
+        font-size: 10px;
+        color: #a89cc4;
+        font-style: italic;
+        line-height: 1.4;
+      }
+      @media (max-width: 600px) {
+        #hud-goal {
+          font-size: 10px;
+          padding: 6px 8px;
+          max-width: calc(100vw - 80px);
+        }
+        #hud-goal .goal-text { font-size: 11px; }
+        #hud-goal .goal-reason { font-size: 9px; }
+      }
+      #hud-goal-daily {
+        margin-top: 6px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: rgba(80, 130, 100, 0.14);
+        border-left: 3px solid #6db28a;
+        display: none;
+        font-size: 11px;
+        color: #d6efe0;
+        max-width: 240px;
+        line-height: 1.45;
+        word-wrap: break-word;
+      }
+      #hud-goal-daily.show { display: block; }
+      #hud-goal-daily.align-maintains {
+        background: rgba(160, 140, 80, 0.14);
+        border-left-color: #d4b86a;
+        color: #efe6c8;
+      }
+      #hud-goal-daily.align-survival_override {
+        background: rgba(180, 80, 80, 0.16);
+        border-left-color: #d46a6a;
+        color: #f0d0d0;
+      }
+      #hud-goal-daily .daily-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      #hud-goal-daily .daily-label {
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #9bc8a8;
+        font-weight: 600;
+      }
+      #hud-goal-daily.align-maintains .daily-label { color: #c8b078; }
+      #hud-goal-daily.align-survival_override .daily-label { color: #d49494; }
+      #hud-goal-daily .daily-progress {
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+        color: #b8d8c4;
+        background: rgba(140, 200, 160, 0.18);
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-weight: 600;
+      }
+      #hud-goal-daily.align-maintains .daily-progress {
+        color: #d4be84;
+        background: rgba(212, 184, 106, 0.18);
+      }
+      #hud-goal-daily.align-survival_override .daily-progress {
+        color: #e4a8a8;
+        background: rgba(212, 106, 106, 0.20);
+      }
+      #hud-goal-daily .daily-summary {
+        color: #ecf6ec;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      #hud-goal-daily .daily-steps {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: 10px;
+        line-height: 1.5;
+      }
+      #hud-goal-daily .daily-steps li {
+        color: #a8c4b0;
+        padding-left: 14px;
+        position: relative;
+      }
+      #hud-goal-daily .daily-steps li.done {
+        color: #6a8870;
+        text-decoration: line-through;
+      }
+      #hud-goal-daily .daily-steps li.active {
+        color: #ecf6ec;
+        font-weight: 500;
+      }
+      #hud-goal-daily .daily-steps li::before {
+        content: '·';
+        position: absolute;
+        left: 4px;
+        opacity: 0.7;
+      }
+      #hud-goal-daily .daily-steps li.done::before { content: '✓'; }
+      #hud-goal-daily .daily-steps li.active::before { content: '▸'; }
+      @media (max-width: 600px) {
+        #hud-goal-daily {
+          font-size: 10px;
+          padding: 6px 8px;
+          max-width: calc(100vw - 80px);
+        }
+        #hud-goal-daily .daily-summary { font-size: 11px; }
+        #hud-goal-daily .daily-steps { font-size: 9px; }
+      }
+      #log-drawer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 50vh;
+        max-height: 50dvh;
+        background: rgba(0, 0, 0, 0.78);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        display: flex;
+        flex-direction: column;
+        transform: translateY(0);
+        transition: transform 220ms ease;
+        z-index: 50;
+        pointer-events: auto;
+        touch-action: none;
+      }
+      #log-drawer.dragging {
+        transition: none;
+      }
+      #log-drawer.drawer-collapsed {
+        transform: translateY(calc(100% - 32px));
+      }
+      #log-drawer.drawer-peek {
+        transform: translateY(calc(100% - 140px));
+      }
+      #log-drawer.drawer-expanded {
+        transform: translateY(0);
+      }
+      .drawer-handle {
+        flex: 0 0 auto;
+        height: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        user-select: none;
+        gap: 2px;
+      }
+      .drawer-handle:active { cursor: grabbing; }
+      .drawer-grip {
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.35);
+      }
+      .drawer-label {
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #8a96a8;
+      }
+      #hud-log {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 4px 12px 12px;
+        font-size: 11px;
+        line-height: 1.4;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: #c8d4e6;
+        -webkit-overflow-scrolling: touch;
+      }
+      #hud-log .log-row {
+        margin: 0;
+        padding: 2px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #hud-log .log-t { color: #6f7a8a; margin-right: 6px; }
+      #hud-log .log-k { display: inline-block; min-width: 64px; margin-right: 6px; }
+      #hud-log .k-memorize { color: #7fd18c; }
+      #hud-log .k-forget { color: #f0a674; }
+      #hud-log .k-pick { color: #79b8ff; }
+      #hud-log .k-wander { color: #8a8a8a; }
+      #hud-log .k-death { color: #ea6a6a; }
+      #hud-log .k-respawn { color: #e0c878; }
+      @media (max-width: 600px) {
+        #hud {
+          font-size: 11px;
+          padding: 8px 10px;
+          min-width: 0;
+          max-width: calc(100vw - 80px);
+        }
+        #hud h1 { font-size: 14px; margin: 0 0 4px; }
+        #hud-log { font-size: 10px; padding: 4px 10px 10px; }
+        #log-drawer.drawer-peek {
+          transform: translateY(calc(100% - 120px));
+        }
+      }
+      .stat {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 0;
+        font-size: 11px;
+      }
+      .stat-label {
+        width: 44px;
+        color: #9aa0a6;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .stat-bar {
+        position: relative;
+        flex: 1;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .stat-bar-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 100%;
+        transition: width 220ms ease-out, background 220ms ease-out;
+        background: #7fd18c;
+      }
+      .stat-bar-fill.warn {
+        background: #f0c674;
+      }
+      .stat-bar-fill.crit {
+        background: #ea6a6a;
+      }
+      .stat-val {
+        width: 26px;
+        text-align: right;
+        color: #e5e5e5;
+        font-variant-numeric: tabular-nums;
+      }
+      #status {
+        position: absolute;
+        bottom: calc(var(--drawer-offset, 0px) + 12px);
+        right: 12px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 11px;
+        transition: bottom 0.25s ease;
+        pointer-events: none;
+      }
+      #speed-toggle {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 7;
+        display: flex;
+        gap: 4px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        padding: 4px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      #speed-toggle .speed-label {
+        color: #8a96a8;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        align-self: center;
+        padding: 0 4px;
+      }
+      #speed-toggle button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #c8d4e6;
+        border-radius: 4px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        min-width: 32px;
+        transition: background 0.12s ease, border-color 0.12s ease;
+      }
+      #speed-toggle button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      #speed-toggle button.active {
+        background: rgba(121, 184, 255, 0.18);
+        border-color: #79b8ff;
+        color: #ecf2ff;
+        font-weight: 600;
+      }
+      #speed-toggle button:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      @media (max-width: 600px) {
+        #speed-toggle .speed-label { display: none; }
+        #speed-toggle button { padding: 4px 8px; min-width: 28px; }
+      }
+      #status.ok {
+        color: #7fd18c;
+      }
+      #status.warn {
+        color: #f0c674;
+      }
+      #status.err {
+        color: #ea6a6a;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="hud-panel" class="panel-open">
+      <div id="hud">
+        <h1>Udu</h1>
+        <div class="row"><span>Time</span><span id="hud-time">—</span></div>
+        <div class="row"><span>Character</span><span id="hud-char">—</span></div>
+        <div class="row"><span>Resources</span><span id="hud-resources">—</span></div>
+        <div class="row"><span>Inventory</span><span id="hud-inv">—</span></div>
+        <div id="stats">
+          <div class="stat"><span class="stat-label">Hunger</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-hunger"></div></div><span class="stat-val" id="val-hunger">—</span></div>
+          <div class="stat"><span class="stat-label">Thirst</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-thirst"></div></div><span class="stat-val" id="val-thirst">—</span></div>
+          <div class="stat"><span class="stat-label">Bladder</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-bladder"></div></div><span class="stat-val" id="val-bladder">—</span></div>
+          <div class="stat"><span class="stat-label">Energy</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-energy"></div></div><span class="stat-val" id="val-energy">—</span></div>
+          <div class="stat"><span class="stat-label">Sick</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-sickness"></div></div><span class="stat-val" id="val-sickness">—</span></div>
+        </div>
+        <div id="hud-goal"></div>
+        <div id="hud-goal-daily"></div>
+        <div id="hud-reasoning"></div>
+      </div>
+      <div id="hud-handle" role="button" aria-label="Toggle stats panel" title="Toggle stats panel">
+        <div class="handle-grip"></div>
+        <span class="handle-label">Stats</span>
+      </div>
+    </div>
+    <div id="log-drawer" class="drawer-peek">
+      <div class="drawer-handle" id="drawer-handle">
+        <div class="drawer-grip"></div>
+        <span class="drawer-label">AI debug log</span>
+      </div>
+      <div id="hud-log"></div>
+    </div>
+    <div id="camera-controls">
+      <button class="cam-btn" id="cam-zoom-in" type="button" aria-label="Zoom in" title="Zoom in">＋</button>
+      <button class="cam-btn" id="cam-zoom-out" type="button" aria-label="Zoom out" title="Zoom out">−</button>
+      <button class="cam-btn" id="cam-recenter" type="button" aria-label="Re-center" title="Re-center on character">◎</button>
+    </div>
+    <div id="status" class="warn">connecting…</div>
+    <div id="speed-toggle" role="group" aria-label="Game speed">
+      <span class="speed-label">Speed</span>
+      <button type="button" data-speed="1" class="active">1×</button>
+      <button type="button" data-speed="2">2×</button>
+      <button type="button" data-speed="3">3×</button>
+    </div>
+    <script>
+      (function () {
+        var PANEL_KEY = 'udu-hud-panel-state';
+        var panel = document.getElementById('hud-panel');
+        var handle = document.getElementById('hud-handle');
+        function setPanelState(state) {
+          panel.classList.remove('panel-open', 'panel-collapsed');
+          panel.classList.add('panel-' + state);
+          panel.style.transform = '';
+          localStorage.setItem(PANEL_KEY, state);
+        }
+        var initialPanel = localStorage.getItem(PANEL_KEY);
+        if (initialPanel !== 'open' && initialPanel !== 'collapsed') initialPanel = 'open';
+        setPanelState(initialPanel);
+
+        var pdrag = null;
+        function panelSnap(x, width) {
+          // x is current translateX (negative). Snap to nearest of 0 (open) or
+          // -(width - 32) (collapsed).
+          var collapsedX = -(width - 32);
+          return Math.abs(x) < Math.abs(collapsedX - x) ? 'open' : 'collapsed';
+        }
+        handle.addEventListener('pointerdown', function (e) {
+          var rect = panel.getBoundingClientRect();
+          var startState = panel.classList.contains('panel-collapsed') ? 'collapsed' : 'open';
+          var collapsedX = -(rect.width - 32);
+          pdrag = {
+            startX: e.clientX,
+            baseX: startState === 'collapsed' ? collapsedX : 0,
+            width: rect.width,
+            collapsedX: collapsedX,
+            pointerId: e.pointerId,
+            moved: false,
+          };
+          panel.classList.add('dragging');
+          handle.setPointerCapture(e.pointerId);
+        });
+        handle.addEventListener('pointermove', function (e) {
+          if (!pdrag) return;
+          var dx = e.clientX - pdrag.startX;
+          if (Math.abs(dx) > 4) pdrag.moved = true;
+          var x = Math.max(pdrag.collapsedX, Math.min(0, pdrag.baseX + dx));
+          panel.style.transform = 'translateX(' + x + 'px)';
+        });
+        function endPanelDrag(e) {
+          if (!pdrag) return;
+          var dx = e.clientX - pdrag.startX;
+          var snap;
+          if (!pdrag.moved) {
+            // Tap — toggle open/collapsed.
+            snap = panel.classList.contains('panel-open') ? 'collapsed' : 'open';
+          } else {
+            var x = Math.max(pdrag.collapsedX, Math.min(0, pdrag.baseX + dx));
+            snap = panelSnap(x, pdrag.width);
+          }
+          panel.classList.remove('dragging');
+          setPanelState(snap);
+          handle.releasePointerCapture(pdrag.pointerId);
+          pdrag = null;
+        }
+        handle.addEventListener('pointerup', endPanelDrag);
+        handle.addEventListener('pointercancel', endPanelDrag);
+
+        function scene() {
+          var g = window.__UDU_GAME__;
+          return g && g.scene && g.scene.scenes && g.scene.scenes[0];
+        }
+        function zoomStep(sign) {
+          var s = scene();
+          if (!s) return;
+          var cam = s.cameras.main;
+          var step = 0.25;
+          var next = cam.zoom * (sign > 0 ? 1 + step : 1 - step);
+          s.zoomAround(cam.width / 2, cam.height / 2, next);
+        }
+        document.getElementById('cam-zoom-in').addEventListener('click', function () { zoomStep(1); });
+        document.getElementById('cam-zoom-out').addEventListener('click', function () { zoomStep(-1); });
+        document.getElementById('cam-recenter').addEventListener('click', function () {
+          var s = scene();
+          if (s) s.recenterOnCharacter();
+        });
+
+        // Slide-up log drawer. Three snap points:
+        //   collapsed = handle only (32px)
+        //   peek      = ~140px  (last few entries)
+        //   expanded  = drawer.height (50vh)
+        // Pointer events handle touch + mouse uniformly.
+        var DRAWER_KEY = 'udu-drawer-state';
+        var drawer = document.getElementById('log-drawer');
+        var handle = document.getElementById('drawer-handle');
+        function drawerOffsetPx(state) {
+          if (state === 'expanded') return Math.round(window.innerHeight * 0.5);
+          if (state === 'collapsed') return 32;
+          return window.innerWidth <= 600 ? 120 : 140;
+        }
+        function setDrawerState(state) {
+          drawer.classList.remove('drawer-collapsed', 'drawer-peek', 'drawer-expanded');
+          drawer.classList.add('drawer-' + state);
+          drawer.style.transform = '';
+          document.documentElement.style.setProperty('--drawer-offset', drawerOffsetPx(state) + 'px');
+          localStorage.setItem(DRAWER_KEY, state);
+        }
+        window.addEventListener('resize', function () {
+          var s = drawer.classList.contains('drawer-collapsed') ? 'collapsed'
+            : drawer.classList.contains('drawer-expanded') ? 'expanded'
+            : 'peek';
+          document.documentElement.style.setProperty('--drawer-offset', drawerOffsetPx(s) + 'px');
+        });
+        var initial = localStorage.getItem(DRAWER_KEY) || 'peek';
+        setDrawerState(initial);
+
+        var drag = null;
+        function snapPoints() {
+          // Returns [collapsedY, peekY, expandedY] as translateY pixels from
+          // top of drawer (0 = fully open). Larger = more closed.
+          var h = drawer.getBoundingClientRect().height;
+          var peekHeight = window.innerWidth <= 600 ? 120 : 140;
+          return {
+            collapsed: h - 32,
+            peek: h - peekHeight,
+            expanded: 0,
+          };
+        }
+        function nearestSnap(y) {
+          var pts = snapPoints();
+          var entries = [
+            ['collapsed', pts.collapsed],
+            ['peek', pts.peek],
+            ['expanded', pts.expanded],
+          ];
+          var best = entries[0];
+          for (var i = 1; i < entries.length; i++) {
+            if (Math.abs(entries[i][1] - y) < Math.abs(best[1] - y)) best = entries[i];
+          }
+          return best[0];
+        }
+        handle.addEventListener('pointerdown', function (e) {
+          var pts = snapPoints();
+          var startState = drawer.classList.contains('drawer-collapsed')
+            ? 'collapsed'
+            : drawer.classList.contains('drawer-expanded')
+            ? 'expanded'
+            : 'peek';
+          drag = {
+            startY: e.clientY,
+            baseY: pts[startState],
+            pointerId: e.pointerId,
+          };
+          drawer.classList.add('dragging');
+          handle.setPointerCapture(e.pointerId);
+        });
+        handle.addEventListener('pointermove', function (e) {
+          if (!drag) return;
+          var dy = e.clientY - drag.startY;
+          var pts = snapPoints();
+          var y = Math.max(pts.expanded, Math.min(pts.collapsed, drag.baseY + dy));
+          drawer.style.transform = 'translateY(' + y + 'px)';
+        });
+        function endDrag(e) {
+          if (!drag) return;
+          var dy = e.clientY - drag.startY;
+          var pts = snapPoints();
+          var y = Math.max(pts.expanded, Math.min(pts.collapsed, drag.baseY + dy));
+          var snap = Math.abs(dy) < 6
+            // Tap (no drag) — cycle through states.
+            ? (drawer.classList.contains('drawer-collapsed') ? 'peek'
+              : drawer.classList.contains('drawer-peek') ? 'expanded'
+              : 'collapsed')
+            : nearestSnap(y);
+          drawer.classList.remove('dragging');
+          setDrawerState(snap);
+          handle.releasePointerCapture(drag.pointerId);
+          drag = null;
+        }
+        handle.addEventListener('pointerup', endDrag);
+        handle.addEventListener('pointercancel', endDrag);
+      })();
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

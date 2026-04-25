@@ -29,7 +29,7 @@ See [Phase 0 tasks](/tasks/phase-0-documentation).
 - [AI Architecture](/guide/ai-architecture) — Utility AI + LLM reflection
 - [Data Model](/guide/data-model) — SQLite + TS types
 - [API](/guide/api) — WebSocket + REST protocol
-- [Deployment](/guide/deployment) — pm2 + cloudflared
+- [Deployment](/guide/deployment) — Docker Compose + cloudflared
 
 ## Resume workflow
 
