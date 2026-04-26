@@ -2,13 +2,14 @@ import Phaser from 'phaser';
 import type { Resource } from '../../../shared/types';
 
 // Resource sprite atlases (frames within a single sheet):
-//   trees.png   48×48 × 2 frames  — [0]=trunk with stump, [1]=canopy overlay
+//   tree_fruit.png / tree_vine.png / tree_wood.png  48×48 × 2 frames each — [0]=trunk, [1]=canopy
 //   bushes.png  32×32 — loaded twice: as 16×16 × 4 frames and as 32×16 × 2 frames.
 //                        Small (16×16): [2]=berry bush, [3]=empty dome.
 //                        Big (32×16): frame 0 = big bush spanning 2 tiles.
-//   fireplace.png 16×16 × 4 frames — animated fire
+//   fireplace.png      16×16 × 4 frames — animated fire (lit)
+//   fireplace_off.png  16×16 single frame — cold/extinguished pit (no fuel)
 //   chicken.png 16×16 × 6 frames  — top-row walk cycle (bottom row reserved; use flipX for direction)
-//   items.png   16×16 × 3 frames  — [0]=fruit, [1]=berry, [2]=wood log
+//   items.png   16×16 × 4 frames  — [0]=fruit, [1]=berry, [2]=wood log, [3]=vine
 // (Character sprites are owned by CharacterSprite.ts, not duplicated here.)
 type SheetDef = {
   key: string;
@@ -21,11 +22,14 @@ type SheetDef = {
 };
 
 const SHEETS: readonly SheetDef[] = [
-  { key: 'trees', path: '/sprites/tiles/trees.png?v=3', frameWidth: 48, frameHeight: 48 },
+  { key: 'tree_fruit', path: '/sprites/tiles/tree_fruit.png?v=2', frameWidth: 48, frameHeight: 48 },
+  { key: 'tree_vine', path: '/sprites/tiles/tree_vine.png?v=2', frameWidth: 48, frameHeight: 48 },
+  { key: 'tree_wood', path: '/sprites/tiles/tree_wood.png?v=2', frameWidth: 48, frameHeight: 48 },
   { key: 'bushes', path: '/sprites/tiles/bushes.png?v=4', frameWidth: 16, frameHeight: 16 },
   { key: 'bushes_big', path: '/sprites/tiles/bushes.png?v=4', frameWidth: 32, frameHeight: 16 },
   { key: 'fireplace', path: '/sprites/tiles/fireplace.png?v=3', frameWidth: 16, frameHeight: 16, animFrames: 4, fps: 6 },
-  { key: 'items', path: '/sprites/tiles/items.png?v=4', frameWidth: 16, frameHeight: 16 },
+  { key: 'fireplace_off', path: '/sprites/tiles/fireplace_off.png?v=1', frameWidth: 16, frameHeight: 16 },
+  { key: 'items', path: '/sprites/tiles/items.png?v=5', frameWidth: 16, frameHeight: 16 },
   { key: 'chicken_walk', path: '/sprites/tiles/chicken.png', frameWidth: 16, frameHeight: 16, animFrames: 6, fps: 6 },
   { key: 'fish_idle', path: '/sprites/animals/fish_idle.png', frameWidth: 16, frameHeight: 16 },
 ] as const;
@@ -66,6 +70,10 @@ export type ResourceVisual = {
     scale: number;
     depthBias: number;
   }>;
+  // Optional tint applied to the base sprite (Phaser setTint). 0xffffff = no
+  // tint. Used for visual state changes that don't justify a separate sheet
+  // (e.g. unlit fire = gray dim of the lit frame).
+  tint?: number;
 };
 
 export function preloadResourceSprites(scene: Phaser.Scene): void {
@@ -98,45 +106,46 @@ export function registerResourceAnimations(scene: Phaser.Scene): void {
 // Decide sprite + frame for a resource, or null when asset is missing (caller falls back to shape).
 export function visualFor(scene: Phaser.Scene, r: Resource): ResourceVisual | null {
   switch (r.type) {
-    case 'tree': {
-      if (!available(scene, 'trees')) return null;
-      // Trunk is the base, canopy overlay always renders above characters so they
-      // can walk "under" the foliage.
-      const fruits = Number(r.state?.fruits ?? 0);
-      const fruitDecos: NonNullable<ResourceVisual['decorations']> = [];
-      if (fruits > 0 && available(scene, 'items')) {
-        // Cluster fruits across the canopy. Base sprite anchored at tile bottom,
-        // canopy occupies the upper ~28 px of the 48-tall sprite — fruits sit
-        // around y = -32 (mid-canopy). Angle starts at 0 (right) so n=2 spreads
-        // horizontally instead of stacking vertically at the trunk axis.
-        const radius = fruits === 1 ? 0 : 7;
-        for (let i = 0; i < fruits; i++) {
-          const a = (i / Math.max(1, fruits)) * Math.PI * 2;
-          fruitDecos.push({
-            sheetKey: 'items',
-            frame: 0,
-            dx: Math.cos(a) * radius,
-            dy: -32 + Math.sin(a) * radius * 0.4,
-            scale: 0.75,
-            depthBias: 10001, // just above canopy (10000)
-          });
+    case 'tree_fruit':
+    case 'tree_vine':
+    case 'tree_wood': {
+      const sheetKey = r.type; // matches sheet keys 1:1
+      if (!available(scene, sheetKey)) return null;
+      // Decorations: only tree_fruit shows yield count (fruits dangling from canopy).
+      // tree_vine/tree_wood express stash visually via the canopy art itself.
+      const decos: NonNullable<ResourceVisual['decorations']> = [];
+      if (r.type === 'tree_fruit' && available(scene, 'items')) {
+        const fruits = Number(r.state?.fruits ?? 0);
+        if (fruits > 0) {
+          const radius = fruits === 1 ? 0 : 7;
+          for (let i = 0; i < fruits; i++) {
+            const a = (i / Math.max(1, fruits)) * Math.PI * 2;
+            decos.push({
+              sheetKey: 'items',
+              frame: 0,
+              dx: Math.cos(a) * radius,
+              dy: -32 + Math.sin(a) * radius * 0.4,
+              scale: 1,
+              depthBias: 10001,
+            });
+          }
         }
       }
       return {
-        sheetKey: 'trees',
+        sheetKey,
         frame: 0,
         anchorX: 0.5,
         anchorY: 1,
         animate: false,
         depthOffset: 0,
         overlay: {
-          sheetKey: 'trees',
+          sheetKey,
           frame: 1,
           anchorX: 0.5,
           anchorY: 1,
           depthBias: 10000,
         },
-        decorations: fruitDecos.length > 0 ? fruitDecos : undefined,
+        decorations: decos.length > 0 ? decos : undefined,
       };
     }
     case 'wood': {
@@ -148,6 +157,16 @@ export function visualFor(scene: Phaser.Scene, r: Resource): ResourceVisual | nu
       if (!available(scene, 'items')) return null;
       // items.png frame 0 = fruit, sitting where it fell from the canopy.
       return { sheetKey: 'items', frame: 0, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
+    }
+    case 'branch_on_ground': {
+      // Reuse wood log frame until a dedicated branch sprite lands.
+      if (!available(scene, 'items')) return null;
+      return { sheetKey: 'items', frame: 2, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
+    }
+    case 'vine_on_ground': {
+      if (!available(scene, 'items')) return null;
+      // items.png frame 3 = vine.
+      return { sheetKey: 'items', frame: 3, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
     }
     case 'bush': {
       if (!available(scene, 'bushes')) return null;
@@ -172,7 +191,7 @@ export function visualFor(scene: Phaser.Scene, r: Resource): ResourceVisual | nu
             frame: 1,
             dx: Math.cos(a) * radius,
             dy: -10 + Math.sin(a) * radius * 0.35,
-            scale: 0.6,
+            scale: 1,
             depthBias: 100, // above bush body, but well below tree canopy
           });
         }
@@ -188,9 +207,17 @@ export function visualFor(scene: Phaser.Scene, r: Resource): ResourceVisual | nu
       };
     }
     case 'fire': {
-      if (!available(scene, 'fireplace')) return null;
       const lit = Boolean(r.state?.lit ?? true);
-      return { sheetKey: 'fireplace', frame: lit ? 0 : 0, anchorX: 0.5, anchorY: 0.5, animate: lit, depthOffset: 0 };
+      const sheetKey = lit ? 'fireplace' : 'fireplace_off';
+      if (!available(scene, sheetKey)) return null;
+      return {
+        sheetKey,
+        frame: 0,
+        anchorX: 0.5,
+        anchorY: 0.5,
+        animate: lit,
+        depthOffset: 0,
+      };
     }
     case 'animal_chicken': {
       if (!available(scene, 'chicken_walk')) return null;
