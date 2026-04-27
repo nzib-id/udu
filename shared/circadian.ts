@@ -24,16 +24,17 @@ export const CIRCADIAN: {
   hungerDecay: PhaseMap;
   bladderDecay: PhaseMap;
   sleepRecovery: PhaseMap;
+  // Per-phase OVERRIDE for the energy threshold that triggers reactive sleep.
+  // Lower = char only sleeps when truly drained; higher = char sleeps earlier.
+  // Morning/afternoon: push through, only sleep on near-collapse. Evening:
+  // start winding down. Night: sleep early (recovery is ×1.8 here, decay
+  // awake is ×1.5 — both push the same way).
+  energySleepTrigger: PhaseMap;
 } = {
-  // Active drain on energy. Morning fresh (×0.7), evening tired (×1.2),
-  // night brutal (×1.5) — staying up late hurts.
   energyDecay:    { morning: 0.7, afternoon: 1.0, evening: 1.2, night: 1.5 },
-  // Thirst spikes in the heat of the afternoon, drops at night.
   thirstDecay:    { morning: 1.0, afternoon: 1.3, evening: 1.0, night: 0.6 },
-  // Hunger high after the long overnight fast, low while asleep.
   hungerDecay:    { morning: 1.1, afternoon: 1.0, evening: 1.0, night: 0.5 },
-  // Bladder pressure spikes morning (overnight buildup), kidneys slow at night.
   bladderDecay:   { morning: 1.2, afternoon: 1.0, evening: 1.0, night: 0.3 },
-  // Sleep efficiency: night sleep restorative (×1.8), midday nap useless (×0.4).
   sleepRecovery:  { morning: 0.7, afternoon: 0.4, evening: 0.6, night: 1.8 },
+  energySleepTrigger: { morning: 8, afternoon: 10, evening: 18, night: 28 },
 };

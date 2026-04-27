@@ -2,13 +2,16 @@
 
 Latest first. Read this when scanning across days. For implementation detail (file changes, configs, verify steps), open the specific day file.
 
-## 2026-04-27 — Sprite art swap: tree variants + items + fireplace_off + 1:1 scale rule
+## 2026-04-27 — Sprite art swap + late-night polish + sleep-wake loop fix + Phase A.2 stone/boulder
 
 - Tree variant sprites: 3 dedicated 96×48 sheets (`tree_fruit`, `tree_vine`, `tree_wood`) replace the shared `trees.png`. Visual differentiation now lives in art, not just data — `tree_fruit` decos preserved.
 - `items.png` 3→4 frames: real vine sprite at `[3]`. Retired the placeholder where `vine_on_ground` was a green-tinted berry.
 - `fireplace_off.png` dedicated unlit-state sprite. Removed the `tint: 0x444444` hack on the lit frame.
 - Pixel scale rule (Nzib correction): `scale: 1` mandatory for every sprite/decoration. Fruit deco 0.75→1, berry deco 0.6→1. Saved as feedback memory.
 - Dimensional sanity: ffmpeg `cropdetect` on each new f0/f1 to verify trunk+canopy alignment vs old trees.png anchor.
+- **Late-night polish:** `fish_idle` 5-frame anim @ 5 fps + alpha 0.75 (semi-submerged), `ResourceVisual.alpha?` field added. Removed bubble ripple animation on river tiles (was banded/ugly). Fireplace night glow rewritten — replaced two-layer `fillCircle` stack with pre-rendered radial-gradient texture + additive `Image` pool (smooth halo), and added `preFX.addGlow` on lit fireplace sprite for tight rim aura. Verified via 3 reversible debug overrides (forced night + forced lit), all reverted post-confirmation.
+- **Sleep-wake loop fix (Opsi A):** dropped `s.health < HEALTH_CONFIG.max / 2` from the `wakeForNeed` clause in `game-loop.ts:1346-1349`. Bug: HP-low caused by exhaustion was waking the char, but sleep is the only cure for exhaustion → instant re-sleep → instant wake → loop. Hunger/thirst/bladder still wake on emergency; HP-low alone no longer interrupts recovery. Backend rebuilt clean. Awaiting live observation.
+- **Phase A.2 — Stone/boulder shipped:** new `boulder` (blocking, mineable) and `stone_on_ground` (pickup) ResourceTypes. Actions `pickup_stone` (0.3 energy) and `mine_stone` (3 energy, adjacency-required, 3 stones/boulder despawn). Inventory weight `stone: 1.5`. LLM wander menu surfaces both options when can-carry+reachable; rule fallback skips them. Sprites: `boulder.png` 32×32 + `items.png` bumped 64×16→64×32 (stone at frame 5). Spawn: per-biome `boulderDensity` (forest 0.04, grove 0.02, open 0.01) + relaxed `hasFreeOrthogonalNeighbor` placement → 19 boulders on fresh seed. Initial 8 `stone_on_ground` scatter so pickup is reachable before first mine. Daily-goal validator caught up with Phase A.1+A.2 action/item names. Backend+frontend rebuilt clean, sprites render in puppeteer screenshot. Live mine_stone test: pending.
 
 ## 2026-04-26 — Decision-making completeness + Fire+Temp + Day-18 bug-fixes + Night System + Cortex mode + Batch 7 + Cara A + observe.py + escape valve + drop_X + gate removal + cap=20 + Phase A.1 tree split
 

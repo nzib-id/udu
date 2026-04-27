@@ -6,16 +6,25 @@
 import type { Character, LifeGoal } from '../../../shared/types.js';
 import { generate, type OllamaOptions } from './ollama-client.js';
 import { buildLifeGoalPrompt } from './prompt-life-goal.js';
-import { buildWorldSummary } from './world-summary.js';
+import { buildWorldSummary, buildLineageTrajectoryText } from './world-summary.js';
 import type { RememberedResource } from '../spatial-memory-repo.js';
 import type { ChunkVisit } from '../chunk-visit-repo.js';
 import type { EventRepo } from '../event-repo.js';
+import type { CharacterRepo } from '../character-repo.js';
+
+const LINEAGE_TRAJECTORY_LIMIT = 5;
+// Life-goal call needs more time than the default 8s: diagnose+prescribe pattern
+// + 280 numPredict ≈ 10-15s warm. Daily-goal observed at 6.5s on similar load,
+// life-goal will sit just over the default. 20s gives headroom incl cold start.
+const LIFE_GOAL_TIMEOUT_MS = 20000;
 
 export type GenerateLifeGoalArgs = {
   character: Character;
   knownResources: RememberedResource[];
   chunkVisits: ChunkVisit[];
   eventRepo: EventRepo;
+  characterRepo: CharacterRepo;
+  lineageId: number;
   cachedRules: string[];
   ollama: OllamaOptions;
   gameDay: number;
@@ -31,10 +40,19 @@ export async function generateLifeGoal(args: GenerateLifeGoalArgs): Promise<Life
     args.eventRepo,
     args.cachedRules,
   );
-  const prompt = buildLifeGoalPrompt(args.character, summary.text, summary.allowedEntities);
+  const trajectoryText = buildLineageTrajectoryText(
+    args.characterRepo,
+    args.lineageId,
+    LINEAGE_TRAJECTORY_LIMIT,
+  );
+  const prompt = buildLifeGoalPrompt(args.character, summary.text, summary.allowedEntities, trajectoryText);
 
   for (let attempt = 1; attempt <= 2; attempt++) {
-    const res = await generate(args.ollama, prompt, { numPredict: 180, temperature: 0.8 });
+    const res = await generate(
+      { ...args.ollama, timeoutMs: LIFE_GOAL_TIMEOUT_MS },
+      prompt,
+      { numPredict: 280, temperature: 0.8 },
+    );
     if (!res.ok) {
       log(`[llm] life-goal call failed (${res.kind}: ${res.error}) attempt=${attempt}`);
       continue;
@@ -49,18 +67,22 @@ export async function generateLifeGoal(args: GenerateLifeGoalArgs): Promise<Life
       log(`[llm] life-goal rejected — hallucinated entities ${JSON.stringify(invalid)} (attempt=${attempt})`);
       continue;
     }
-    log(`[llm] life-goal pick="${parsed.goal}" priority=${parsed.priority} (${res.totalDurationMs}ms)`);
+    log(
+      `[llm] life-goal pick="${parsed.goal}" priority=${parsed.priority} diagnosis="${parsed.diagnosis}" (${res.totalDurationMs}ms)`,
+    );
     return {
       text: parsed.goal,
       reason: parsed.reason,
       priority: parsed.priority,
       setAtDay: args.gameDay,
+      diagnosis: parsed.diagnosis,
     };
   }
   return null;
 }
 
 type Parsed = {
+  diagnosis: string;
   goal: string;
   reason: string;
   priority: number;
@@ -70,15 +92,16 @@ type Parsed = {
 function parse(text: string): Parsed | null {
   try {
     const obj = JSON.parse(text) as Record<string, unknown>;
+    const diagnosis = typeof obj.diagnosis === 'string' ? obj.diagnosis.trim() : '';
     const goal = typeof obj.goal === 'string' ? obj.goal.trim() : '';
     const reason = typeof obj.reason === 'string' ? obj.reason.trim() : '';
     const priority = typeof obj.priority === 'number' ? Math.round(obj.priority) : NaN;
     const refs = Array.isArray(obj.referenced_entities)
       ? obj.referenced_entities.filter((x): x is string => typeof x === 'string')
       : [];
-    if (!goal || !reason) return null;
+    if (!diagnosis || !goal || !reason) return null;
     if (!Number.isFinite(priority) || priority < 1 || priority > 10) return null;
-    return { goal, reason, priority, referenced_entities: refs };
+    return { diagnosis, goal, reason, priority, referenced_entities: refs };
   } catch {
     return null;
   }

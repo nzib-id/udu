@@ -3,11 +3,14 @@ import type { Resource } from '../../shared/types.js';
 import {
   ANIMAL_CONFIG,
   BIOME_CONFIG,
+  BOULDER_CONFIG,
   DIRT_TILES,
   FIRE_CONFIG,
   MAP_CONFIG,
+  REGEN_CONFIG,
   RESOURCE_CONFIG,
   TERRAIN_GRID,
+  TREE_TYPE_RATIO,
   WATER_TILES,
 } from '../../shared/config.js';
 
@@ -67,6 +70,15 @@ export class ResourceRepo {
    */
   private backfillPhase3(existing: Resource[]): Resource[] {
     const hasFire = existing.some((r) => r.type === 'fire');
+    // Phase 5: existing fires from pre-fuel era get fuel=initialFuel injected
+    // so they remain lit and the burn loop has a counter to decrement.
+    for (const r of existing) {
+      if (r.type !== 'fire') continue;
+      if (typeof r.state.fuel !== 'number') {
+        r.state = { ...r.state, fuel: FIRE_CONFIG.initialFuel, lit: r.state.lit ?? true };
+        this.persist(r);
+      }
+    }
     const chickenCount = existing.filter((r) => r.type === 'animal_chicken').length;
     const fishCount = existing.filter((r) => r.type === 'animal_fish').length;
     const added: Resource[] = [];
@@ -76,13 +88,28 @@ export class ResourceRepo {
       let fx = FIRE_CONFIG.x;
       let fy = FIRE_CONFIG.y;
       while (occupied.has(`${fx},${fy}`) && fy < MAP_CONFIG.heightTiles - 1) fy++;
-      const fire: Resource = { id: 'fire_main', type: 'fire', x: fx, y: fy, state: { lit: true } };
+      const fire: Resource = {
+        id: 'fire_main',
+        type: 'fire',
+        x: fx,
+        y: fy,
+        state: { fuel: FIRE_CONFIG.initialFuel, lit: true },
+      };
       added.push(fire);
       occupied.add(`${fx},${fy}`);
     }
 
     const blocked = new Set(
-      existing.filter((r) => r.type === 'bush' || r.type === 'tree' || r.type === 'river').map((r) => `${r.x},${r.y}`),
+      existing
+        .filter(
+          (r) =>
+            r.type === 'bush' ||
+            r.type === 'tree_fruit' ||
+            r.type === 'tree_vine' ||
+            r.type === 'tree_wood' ||
+            r.type === 'river',
+        )
+        .map((r) => `${r.x},${r.y}`),
     );
     for (let i = chickenCount; i < ANIMAL_CONFIG.chickenCount; i++) {
       for (let attempt = 0; attempt < 200; attempt++) {
@@ -168,6 +195,7 @@ function generateInitialResources(): Resource[] {
   // sparse but more often productive. Bush/tree never on dirt or water.
   let treeIdx = 0;
   let bushIdx = 0;
+  let boulderIdx = 0;
 
   for (let y = 0; y < MAP_CONFIG.heightTiles; y++) {
     for (let x = 0; x < MAP_CONFIG.widthTiles; x++) {
@@ -185,16 +213,35 @@ function generateInitialResources(): Resource[] {
         // pathing breathing room.
         if (biome === 'forest' || hasFreeNeighbors(key, used)) {
           const barren = rand() < cfg.treeBarrenChance;
-          const state = barren
-            ? { fruits: 0, barren: true }
-            : {
-                fruits: Math.floor(
+          // Pick tree variant by ratio. tree_fruit drops fruit (food),
+          // tree_wood drops branch (fire fuel), tree_vine drops vine
+          // (Phase B craft material — placeholder consumer).
+          const variantRoll = rand();
+          let variant: 'tree_fruit' | 'tree_vine' | 'tree_wood';
+          if (variantRoll < TREE_TYPE_RATIO.fruit) variant = 'tree_fruit';
+          else if (variantRoll < TREE_TYPE_RATIO.fruit + TREE_TYPE_RATIO.vine) variant = 'tree_vine';
+          else variant = 'tree_wood';
+
+          const state: Record<string, unknown> = barren ? { barren: true } : {};
+          if (variant === 'tree_fruit') {
+            state.fruits = barren
+              ? 0
+              : Math.floor(
                   RESOURCE_CONFIG.treeFruitsMin +
                     rand() * (RESOURCE_CONFIG.treeFruitsMax - RESOURCE_CONFIG.treeFruitsMin + 1),
-                ),
-              };
+                );
+          } else if (variant === 'tree_vine') {
+            state.vines = barren
+              ? 0
+              : Math.floor(1 + rand() * (REGEN_CONFIG.treeVinesMax - 1 + 1));
+          } else {
+            state.branches = barren
+              ? 0
+              : Math.floor(1 + rand() * (REGEN_CONFIG.treeWoodBranchesMax - 1 + 1));
+          }
+
           used.add(key);
-          result.push({ id: `tree_${treeIdx++}`, type: 'tree', x, y, state });
+          result.push({ id: `${variant}_${treeIdx++}`, type: variant, x, y, state });
           continue;
         }
       }
@@ -213,7 +260,42 @@ function generateInitialResources(): Resource[] {
             };
         used.add(key);
         result.push({ id: `bush_${bushIdx++}`, type: 'bush', x, y, state });
+        continue;
       }
+
+      // Boulder roll — mineable stone source. 32×32 visual extends upward+
+      // sideways but minor overlap with tree canopy is fine. Only requirement:
+      // ≥1 free orthogonal neighbor so char can stand adjacent to mine.
+      if (rand() < cfg.boulderDensity) {
+        if (!hasFreeOrthogonalNeighbor(key, used)) continue;
+        used.add(key);
+        result.push({
+          id: `boulder_${boulderIdx++}`,
+          type: 'boulder',
+          x,
+          y,
+          state: { stonesRemaining: BOULDER_CONFIG.stonesPerBoulder },
+        });
+      }
+    }
+  }
+
+  // Initial stone-on-ground scatter — small handful so picking up stones is
+  // reachable before the first mine_stone. Boulders are the renewable source;
+  // these are just primer.
+  {
+    let placed = 0;
+    let attempts = 0;
+    while (placed < BOULDER_CONFIG.initialGroundStones && attempts < BOULDER_CONFIG.initialGroundStones * 100) {
+      attempts++;
+      const x = Math.floor(rand() * MAP_CONFIG.widthTiles);
+      const y = Math.floor(rand() * MAP_CONFIG.heightTiles);
+      const key = `${x},${y}`;
+      if (used.has(key)) continue;
+      if (TERRAIN_GRID.cells[y][x] !== 'grass') continue;
+      used.add(key);
+      result.push({ id: `stone_seed_${placed}`, type: 'stone', x, y, state: {} });
+      placed++;
     }
   }
 
@@ -224,7 +306,13 @@ function generateInitialResources(): Resource[] {
     let fy = FIRE_CONFIG.y;
     while (used.has(`${fx},${fy}`) && fy < MAP_CONFIG.heightTiles - 1) fy++;
     used.add(`${fx},${fy}`);
-    result.push({ id: 'fire_main', type: 'fire', x: fx, y: fy, state: { lit: true } });
+    result.push({
+      id: 'fire_main',
+      type: 'fire',
+      x: fx,
+      y: fy,
+      state: { fuel: FIRE_CONFIG.initialFuel, lit: true },
+    });
   }
 
   // Chickens — wander over land. Allow adjacency to bush/tree so they can hide near cover.
@@ -270,4 +358,16 @@ function hasFreeNeighbors(key: string, used: Set<string>): boolean {
     }
   }
   return true;
+}
+
+// Looser placement check for blocking objects that just need a walkable
+// approach tile. Returns true if at least one of the four orthogonal
+// neighbours (N/E/S/W) is free of placed resources.
+function hasFreeOrthogonalNeighbor(key: string, used: Set<string>): boolean {
+  const [sx, sy] = key.split(',').map(Number);
+  const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]] as const;
+  for (const [dx, dy] of dirs) {
+    if (!used.has(`${sx + dx},${sy + dy}`)) return true;
+  }
+  return false;
 }

@@ -1,9 +1,11 @@
-import type { Action, Character, Position, Resource } from '../../shared/types.js';
-import { AI_CONFIG, MAP_CONFIG, REST_CONFIG, THRESHOLDS, TIME_CONFIG } from '../../shared/config.js';
+import type { Action, Character, Position, Resource, ResourceType } from '../../shared/types.js';
+import { AI_CONFIG, FIRE_CONFIG, MAP_CONFIG, NUTRITION, REST_CONFIG, TEMPERATURE_CONFIG, THRESHOLDS, TIME_CONFIG } from '../../shared/config.js';
+import { canCarry, weightOfItem } from '../../shared/inventory.js';
+import { CIRCADIAN, currentPhase, type Phase } from '../../shared/circadian.js';
 import { tileToChunk, chunkKey } from '../../shared/spatial.js';
 import type { ChunkVisit } from './chunk-visit-repo.js';
 import { findPath, hasLineOfSight, smoothPath } from './pathfinder.js';
-import type { ChoicePicker, FeedOption, Observation, WanderKind, WanderOption } from './llm/choice-picker.js';
+import type { ChoicePicker, FeedOption, Observation, WanderKind, WanderOption, WorldStatus } from './llm/choice-picker.js';
 
 // Extra context for the wander annotation layer. Threads remembered-resource
 // staleness + chunk visit history into enumerateWanderOptions so the LLM can
@@ -14,6 +16,14 @@ export type WanderHints = {
   lastSeenById: Map<string, number>;
   chunkVisits: Map<string, ChunkVisit>;
   nowMs: number;
+  // Circadian hints — feed the pre-emptive sleep option. Optional so legacy
+  // call-sites (debug endpoint) keep working with default behaviour (no
+  // pre-emptive sleep surfaced).
+  phase?: Phase;
+  nearLitFire?: boolean;
+  // Pre-formatted game-time stamp ("D2 14:30") — cortex prompt surfaces it
+  // so the LLM knows the in-game clock, not just the phase.
+  gameTimeStamp?: string;
 };
 
 export type ActionPlan = {
@@ -48,7 +58,14 @@ const DESPERATE_HUNGER = 15;
 export function computeBlocked(resources: Resource[]): Set<string> {
   const blocked = new Set<string>();
   for (const r of resources) {
-    if (r.type === 'bush' || r.type === 'tree' || r.type === 'river') {
+    if (
+      r.type === 'bush' ||
+      r.type === 'tree_fruit' ||
+      r.type === 'tree_vine' ||
+      r.type === 'tree_wood' ||
+      r.type === 'boulder' ||
+      r.type === 'river'
+    ) {
       blocked.add(`${r.x},${r.y}`);
     }
   }
@@ -64,6 +81,15 @@ export function computeBlocked(resources: Resource[]): Set<string> {
  * planners return null, and we fall through to wander → pure exploration
  * until the vision cone scoops up something useful.
  */
+export type DecideOptions = {
+  suppressSleep?: boolean;
+  // Phase + fire hints feed circadian sleep pull and pre-emptive sleep option.
+  // `phase` derived from current game hour by caller (game-loop already owns
+  // the gameTime clock); `nearLitFire` lifted from isCharNearLitFire().
+  phase?: Phase;
+  nearLitFire?: boolean;
+};
+
 export async function decide(
   character: Character,
   knownResources: Resource[],
@@ -72,8 +98,11 @@ export async function decide(
   observations: Observation[],
   rules: string[],
   wanderHints: WanderHints,
+  options: DecideOptions = {},
 ): Promise<DecideResult | null> {
   const s = character.stats;
+  const { suppressSleep = false, phase = 'afternoon', nearLitFire = false } = options;
+  const sleepTrigger = CIRCADIAN.energySleepTrigger[phase];
 
   if (character.currentAction.type === 'sleep' && s.energy < AI_CONFIG.sleepWakeEnergy) {
     return null;
@@ -83,15 +112,20 @@ export async function decide(
   // need fires only when its stat crosses the trigger; this stops the loop of
   // "stat dipped 1 → immediately recover" that made the character feel
   // robotic. Picking the most urgent of the firing needs preserves the old
-  // priority behaviour.
+  // priority behaviour. Sleep trigger is now phase-aware so the char sleeps
+  // earlier at night and pushes through during the day.
   const triggered: Array<{ need: Need; urgency: number }> = [];
   if (s.hunger <= THRESHOLDS.hungerTrigger) triggered.push({ need: 'eat', urgency: 100 - s.hunger });
   if (s.thirst <= THRESHOLDS.thirstTrigger) triggered.push({ need: 'drink', urgency: 100 - s.thirst });
-  if (s.energy <= THRESHOLDS.energyTrigger) triggered.push({ need: 'sleep', urgency: 100 - s.energy });
+  if (s.energy <= sleepTrigger && !suppressSleep) triggered.push({ need: 'sleep', urgency: 100 - s.energy });
   if (s.bladder >= THRESHOLDS.bladderTrigger) triggered.push({ need: 'pee', urgency: s.bladder });
 
   if (triggered.length === 0) {
-    // No urgent need — opportunistic wood pickup, otherwise rest or wander.
+    // No urgent need — opportunistic fire-tending first, then wood pickup,
+    // then rest or wander. Refueling jumps the queue when fire is unlit or
+    // running low and char has wood; matches "good steward" behavior.
+    const fuelPlan = planAddFuel(character, knownResources, blocked);
+    if (fuelPlan) return { plan: fuelPlan };
     const opportunistic = planPickupWood(character, knownResources, blocked);
     if (opportunistic) return { plan: opportunistic };
     // Rest is rare-by-design. Energy gate first: fresh/decent character
@@ -101,7 +135,7 @@ export async function decide(
       const restProb = (1 - s.energy / 100) * REST_CONFIG.maxProbability;
       if (Math.random() < restProb) return { plan: planRest() };
     }
-    return await wanderWithChoice(character, blocked, picker, knownResources, wanderHints);
+    return await wanderWithChoice(character, blocked, picker, knownResources, wanderHints, observations);
   }
 
   // Try each triggered need in priority order. If the top-urgency planner
@@ -122,11 +156,18 @@ export async function decide(
       return { plan: { path: [], finalAction: { type: 'sleep', startedAt: Date.now() } } };
     }
   }
-  // Every triggered need failed to plan — route through wanderWithChoice so
-  // the LLM can steer toward areas likely to satisfy the unmet need, instead
-  // of random rule-only wander. wanderWithChoice itself falls back to legacy
-  // wander when no directional options are walkable (extreme tight spaces).
-  return await wanderWithChoice(character, blocked, picker, knownResources, wanderHints);
+  // Every triggered need failed to plan. If energy is also low (woke from
+  // sleep early due to hunger/thirst but nothing is reachable), go back to
+  // sleep rather than wandering and draining energy further. This breaks the
+  // thrash loop of: wake-for-hunger → planFeed fails → wander → energy→15 →
+  // sleep → wake-for-hunger → repeat.
+  if (s.energy <= sleepTrigger + 15) {
+    return { plan: { path: [], finalAction: { type: 'sleep', startedAt: Date.now() } } };
+  }
+  // Route through wanderWithChoice so the LLM can steer toward areas likely
+  // to satisfy the unmet need. Falls back to legacy wander when no directional
+  // options are walkable (extreme tight spaces).
+  return await wanderWithChoice(character, blocked, picker, knownResources, wanderHints, observations);
 }
 
 function planRest(): ActionPlan {
@@ -154,7 +195,8 @@ async function planFeed(
 ): Promise<DecideResult | null> {
   const options = enumerateFeedOptions(character, resources, blocked);
   if (options.length === 0) return null;
-  const result = await picker.pickFeed({ character, options, observations, rules });
+  const world = computeWorldStatus(character, resources);
+  const result = await picker.pickFeed({ character, options, observations, rules, world });
   if (!result) return null;
   return {
     plan: { path: result.option.path, finalAction: result.option.finalAction },
@@ -180,33 +222,49 @@ export function enumerateFeedOptions(
 ): FeedOption[] {
   const options: FeedOption[] = [];
   const inv = character.inventory;
-  const hungerCritical = character.stats.hunger <= DESPERATE_HUNGER;
+  const s = character.stats;
+  const hungerCritical = s.hunger <= DESPERATE_HUNGER;
   const start = character.position;
+
+  // Helpers — clamped gain so "expected" reflects real benefit after the 0-100
+  // cap. Sickness gain is capped at the remaining headroom too so raw meat
+  // doesn't advertise +20sickness when sickness is already 95.
+  const hungerGain = (raw: number) => Math.max(0, Math.min(raw, 100 - s.hunger));
+  const energyGain = (raw: number) => Math.max(0, Math.min(raw, 100 - s.energy));
+  const sicknessGain = (raw: number) => Math.max(0, Math.min(raw, 100 - (s.sickness ?? 0)));
 
   // From-inventory eats — distance 0, no walk.
   if (inv.includes('meat_cooked')) {
+    const dh = hungerGain(NUTRITION.hungerPerMeatCooked);
+    const de = energyGain(NUTRITION.energyPerMeatCooked);
     options.push({
       kind: 'eat_meat_cooked',
       path: [],
       distance: 0,
-      finalAction: { type: 'eat_meat', target: 'cooked', startedAt: Date.now() },
+      finalAction: { type: 'eat', target: 'meat_cooked', startedAt: Date.now() },
+      annotation: `expected=+${dh.toFixed(0)}hunger,+${de.toFixed(0)}energy`,
     });
   }
 
   if (inv.includes('meat_raw')) {
+    const dh = hungerGain(NUTRITION.hungerPerMeatRaw);
+    const ds = sicknessGain(NUTRITION.sicknessPerMeatRaw);
+    const rawAnnot = `expected=+${dh.toFixed(0)}hunger,+${ds.toFixed(0)}sickness`;
     if (hungerCritical) {
       options.push({
         kind: 'eat_meat_raw_panic',
         path: [],
         distance: 0,
-        finalAction: { type: 'eat_meat', target: 'raw', startedAt: Date.now() },
+        finalAction: { type: 'eat', target: 'meat_raw', startedAt: Date.now() },
+        annotation: rawAnnot,
       });
     } else {
       options.push({
         kind: 'eat_meat_raw_normal',
         path: [],
         distance: 0,
-        finalAction: { type: 'eat_meat', target: 'raw', startedAt: Date.now() },
+        finalAction: { type: 'eat', target: 'meat_raw', startedAt: Date.now() },
+        annotation: rawAnnot,
       });
     }
     const cookPlan = planCook(character, resources, blocked);
@@ -222,19 +280,23 @@ export function enumerateFeedOptions(
   }
 
   if (inv.includes('berry')) {
+    const dh = hungerGain(NUTRITION.hungerPerBerry);
     options.push({
       kind: 'eat_berry_inv',
       path: [],
       distance: 0,
-      finalAction: { type: 'eat_berry', startedAt: Date.now() },
+      finalAction: { type: 'eat', target: 'berry', startedAt: Date.now() },
+      annotation: `expected=+${dh.toFixed(0)}hunger`,
     });
   }
   if (inv.includes('fruit')) {
+    const dh = hungerGain(NUTRITION.hungerPerFruit);
     options.push({
       kind: 'eat_fruit_inv',
       path: [],
       distance: 0,
-      finalAction: { type: 'eat_fruit', startedAt: Date.now() },
+      finalAction: { type: 'eat', target: 'fruit', startedAt: Date.now() },
+      annotation: `expected=+${dh.toFixed(0)}hunger`,
     });
   }
 
@@ -274,7 +336,7 @@ export function enumerateFeedOptions(
     });
   }
 
-  const treePlan = planForageOf(character, resources, blocked, 'tree');
+  const treePlan = planForageOf(character, resources, blocked, 'tree_fruit');
   if (treePlan) {
     options.push({
       kind: 'shake_tree',
@@ -315,7 +377,8 @@ function planPickupFruitGround(
   resources: Resource[],
   blocked: Set<string>,
 ): ActionPlan | null {
-  const fruits = resources.filter((r) => r.type === 'fruit_on_ground');
+  if (!canCarry(character.inventory, 'fruit')) return null;
+  const fruits = resources.filter((r) => r.type === 'fruit');
   let best: { path: Position[]; fruit: Resource } | null = null;
   for (const f of fruits) {
     const path = findPath(character.position, [{ x: f.x, y: f.y }], blocked);
@@ -331,7 +394,7 @@ function planPickupFruitGround(
     : [...smoothed.slice(0, -1), { x: best.fruit.x + jx, y: best.fruit.y + jy }];
   return {
     path: floatPath,
-    finalAction: { type: 'pickup_fruit_ground', target: best.fruit.id, startedAt: Date.now() },
+    finalAction: { type: 'pickup', target: best.fruit.id, startedAt: Date.now() },
   };
 }
 
@@ -339,12 +402,19 @@ function planForageOf(
   character: Character,
   resources: Resource[],
   blocked: Set<string>,
-  type: 'bush' | 'tree',
+  type: 'bush' | 'tree_fruit' | 'tree_vine' | 'tree_wood',
 ): ActionPlan | null {
+  // Bush picks straight to inventory (berry); tree shakes drop the stash item
+  // on the ground (uncapped) — only the bush path needs an inventory weight gate.
+  if (type === 'bush' && !canCarry(character.inventory, 'berry')) return null;
+  const stashKey =
+    type === 'bush' ? 'berries'
+      : type === 'tree_fruit' ? 'fruits'
+        : type === 'tree_vine' ? 'vines'
+          : 'branches';
   const candidates = resources.filter((r) => {
     if (r.type !== type) return false;
-    if (type === 'bush') return Number(r.state?.berries ?? 0) > 0;
-    return Number(r.state?.fruits ?? 0) > 0;
+    return Number(r.state?.[stashKey] ?? 0) > 0;
   });
   if (candidates.length === 0) return null;
 
@@ -358,7 +428,7 @@ function planForageOf(
   }
   if (!best) return null;
 
-  const finalType: Action['type'] = type === 'bush' ? 'pickup_berry' : 'shake_tree';
+  const finalType: Action['type'] = 'shake';
   const smoothed = smoothPath(character.position, best.path, blocked);
   return {
     path: applyOrganicStop(smoothed, best.target, character.position, blocked),
@@ -384,7 +454,7 @@ function planCook(
   const smoothed = smoothPath(character.position, best.path, blocked);
   return {
     path: applyOrganicStop(smoothed, best.fire, character.position, blocked),
-    finalAction: { type: 'cook_meat', target: best.fire.id, startedAt: Date.now() },
+    finalAction: { type: 'cook', target: best.fire.id, startedAt: Date.now() },
   };
 }
 
@@ -393,6 +463,7 @@ function planHunt(
   resources: Resource[],
   blocked: Set<string>,
 ): ActionPlan | null {
+  if (!canCarry(character.inventory, 'meat_raw')) return null;
   const animals = resources.filter(
     (r) => r.type === 'animal_chicken' || r.type === 'animal_fish',
   );
@@ -412,19 +483,106 @@ function planHunt(
   };
 }
 
+// Build a world-status snapshot for the LLM prompts. Currently this is just
+// the nearest fire's fuel + lit state + integer tile distance from the char.
+// Returns `{ fireStatus: null }` when no fire exists on the map (defensive —
+// the seed always spawns one, but lineages may shift later).
+function computeWorldStatus(character: Character, resources: readonly Resource[]): WorldStatus {
+  const fires = resources.filter((r) => r.type === 'fire');
+  if (fires.length === 0) return { fireStatus: null };
+  let nearest: { fire: Resource; dist: number } | null = null;
+  for (const f of fires) {
+    const d = Math.hypot(character.position.x - f.x, character.position.y - f.y);
+    if (!nearest || d < nearest.dist) nearest = { fire: f, dist: d };
+  }
+  if (!nearest) return { fireStatus: null };
+  const fuel = typeof nearest.fire.state.fuel === 'number'
+    ? nearest.fire.state.fuel
+    : FIRE_CONFIG.maxFuel;
+  const lit = nearest.fire.state.lit !== false;
+  const status = `Fire: ${fuel}/${FIRE_CONFIG.maxFuel} wood, ${lit ? 'lit' : 'unlit'}, ${Math.round(nearest.dist)} tiles away`;
+  return { fireStatus: status };
+}
+
+// Strategic refuel: if char carries branch or wood and the fire is unlit or
+// running below half capacity, walk to the fire and feed it. Branch is the
+// primary post-A.1 fuel; wood remains valid (legacy spawns + future chop).
+function planAddFuel(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+): ActionPlan | null {
+  if (!character.inventory.includes('branch') && !character.inventory.includes('wood')) return null;
+  const fires = resources.filter((r) => r.type === 'fire');
+  if (fires.length === 0) return null;
+
+  let best: { path: Position[]; fire: Resource } | null = null;
+  for (const f of fires) {
+    const fuel = typeof f.state.fuel === 'number' ? f.state.fuel : FIRE_CONFIG.maxFuel;
+    const lit = f.state.lit !== false;
+    const needsRefuel = !lit || fuel < FIRE_CONFIG.maxFuel / 2;
+    if (!needsRefuel) continue;
+    const goals = adjacentTiles(f, blocked);
+    if (goals.length === 0) continue;
+    const path = findPath(character.position, goals, blocked);
+    if (path === null) continue;
+    if (!best || path.length < best.path.length) best = { path, fire: f };
+  }
+  if (!best) return null;
+  const smoothed = smoothPath(character.position, best.path, blocked);
+  return {
+    path: applyOrganicStop(smoothed, best.fire, character.position, blocked),
+    finalAction: { type: 'add_fuel', target: best.fire.id, startedAt: Date.now() },
+  };
+}
+
 function planPickupWood(
   character: Character,
   resources: Resource[],
   blocked: Set<string>,
 ): ActionPlan | null {
-  if (character.inventory.includes('wood')) return null;
-  const woods = resources.filter((r) => r.type === 'wood');
-  let best: { path: Position[]; wood: Resource } | null = null;
-  for (const w of woods) {
-    // Walk to the wood tile itself (walkable) — stand right over it for pickup.
-    const path = findPath(character.position, [{ x: w.x, y: w.y }], blocked);
+  return planPickupGroundItem(character, resources, blocked, 'wood', 'wood');
+}
+
+function planPickupBranch(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+): ActionPlan | null {
+  return planPickupGroundItem(character, resources, blocked, 'branch', 'branch');
+}
+
+function planPickupVine(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+): ActionPlan | null {
+  return planPickupGroundItem(character, resources, blocked, 'vine', 'vine');
+}
+
+function planPickupStone(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+): ActionPlan | null {
+  return planPickupGroundItem(character, resources, blocked, 'stone', 'stone');
+}
+
+
+function planPickupGroundItem(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+  resourceType: ResourceType,
+  invItem: string,
+): ActionPlan | null {
+  if (!canCarry(character.inventory, invItem)) return null;
+  const candidates = resources.filter((r) => r.type === resourceType);
+  let best: { path: Position[]; target: Resource } | null = null;
+  for (const c of candidates) {
+    const path = findPath(character.position, [{ x: c.x, y: c.y }], blocked);
     if (path === null) continue;
-    if (!best || path.length < best.path.length) best = { path, wood: w };
+    if (!best || path.length < best.path.length) best = { path, target: c };
   }
   if (!best) return null;
   const smoothed = smoothPath(character.position, best.path, blocked);
@@ -432,10 +590,10 @@ function planPickupWood(
   const jy = (Math.random() - 0.5) * 0.5;
   const floatPath = smoothed.length === 0
     ? smoothed
-    : [...smoothed.slice(0, -1), { x: best.wood.x + jx, y: best.wood.y + jy }];
+    : [...smoothed.slice(0, -1), { x: best.target.x + jx, y: best.target.y + jy }];
   return {
     path: floatPath,
-    finalAction: { type: 'pickup_wood', target: best.wood.id, startedAt: Date.now() },
+    finalAction: { type: 'pickup', target: best.target.id, startedAt: Date.now() },
   };
 }
 
@@ -443,14 +601,9 @@ function planForage(
   character: Character,
   resources: Resource[],
   blocked: Set<string>,
-  wantedTypes: Array<'bush' | 'tree' | 'river'>,
+  wantedTypes: Array<'river'>,
 ): ActionPlan | null {
-  const candidates = resources.filter((r) => {
-    if (!wantedTypes.includes(r.type as 'bush' | 'tree' | 'river')) return false;
-    if (r.type === 'bush' && Number(r.state?.berries ?? 0) <= 0) return false;
-    if (r.type === 'tree' && Number(r.state?.fruits ?? 0) <= 0) return false;
-    return true;
-  });
+  const candidates = resources.filter((r) => wantedTypes.includes(r.type as 'river'));
   if (candidates.length === 0) return null;
 
   let best: { path: Position[]; target: Resource } | null = null;
@@ -463,15 +616,10 @@ function planForage(
   }
   if (!best) return null;
 
-  const finalType: Action['type'] = best.target.type === 'bush'
-    ? 'eat_berry'
-    : best.target.type === 'tree'
-      ? 'eat_fruit'
-      : 'drink';
   const smoothed = smoothPath(character.position, best.path, blocked);
   return {
     path: applyOrganicStop(smoothed, best.target, character.position, blocked),
-    finalAction: { type: finalType, target: best.target.id, startedAt: Date.now() },
+    finalAction: { type: 'drink', target: best.target.id, startedAt: Date.now() },
   };
 }
 
@@ -624,7 +772,279 @@ export function enumerateWanderOptions(
     isUnexplored: false,
   });
 
+  // Pre-emptive consume options — let the LLM decide to eat/drink before
+  // hunger/thirst cross the safety-net threshold. Path/distance match the
+  // movement cost: eat-from-inventory is in-place (path=[]), drink walks to
+  // the river first. Each option carries an `expected=+Nstat` annotation:
+  // the actual stat gain after clamp at 100, so the LLM can see "expected=+0"
+  // when char is full and skip the redundant pick. Without this, qwen3:8b
+  // observed picking drink_river 30+ times in a row at thirst=100 ("drinking
+  // is not needed... however..."), reasoning contradicting choice.
+  const inv = character.inventory;
+  const s = character.stats;
+  const berryCount = inv.filter((i) => i === 'berry').length;
+  if (berryCount > 0) {
+    const gain = Math.max(0, Math.min(NUTRITION.hungerPerBerry, 100 - s.hunger));
+    opts.push({
+      kind: 'eat_berry_inv',
+      target: { x: start.x, y: start.y },
+      path: [],
+      distance: 0,
+      annotation: `inv=${berryCount}berry expected=+${gain.toFixed(0)}hunger`,
+      isUnexplored: false,
+      finalAction: { type: 'eat', target: 'berry', startedAt: Date.now() },
+    });
+  }
+  const fruitCount = inv.filter((i) => i === 'fruit').length;
+  if (fruitCount > 0) {
+    const gain = Math.max(0, Math.min(NUTRITION.hungerPerFruit, 100 - s.hunger));
+    opts.push({
+      kind: 'eat_fruit_inv',
+      target: { x: start.x, y: start.y },
+      path: [],
+      distance: 0,
+      annotation: `inv=${fruitCount}fruit expected=+${gain.toFixed(0)}hunger`,
+      isUnexplored: false,
+      finalAction: { type: 'eat', target: 'fruit', startedAt: Date.now() },
+    });
+  }
+
+  // Drop options — surface drop_<item> for each unique inventory item so the
+  // LLM can free up weight when it wants to pick up something else (e.g.
+  // carrying max wood prevents berry pickup; drop_wood opens capacity).
+  // Drops vanish (no on-ground spawn) for now — Phase 1 simplicity. One drop
+  // = one item; LLM repeats kind to drop multiple.
+  const seenInvTypes = new Set<string>();
+  for (const item of inv) {
+    if (seenInvTypes.has(item)) continue;
+    seenInvTypes.add(item);
+    const count = inv.filter((i) => i === item).length;
+    const w = weightOfItem(item);
+    opts.push({
+      kind: `drop_${item}`,
+      target: { x: start.x, y: start.y },
+      path: [],
+      distance: 0,
+      annotation: `inv=${count}${item} weight=${(w * count).toFixed(1)} drops 1`,
+      isUnexplored: false,
+      finalAction: { type: 'drop', target: item, startedAt: Date.now() },
+    });
+  }
+
+  // Drink option — surfaces whenever a river is reachable. Annotation includes
+  // expected thirst gain so the LLM can self-skip when thirst is already full.
+  const drinkPlan = planForage(character, knownResources, blocked, ['river']);
+  if (drinkPlan) {
+    const dist = drinkPlan.path.length;
+    const gain = Math.max(0, Math.min(NUTRITION.thirstPerDrink, 100 - s.thirst));
+    opts.push({
+      kind: 'drink_river',
+      target:
+        drinkPlan.path.length > 0
+          ? drinkPlan.path[drinkPlan.path.length - 1]
+          : { x: start.x, y: start.y },
+      path: drinkPlan.path,
+      distance: dist,
+      annotation: `river dist=${dist}t expected=+${gain.toFixed(0)}thirst`,
+      isUnexplored: false,
+      finalAction: drinkPlan.finalAction,
+    });
+  }
+
+  // Pee — always surfaced when a spot is reachable. Annotation includes current
+  // bladder so the LLM can self-skip when fresh.
+  {
+    const peePlan = planDefecate(character, blocked, knownResources);
+    if (peePlan) {
+      opts.push({
+        kind: 'pee_now',
+        target:
+          peePlan.path.length > 0
+            ? peePlan.path[peePlan.path.length - 1]
+            : { x: start.x, y: start.y },
+        path: peePlan.path,
+        distance: peePlan.path.length,
+        annotation: `bladder=${Math.round(s.bladder)} expected=-${Math.round(s.bladder)}bladder`,
+        isUnexplored: false,
+        finalAction: peePlan.finalAction,
+      });
+    }
+  }
+
+  // Warm-at-fire — surfaces whenever a lit fire is reachable. Walks to the
+  // adjacent tile (inside FIRE_CONFIG.warmthRadius=3) and rests there; warmth
+  // override drifts body temp toward fireWarmthAmbient. Annotation includes
+  // current body temp so the LLM can self-skip when comfortable.
+  {
+    const warmPlan = planWarmAtFire(character, knownResources, blocked);
+    if (warmPlan) {
+      opts.push({
+        kind: 'warm_at_fire',
+        target:
+          warmPlan.path.length > 0
+            ? warmPlan.path[warmPlan.path.length - 1]
+            : { x: start.x, y: start.y },
+        path: warmPlan.path,
+        distance: warmPlan.path.length,
+        annotation: `body=${Math.round(s.temperature)}C expected=ambient${TEMPERATURE_CONFIG.fireWarmthAmbient}C`,
+        isUnexplored: false,
+        finalAction: warmPlan.finalAction,
+      });
+    }
+  }
+
+  // Pre-emptive sleep — surface whenever it's night AND char is standing in a
+  // lit fire's warmth radius (physical prereq for the "sleep efficiently next
+  // to fire" variant). Sleep recovery is ×1.8 at night, awake decay is ×1.5,
+  // both pull the same way. Annotation includes current energy so the LLM can
+  // self-skip when fresh.
+  if (hints.phase === 'night' && hints.nearLitFire) {
+    opts.push({
+      kind: 'sleep_now',
+      target: { x: start.x, y: start.y },
+      path: [],
+      distance: 0,
+      annotation: `night recovery=×1.8 energy=${Math.round(s.energy)}`,
+      isUnexplored: false,
+      finalAction: { type: 'sleep', startedAt: Date.now() },
+    });
+  }
+
+  // Pickup-wood / pickup_branch — fire-fuel pickups. Both surface when fire is
+  // unlit or low AND char can carry the item. Branch is the primary fuel post-A.1
+  // (lighter than wood, drops from tree_wood); legacy wood ground items survive
+  // until the schema reset clears them. Listed both so the LLM picks proximity.
+  const fireNeedsFuel = knownResources.some((r) => {
+    if (r.type !== 'fire') return false;
+    const fuel = typeof r.state.fuel === 'number' ? r.state.fuel : FIRE_CONFIG.maxFuel;
+    const lit = r.state.lit !== false;
+    return !lit || fuel < FIRE_CONFIG.maxFuel / 2;
+  });
+  if (fireNeedsFuel && canCarry(character.inventory, 'wood')) {
+    const wPlan = planPickupWood(character, knownResources, blocked);
+    if (wPlan) {
+      const dist = pathDistance(start, wPlan.path);
+      opts.push({
+        kind: 'pickup_wood',
+        target: wPlan.path.length > 0 ? wPlan.path[wPlan.path.length - 1] : start,
+        path: wPlan.path,
+        distance: dist,
+        annotation: `fire=low dist=${Math.round(dist)}t`,
+        isUnexplored: false,
+        finalAction: wPlan.finalAction,
+      });
+    }
+  }
+  if (fireNeedsFuel && canCarry(character.inventory, 'branch')) {
+    const bPlan = planPickupBranch(character, knownResources, blocked);
+    if (bPlan) {
+      const dist = pathDistance(start, bPlan.path);
+      opts.push({
+        kind: 'pickup_branch',
+        target: bPlan.path.length > 0 ? bPlan.path[bPlan.path.length - 1] : start,
+        path: bPlan.path,
+        distance: dist,
+        annotation: `fire=low dist=${Math.round(dist)}t`,
+        isUnexplored: false,
+        finalAction: bPlan.finalAction,
+      });
+    }
+  }
+
+  // Pickup-vine — always surface when reachable + carry capacity. No urgent
+  // gate; vine is a future-craft material so the LLM is free to stockpile or
+  // ignore as it sees fit.
+  if (canCarry(character.inventory, 'vine')) {
+    const vPlan = planPickupVine(character, knownResources, blocked);
+    if (vPlan) {
+      const dist = pathDistance(start, vPlan.path);
+      opts.push({
+        kind: 'pickup_vine',
+        target: vPlan.path.length > 0 ? vPlan.path[vPlan.path.length - 1] : start,
+        path: vPlan.path,
+        distance: dist,
+        annotation: `dist=${Math.round(dist)}t`,
+        isUnexplored: false,
+        finalAction: vPlan.finalAction,
+      });
+    }
+  }
+
+  // Pickup-stone — free stones lying around. No urgent gate; like vine, future
+  // craft material (axe in Phase B).
+  if (canCarry(character.inventory, 'stone')) {
+    const sPlan = planPickupStone(character, knownResources, blocked);
+    if (sPlan) {
+      const dist = pathDistance(start, sPlan.path);
+      opts.push({
+        kind: 'pickup_stone',
+        target: sPlan.path.length > 0 ? sPlan.path[sPlan.path.length - 1] : start,
+        path: sPlan.path,
+        distance: dist,
+        annotation: `dist=${Math.round(dist)}t`,
+        isUnexplored: false,
+        finalAction: sPlan.finalAction,
+      });
+    }
+  }
+
+
+  // Shake tree_wood / tree_vine — non-food shake variants. Force-drop alongside
+  // the passive auto-drop loop. tree_fruit shake stays in feed enumerate.
+  const shakeWoodPlan = planForageOf(character, knownResources, blocked, 'tree_wood');
+  if (shakeWoodPlan) {
+    const dist = pathDistance(start, shakeWoodPlan.path);
+    opts.push({
+      kind: 'shake_tree_wood',
+      target: shakeWoodPlan.path.length > 0 ? shakeWoodPlan.path[shakeWoodPlan.path.length - 1] : start,
+      path: shakeWoodPlan.path,
+      distance: dist,
+      annotation: `dist=${Math.round(dist)}t`,
+      isUnexplored: false,
+      finalAction: shakeWoodPlan.finalAction,
+    });
+  }
+  const shakeVinePlan = planForageOf(character, knownResources, blocked, 'tree_vine');
+  if (shakeVinePlan) {
+    const dist = pathDistance(start, shakeVinePlan.path);
+    opts.push({
+      kind: 'shake_tree_vine',
+      target: shakeVinePlan.path.length > 0 ? shakeVinePlan.path[shakeVinePlan.path.length - 1] : start,
+      path: shakeVinePlan.path,
+      distance: dist,
+      annotation: `dist=${Math.round(dist)}t`,
+      isUnexplored: false,
+      finalAction: shakeVinePlan.finalAction,
+    });
+  }
+
   return opts;
+}
+
+// Walk to a lit fire so the warmth override applies. Picks the nearest fire
+// the char can reach an adjacent tile of; final action is `rest` so the char
+// stays in the warmth radius rather than wandering off the next tick.
+function planWarmAtFire(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+): ActionPlan | null {
+  const fires = resources.filter((r) => r.type === 'fire' && r.state.lit !== false);
+  if (fires.length === 0) return null;
+  let best: { path: Position[]; fire: Resource } | null = null;
+  for (const f of fires) {
+    const goals = adjacentTiles(f, blocked);
+    if (goals.length === 0) continue;
+    const path = findPath(character.position, goals, blocked);
+    if (path === null) continue;
+    if (!best || path.length < best.path.length) best = { path, fire: f };
+  }
+  if (!best) return null;
+  const smoothed = smoothPath(character.position, best.path, blocked);
+  return {
+    path: applyOrganicStop(smoothed, best.fire, character.position, blocked),
+    finalAction: { type: 'rest', startedAt: Date.now() },
+  };
 }
 
 // Convert wall-clock ms delta to game-hours so the LLM reasoning aligns with
@@ -692,6 +1112,7 @@ async function wanderWithChoice(
   picker: ChoicePicker,
   knownResources: Resource[],
   hints: WanderHints,
+  observations: Observation[],
 ): Promise<DecideResult | null> {
   const options = enumerateWanderOptions(character, blocked, knownResources, hints);
   // Engine couldn't enumerate any directional options (extremely tight space)
@@ -701,7 +1122,8 @@ async function wanderWithChoice(
     return w ? { plan: w } : null;
   }
   const summary = summarizeRemembered(knownResources);
-  const result = await picker.pickWander({ character, options, rememberedSummary: summary });
+  const world = computeWorldStatus(character, knownResources);
+  const result = await picker.pickWander({ character, options, rememberedSummary: summary, world, observations });
   if (!result) {
     const w = wander(character, blocked);
     return w ? { plan: w } : null;
@@ -711,6 +1133,22 @@ async function wanderWithChoice(
     // reasoning so the dev panel sees why the char paused.
     return {
       plan: { path: [], finalAction: { type: 'rest', startedAt: Date.now() } },
+      choice: result.option.kind,
+      reasoning: result.reasoning,
+      source: result.source,
+      advancesSubgoalIdx: result.advancesSubgoalIdx,
+      completesSubgoal: result.completesSubgoal,
+    };
+  }
+  // Pre-emptive consume picks carry a finalAction (eat_berry / eat_fruit /
+  // drink) attached to the option. Honour it instead of the default wander
+  // movement so the LLM can top up before survival thresholds fire.
+  if (result.option.finalAction) {
+    const path = result.option.path.length > 0
+      ? smoothPath(character.position, result.option.path, blocked)
+      : [];
+    return {
+      plan: { path, finalAction: { ...result.option.finalAction, startedAt: Date.now() } },
       choice: result.option.kind,
       reasoning: result.reasoning,
       source: result.source,
@@ -786,4 +1224,146 @@ function adjacentTiles(r: Resource, blocked: Set<string>): Position[] {
     (p) =>
       p.x >= 0 && p.y >= 0 && p.x < widthTiles && p.y < heightTiles && !blocked.has(`${p.x},${p.y}`),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Cortex — full LLM-driven decision-making.
+//
+// The legacy decide() flow uses utility AI to detect WHICH need is firing
+// (hunger trigger, thirst trigger, energy trigger, etc.) and only then asks
+// the LLM to pick from a narrow option list scoped to that need. Cortex
+// flips it: present the LLM with a flat menu of every action it could take
+// this turn (feed + wander direction + maintenance + sleep + rest) and let
+// it decide what matters. Utility AI stays in the codebase as the fallback
+// when the LLM call fails or returns an invalid pick.
+//
+// Knowledge sources for the LLM are deliberately limited (Phase 4 fidelity):
+// stat scale + survival principles (values, not tactics) + observation log +
+// inherited lessons + life/daily goal. No mechanic disclosure.
+// ---------------------------------------------------------------------------
+
+export type CortexOption = {
+  kind: string; // FeedKind | WanderKind | 'sleep'
+  target?: string;
+  path: Position[];
+  distance: number;
+  annotation?: string;
+  finalAction: Action;
+};
+
+export function enumerateCortexOptions(
+  character: Character,
+  knownResources: Resource[],
+  blocked: Set<string>,
+  hints: WanderHints,
+): CortexOption[] {
+  const seenKinds = new Set<string>();
+  const opts: CortexOption[] = [];
+
+  // Feed options first — they have rich finalActions (eat / cook / hunt /
+  // forage / pickup_*). Anything that overlaps with wander (eat_berry_inv,
+  // eat_fruit_inv, pickup_wood) is deduped on second pass.
+  for (const f of enumerateFeedOptions(character, knownResources, blocked)) {
+    if (seenKinds.has(f.kind)) continue;
+    seenKinds.add(f.kind);
+    opts.push({
+      kind: f.kind,
+      target: f.target,
+      path: f.path,
+      distance: f.distance,
+      annotation: f.annotation,
+      finalAction: f.finalAction,
+    });
+  }
+
+  // Wander options second — direction picks, plus maintenance/consume/stay.
+  // Stay maps to a rest action (sit in place). Direction kinds get a synthetic
+  // 'wander' finalAction so game-loop walks the path then idles.
+  for (const w of enumerateWanderOptions(character, blocked, knownResources, hints)) {
+    if (seenKinds.has(w.kind)) continue;
+    seenKinds.add(w.kind);
+    let finalAction: Action;
+    if (w.kind === 'stay') {
+      finalAction = { type: 'rest', startedAt: Date.now() };
+    } else if (w.finalAction) {
+      finalAction = { ...w.finalAction, startedAt: Date.now() };
+    } else {
+      // Direction wander — game-loop installs walk_to during the path; no
+      // post-walk action needed. Use 'idle' as the sentinel finalAction.
+      finalAction = { type: 'idle', startedAt: Date.now() };
+    }
+    opts.push({
+      kind: w.kind,
+      target: undefined,
+      path: w.path,
+      distance: w.distance,
+      annotation: w.annotation,
+      finalAction,
+    });
+  }
+
+  // Unconditional sleep — wander's 'sleep_now' surfaces only at night near a
+  // lit fire (favourable conditions). This is the always-available variant
+  // so the LLM can choose to nap whenever it wants.
+  if (!seenKinds.has('sleep')) {
+    seenKinds.add('sleep');
+    opts.push({
+      kind: 'sleep',
+      path: [],
+      distance: 0,
+      annotation: `energy=${Math.round(character.stats.energy)}`,
+      finalAction: { type: 'sleep', startedAt: Date.now() },
+    });
+  }
+
+  return opts;
+}
+
+export async function cortexDecide(
+  character: Character,
+  knownResources: Resource[],
+  blocked: Set<string>,
+  picker: ChoicePicker,
+  observations: Observation[],
+  rules: string[],
+  wanderHints: WanderHints,
+  fallbackOptions: DecideOptions = {},
+): Promise<DecideResult | null> {
+  const options = enumerateCortexOptions(character, knownResources, blocked, wanderHints);
+  if (options.length === 0 || !picker.pickCortex) {
+    // Pure-LLM mode: no fallback to utility decide(). If options are empty or
+    // the picker can't run cortex, return null and let the game-loop idle one
+    // tick — next decide cycle retries. RuleBasedChoicePicker / utility
+    // decide() remain in the tree as reference, just not in the live path.
+    return null;
+  }
+  const world = computeWorldStatus(character, knownResources);
+  const remembered = summarizeRemembered(knownResources);
+  const phase = wanderHints.phase ?? 'afternoon';
+  const gameTimeStamp = wanderHints.gameTimeStamp ?? '';
+
+  const result = await picker.pickCortex({
+    character,
+    options,
+    observations,
+    rules,
+    world,
+    rememberedSummary: remembered,
+    phase,
+    gameTimeStamp,
+  });
+  if (!result) {
+    // Pure-LLM mode: LLM failed/timeout/invalid pick — return null so the
+    // game-loop idles this tick. Next decide cycle retries the LLM.
+    return null;
+  }
+  const picked = result.option;
+  return {
+    plan: { path: picked.path, finalAction: picked.finalAction },
+    choice: picked.kind,
+    reasoning: result.reasoning,
+    source: result.source,
+    advancesSubgoalIdx: result.advancesSubgoalIdx,
+    completesSubgoal: result.completesSubgoal,
+  };
 }

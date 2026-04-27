@@ -91,6 +91,7 @@ export function isNight(hour: number): boolean {
   return hour >= nightStart && hour < nightEnd;
 }
 
-export function visionRangeForHour(hour: number): number {
-  return isNight(hour) ? VISION_CONFIG.rangeNight : VISION_CONFIG.rangeDay;
+export function visionRangeForHour(hour: number, opts: { nearLitFire?: boolean } = {}): number {
+  if (!isNight(hour)) return VISION_CONFIG.rangeDay;
+  return opts.nearLitFire ? VISION_CONFIG.rangeNightNearFire : VISION_CONFIG.rangeNight;
 }

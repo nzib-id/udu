@@ -126,20 +126,16 @@ export class CharacterSprite {
       case 'defecate':
       case 'rest':
         return 'man_sit';
-      case 'eat_berry':
-      case 'eat_fruit':
-      case 'eat_meat':
+      case 'eat':
       case 'drink':
         return 'man_use';
-      case 'shake_tree':
+      case 'shake':
         return 'man_shake';
-      case 'pickup_berry':
-      case 'pickup_fruit_ground':
-      case 'pickup_wood':
+      case 'pickup':
         return 'man_bow';
       case 'hunt':
         return 'man_swing';
-      case 'cook_meat':
+      case 'cook':
         return 'man_bow';
       case 'idle':
       default:

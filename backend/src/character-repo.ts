@@ -15,6 +15,7 @@ type CharacterRow = {
   energy: number;
   sickness: number;
   health: number;
+  temperature: number;
   inventory: string;
   current_action: string;
   is_alive: number;
@@ -22,6 +23,16 @@ type CharacterRow = {
   life_goal_reason: string | null;
   life_goal_priority: number | null;
   life_goal_set_at_day: number | null;
+  life_goal_diagnosis: string | null;
+};
+
+export type LineageTrajectoryRow = {
+  iteration: number;
+  goalText: string | null;
+  daysLived: number;
+  chunksVisited: number;
+  resourcesDiscovered: number;
+  deathReason: string | null;
 };
 
 export class CharacterRepo {
@@ -75,6 +86,8 @@ export class CharacterRepo {
     deathTime: number,
     reason: 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'admin',
     lifespanGameHours: number,
+    chunksVisited: number,
+    resourcesDiscovered: number,
   ): void {
     this.db
       .prepare(
@@ -82,10 +95,42 @@ export class CharacterRepo {
            is_alive = 0,
            death_time = ?,
            death_reason = ?,
-           lifespan_game_hours = ?
+           lifespan_game_hours = ?,
+           chunks_visited_at_death = ?,
+           resources_discovered_at_death = ?
          WHERE id = ?`,
       )
-      .run(deathTime, reason, lifespanGameHours, characterId);
+      .run(deathTime, reason, lifespanGameHours, chunksVisited, resourcesDiscovered, characterId);
+  }
+
+  loadLineageTrajectory(lineageId: number, limit: number): LineageTrajectoryRow[] {
+    type Row = {
+      iteration: number;
+      life_goal_text: string | null;
+      lifespan_game_hours: number | null;
+      chunks_visited_at_death: number | null;
+      resources_discovered_at_death: number | null;
+      death_reason: string | null;
+    };
+    const rows = this.db
+      .prepare(
+        `SELECT iteration, life_goal_text, lifespan_game_hours,
+                chunks_visited_at_death, resources_discovered_at_death,
+                death_reason
+         FROM character
+         WHERE lineage_id = ? AND is_alive = 0
+         ORDER BY iteration DESC
+         LIMIT ?`,
+      )
+      .all(lineageId, limit) as Row[];
+    return rows.map((r) => ({
+      iteration: r.iteration,
+      goalText: r.life_goal_text,
+      daysLived: r.lifespan_game_hours == null ? 0 : r.lifespan_game_hours / 24,
+      chunksVisited: r.chunks_visited_at_death ?? 0,
+      resourcesDiscovered: r.resources_discovered_at_death ?? 0,
+      deathReason: r.death_reason,
+    }));
   }
 
   persist(c: Character): void {
@@ -93,10 +138,11 @@ export class CharacterRepo {
       .prepare(
         `UPDATE character SET
            x = ?, y = ?,
-           hunger = ?, thirst = ?, bladder = ?, energy = ?, sickness = ?, health = ?,
+           hunger = ?, thirst = ?, bladder = ?, energy = ?, sickness = ?, health = ?, temperature = ?,
            inventory = ?, current_action = ?, is_alive = ?,
            life_goal_text = ?, life_goal_reason = ?,
-           life_goal_priority = ?, life_goal_set_at_day = ?
+           life_goal_priority = ?, life_goal_set_at_day = ?,
+           life_goal_diagnosis = ?
          WHERE id = ?`,
       )
       .run(
@@ -108,6 +154,7 @@ export class CharacterRepo {
         c.stats.energy,
         c.stats.sickness ?? 0,
         c.stats.health,
+        c.stats.temperature,
         JSON.stringify(c.inventory),
         JSON.stringify(c.currentAction),
         c.isAlive ? 1 : 0,
@@ -115,6 +162,7 @@ export class CharacterRepo {
         c.lifeGoal?.reason ?? null,
         c.lifeGoal?.priority ?? null,
         c.lifeGoal?.setAtDay ?? null,
+        c.lifeGoal?.diagnosis ?? null,
         c.id,
       );
   }
@@ -128,6 +176,7 @@ function rowToCharacter(row: CharacterRow): Character {
           reason: row.life_goal_reason,
           priority: row.life_goal_priority,
           setAtDay: row.life_goal_set_at_day,
+          diagnosis: row.life_goal_diagnosis,
         }
       : null;
   return {
@@ -142,6 +191,7 @@ function rowToCharacter(row: CharacterRow): Character {
       energy: row.energy,
       sickness: row.sickness,
       health: row.health,
+      temperature: row.temperature,
     },
     inventory: safeJsonArray(row.inventory),
     currentAction: safeJsonAction(row.current_action),

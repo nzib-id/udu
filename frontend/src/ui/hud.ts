@@ -19,6 +19,7 @@ type HudElements = {
     energy: HTMLElement;
     sickness: HTMLElement;
     health: HTMLElement;
+    temperature: HTMLElement;
   };
   vals: {
     hunger: HTMLElement;
@@ -27,6 +28,7 @@ type HudElements = {
     energy: HTMLElement;
     sickness: HTMLElement;
     health: HTMLElement;
+    temperature: HTMLElement;
   };
 };
 
@@ -46,6 +48,17 @@ function applyBar(el: HTMLElement, pct: number, tier: 'ok' | 'warn' | 'crit'): v
   el.style.width = `${Math.max(0, Math.min(100, pct))}%`;
   el.classList.remove('warn', 'crit');
   if (tier !== 'ok') el.classList.add(tier);
+}
+
+// Temperature has no "percent full" — render full-width bar with hue mapped to
+// body temp. 0°C → blue, 25°C (comfort midpoint) → green, 50°C → red. Outside
+// the [0,50] range the hue clamps. Text label carries the actual °C number.
+function applyTempBar(el: HTMLElement, temp: number): void {
+  const clamped = Math.max(0, Math.min(50, temp));
+  const hue = 240 - (clamped / 50) * 240;
+  el.style.width = '100%';
+  el.style.background = `hsl(${hue.toFixed(0)}, 70%, 55%)`;
+  el.classList.remove('warn', 'crit');
 }
 
 // Icon chip driven by items.png (48×16 atlas). Frame layout: 0=fruit, 1=berry, 2=wood.
@@ -158,18 +171,21 @@ export function bindHud(el: HudElements) {
         const e = Math.round(s.energy);
         const sk = Math.round(s.sickness ?? 0);
         const hp = Math.round(s.health);
+        const tp = Math.round(s.temperature);
         applyBar(el.bars.hunger, h, tierLow(h));
         applyBar(el.bars.thirst, t, tierLow(t));
         applyBar(el.bars.bladder, b, tierHigh(b));
         applyBar(el.bars.energy, e, tierLow(e));
         applyBar(el.bars.sickness, sk, tierHigh(sk));
         applyBar(el.bars.health, hp, tierLow(hp));
+        applyTempBar(el.bars.temperature, tp);
         el.vals.hunger.textContent = String(h);
         el.vals.thirst.textContent = String(t);
         el.vals.bladder.textContent = String(b);
         el.vals.energy.textContent = String(e);
         el.vals.sickness.textContent = String(sk);
         el.vals.health.textContent = String(hp);
+        el.vals.temperature.textContent = `${tp}°C`;
         el.inv.innerHTML = formatInventory(character.inventory ?? []);
         if (character.lifeGoal) {
           el.goal.innerHTML =

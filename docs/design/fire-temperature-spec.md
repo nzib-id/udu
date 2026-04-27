@@ -88,9 +88,12 @@ Why fuel matters even when sleeping near fire pit: makes refueling a real stake.
 - Out of fuel → `lit: false` → no warmth override, no cooking
 - **Persistent across char respawn** — fire pit and fuel state survive char death. New generation inherits ancestor's fuel state (can be empty if ancestor was lazy).
 
-### Wood respawn (open question — defer?)
-Tree drop wood every X game-day? Or strict scarcity (24 init only)?
-**Decision needed before implementation.** Default proposal: tree drops 1 wood every 12 game-hour (matches existing `WOOD_CONFIG.dropEveryGameHours`).
+### Wood respawn (DECIDED 2026-04-25)
+**`WOOD_CONFIG.dropEveryGameHours: 12 → 48`** (per-tree cooldown bumped from 12h to 48h).
+- ~46 productive trees × 0.5 drop/game-day = ~23 wood/game-day spawn
+- Fire burn = 24 wood/game-day
+- Net ~balanced (slight deficit -1/day) → char must actively forage, can't passive-collect
+- Map clutter reduced ~75% vs old rate
 
 ---
 
@@ -168,7 +171,7 @@ Tree drop wood every X game-day? Or strict scarcity (24 init only)?
 
 | Question | Status |
 |---|---|
-| Wood respawn (tree drop X/day vs strict scarcity) | **DECISION NEEDED** before impl |
+| Wood respawn (tree drop X/day vs strict scarcity) | ✅ DECIDED — bump per-tree cooldown 12h → 48h (section 3) |
 | Fire HUD chip ship now or polish? | Defer to 1.5 unless trivial |
 | Hot zone: how does char enter hot tier? Map biome? Or just summer/season? | **Future**: requires biome or season system. Not blocking; spec future-proof |
 
@@ -190,5 +193,5 @@ Tree drop wood every X game-day? Or strict scarcity (24 init only)?
 - Drain to drives, not direct HP (indirect pipeline)
 - Recalibrated drain rates (table in section 2)
 - Sleep + fire-radius + lit = full immunity (Option B over Option A)
-- Wood init: 24 free spawn, no auto-refill in MVP
+- Wood init: 24 free fuel in fire pit + tree drop rate bumped 12h → 48h (slight deficit forces foraging)
 - HP shipped first, this spec layered on top

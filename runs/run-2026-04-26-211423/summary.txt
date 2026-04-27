@@ -1,0 +1,52 @@
+=== Udu observation run ===
+Started: 2026-04-26T21:14:23
+Ended:   2026-04-26T23:06:16
+Until-gen target: 3
+Total decisions: 979
+
+=== Decision distribution ===
+  sleep                      499  ( 51.0%)
+  drink_river                145  ( 14.8%)
+  eat_berry_inv               53  (  5.4%)
+  forage_bush                 41  (  4.2%)
+  wander_e                    37  (  3.8%)
+  wander_s                    35  (  3.6%)
+  shake_tree                  34  (  3.5%)
+  wander_se                   26  (  2.7%)
+  wander_w                    20  (  2.0%)
+  wander_n                    20  (  2.0%)
+  pee_now                     15  (  1.5%)
+  pickup_wood                 15  (  1.5%)
+  wander_sw                   12  (  1.2%)
+  wander_nw                   10  (  1.0%)
+  wander_ne                    8  (  0.8%)
+  eat_fruit_inv                6  (  0.6%)
+  stay                         2  (  0.2%)
+  pickup_fruit_ground          1  (  0.1%)
+
+=== Deaths ===
+iter,reason,lifespan_gh,x,y,chunks_visited,resources_discovered,life_goal,diagnosis
+2,dehydration,64.00695,39.0,23.0,38,351,Gather 10 berries before exploring unexplored_area,Past attempts failed due to lack of resource gathering before exploration
+
+=== Rules by gen ===
+[gen-2-death]
+  (0.99) Eating fruit decreases hunger and energy
+  (0.99) Sleeping regenerates energy
+  (0.99) Walking in a direction increases path length
+  (0.99) Drinking from a river decreases thirst
+  (0.99) Shaking a tree without fruit drops no wood
+  (0.94) Picking up berries increases inventory count
+  (0.94) Shaking a tree without fruit causes no inventory change
+  (0.90) Defecating does not affect inventory
+  (0.60) Picking up fruit from ground increases inventory count
+
+[start]
+  (0.99) Eating fruit decreases hunger and energy
+  (0.99) Shaking a tree without fruit causes no inventory change
+  (0.99) Sleeping regenerates energy
+  (0.99) Walking in a direction increases path length
+  (0.99) Drinking from a river decreases thirst
+  (0.95) Shaking a tree without fruit drops no wood
+  (0.89) Picking up berries increases inventory count
+  (0.85) Defecating does not affect inventory
+  (0.55) Picking up fruit from ground increases inventory count

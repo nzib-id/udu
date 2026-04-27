@@ -163,19 +163,19 @@ const ACTION_VALUES: ReadonlySet<ActionType> = new Set<ActionType>([
   'drink',
   'sleep',
   'defecate',
-  'shake_tree',
-  'pickup_berry',
-  'pickup_fruit_ground',
-  'pickup_wood',
-  'eat_berry',
-  'eat_fruit',
+  'shake',
+  'pickup',
+  'eat',
   'hunt',
-  'eat_meat',
-  'cook_meat',
+  'cook',
   'rest',
+  'add_fuel',
+  'drop',
 ]);
 
-const INVENTORY_ITEMS = new Set(['berry', 'fruit', 'wood', 'meat_raw', 'meat_cooked']);
+const INVENTORY_ITEMS = new Set([
+  'berry', 'fruit', 'wood', 'branch', 'vine', 'stone', 'meat_raw', 'meat_cooked',
+]);
 
 // Validate the `check` field on a sub-goal. Permissive — drops the field when
 // the shape is wrong rather than rejecting the whole goal, so the LLM can

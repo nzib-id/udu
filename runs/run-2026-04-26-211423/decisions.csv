@@ -1,0 +1,980 @@
+timestamp,iter,pick,target,duration_ms,reasoning,x,y,hp,hunger,thirst,energy,sickness,bladder,temperature,current_action,inventory,daily_goal_step
+2026-04-26T21:14:29,2,wander_e,,3873,"Current hunger is full, but need to gather 10 berries before exploring.",35.06,10.8,100,99.8,37.6,99.8,0,12.3,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:14:35,2,eat_berry_inv,,3295,Need to gather 10 berries before exploring unexplored_area,39,11,100,99.6,37.4,99.4,0,12.3,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:14:39,2,forage_bush,bush_15,3473,"Hunger is full, but need to gather 10 berries before exploring.",39,11,100,100,37.4,100,0,12.3,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:14:48,2,eat_berry_inv,,3798,"Inventory has 12 berries, need 10 for goal. Prioritize eating to meet goal without risking health.",33.26,11.24,100,99.7,37.2,99.1,0,12.3,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:14:52,2,forage_bush,bush_15,3528,"Current hunger is full, but need to gather 10 berries before exploring.",33.26,11.24,100,100,37.2,100,0,12.3,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:14:56,2,eat_berry_inv,,3463,"Inventory has 12 berries; goal is 10, so no need to forage more.",32.27,11.66,100,99.9,37.2,99.6,0,12.3,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:00,2,forage_bush,bush_9,3541,Prioritize gathering berries to meet the life goal before exploring unexplored_area.,32.27,11.66,100,100,37.2,100,0,12.3,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:07,2,eat_berry_inv,,3294,Gather remaining berries to meet goal before exploring unexplored_area,25.36,8.28,100,99.6,36.8,98.9,0,12.3,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:11,2,forage_bush,bush_9,4017,"Gather 10 berries before exploring unexplored_area is the priority. Current berry count is 11, need 1 more.",25.36,8.28,100,100,36.8,99.9,0,12.3,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:18,2,eat_berry_inv,,3123,Prioritize gathering berries to meet life goal before exploring unexplored_area,25.62,8.49,100,100.0,36.8,99.5,0,12.3,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:23,2,forage_bush,bush_9,3663,"Hunger is full, but need to gather 10 berries before exploring unexplored_area.",25.62,8.49,100,100,36.8,100,0,12.3,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:26,2,sleep,,3259,"Inventory has 10 berries, goal achieved. Prioritize rest to maintain energy and health.",25.56,8.43,100,99.7,36.0,94.7,0,13.2,16,sleep,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:30,2,eat_berry_inv,,3145,Prioritize gathering berries to meet life goal before exploring unexplored_area,25.56,8.43,100,99.7,36.0,94.7,0,13.2,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:35,2,forage_bush,bush_6,3474,"Hunger is full, but need to gather 10 berries before exploring.",25.56,8.43,100,100,36.0,95.7,0,13.2,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:44,2,eat_berry_inv,,3273,"Current stats are full, but need 10 berries for exploration. Prioritize gathering.",21.01,7.2,100,99.8,35.8,94.9,0,13.2,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:51,2,forage_bush,bush_6,3569,"Hunger is full, but need 10 berries to explore. Prioritize gathering more berries.",21.01,7.2,100,100,35.8,95.9,0,13.2,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:55,2,eat_berry_inv,,3458,Need to gather 10 berries before exploring unexplored_area; current inventory has 12 berries.,21.75,7.72,100,100.0,35.8,95.5,0,13.2,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:15:59,2,forage_bush,bush_6,3614,"Hunger is full, but need to gather 10 berries before exploring unexplored_area",21.75,7.72,100,100,35.8,96.5,0,13.2,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:03,2,eat_berry_inv,,3254,Prioritize gathering 10 berries to ensure survival before exploring unexplored_area.,21.8,7.93,100,100.0,35.7,96.2,0,13.2,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:07,2,forage_bush,bush_16,3404,Gather remaining berries to meet life goal before exploring unexplored_area.,21.8,7.93,100,100,35.7,97.2,0,13.2,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:13,2,eat_berry_inv,,3607,"Inventory has 12 berries; need 10 for goal, so eating berries is safe.",20.6,12.47,100,99.8,35.6,96.4,0,13.2,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:17,2,forage_bush,bush_16,3505,Prioritize gathering berries to meet life goal before exploring unexplored_area.,20.6,12.47,100,100,35.6,97.4,0,13.2,16,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:25,2,eat_berry_inv,,3441,"Hunger is full, but need berries for exploration. Prioritize gathering more berries.",19.24,12.76,100,99.9,35.5,97.0,0,13.2,16,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:29,2,eat_berry_inv,,3254,Current goal requires gathering 10 berries; inventory has 11 berries.,19.24,12.76,100,100,34.1,95.9,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:33,2,eat_berry_inv,,3434,Life goal requires 10 berries; current inventory has 10 berries.,19.24,12.76,100,100,34.1,96.9,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:37,2,eat_berry_inv,,3135,Gather remaining berries to meet goal before exploring unexplored_area.,19.24,12.76,100,100,34.1,97.9,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:41,2,eat_berry_inv,,3172,"Inventory has 1 berry, need to gather 10 for exploration",19.24,12.76,100,100,34.1,98.9,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:45,2,eat_berry_inv,,3382,"Inventory has 1 berry, need to gather 10 before exploring unexplored_area",19.24,12.76,100,100,34.1,99.9,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:49,2,eat_berry_inv,,3434,Need to gather 10 berries before exploring unexplored_area; current inventory has 6 berries.,19.24,12.76,100,100,34.1,100,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:16:55,2,forage_bush,bush_16,2755,Prioritize gathering berries to meet life goal before exploring unexplored_area.,19.24,12.76,100,100,34.1,100,0,16.8,22,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:00,2,forage_bush,bush_14,3747,Inventory has 1 berry; need 10 for goal. Prioritize gathering berries.,19.2,12.99,100,100.0,34.1,99.7,0,16.8,22,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:04,2,forage_bush,bush_14,3637,Inventory has 1 berry; need 10 berries before exploring unexplored_area,18.42,12.68,100,99.9,34.1,99.3,0,16.8,22,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:07,2,forage_bush,bush_14,2726,"Berries are needed to meet the gathering goal, and energy is sufficient.",17.66,12.72,100,99.9,34.0,98.9,0,16.8,22,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:12,2,eat_berry_inv,,3318,Gather remaining berries to meet goal before exploring unexplored_area,17.2,11.95,100,99.9,34.0,98.5,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:16,2,eat_berry_inv,,3351,"Berries are needed to meet the goal, but inventory is low after multiple eats.",17.2,11.95,100,100,34.0,99.5,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:20,2,eat_berry_inv,,3468,Inventory has 1 berry left; need to gather 10 before exploring unexplored_area.,17.2,11.95,100,100,34.0,100,0,16.8,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:27,2,eat_berry_inv,,3486,"Inventory has 1 berry, need to gather 10 before exploring unexplored_area.",17.2,11.95,100,99.9,32.6,97.9,0,20.4,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:30,2,eat_berry_inv,,3314,Gather remaining berries to meet goal before exploring unexplored_area.,17.2,11.95,100,100,32.6,98.9,0,20.4,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry|berry,4/4
+2026-04-26T21:17:34,2,eat_berry_inv,,3333,Inventory has 1 berry left; must eat it to meet life goal.,17.2,11.95,100,100,32.6,99.9,0,20.4,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry,4/4
+2026-04-26T21:17:38,2,eat_berry_inv,,3242,Gather remaining berries to meet goal before exploring unexplored_area,17.2,11.95,100,100,32.6,100,0,20.4,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:17:43,2,pickup_fruit_ground,fruit_1777210106051,4067,"Inventory has 0 berries, need to gather 10 before exploring.",17.2,11.95,100,100,32.6,100,0,20.4,22,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:17:55,2,forage_bush,bush_12,3715,"Inventory has 0 berries, need to gather 10 for exploration",3.23,22.11,100,99.1,31.9,97.8,0,20.4,22,walk_to,fruit|fruit|fruit|fruit|fruit|berry|berry|fruit,4/4
+2026-04-26T21:18:08,2,eat_berry_inv,,3460,"Current inventory has 3 berries, need to gather 10 before exploring.",13.2,11.03,100,98.2,31.2,95.9,0,20.4,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|berry|fruit|berry,4/4
+2026-04-26T21:18:12,2,eat_berry_inv,,3498,Need to gather 10 berries before exploring unexplored_area; current inventory has 2 berries.,13.2,11.03,100,100,31.2,96.9,0,20.4,22,eat_berry,fruit|fruit|fruit|fruit|fruit|berry|fruit|berry,4/4
+2026-04-26T21:18:17,2,forage_bush,bush_12,3913,"Hunger is full, but need to gather 10 berries before exploring. Prioritize gathering berries.",13.2,11.03,100,100,31.2,97.9,0,20.4,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:18:21,2,forage_bush,bush_12,3587,Need to gather 10 berries before exploring unexplored_area,13.36,11.49,100,100.0,31.2,97.5,0,20.4,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:18:26,2,forage_bush,bush_7,3802,Need to gather 10 berries before exploring unexplored_area; current inventory has 3 berries.,13.2,11.06,100,99.8,29.8,95.1,0,24.0,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:18:33,2,eat_berry_inv,,3293,Prioritize gathering 10 berries to ensure survival before exploring.,14.81,9.78,100,99.7,29.7,94.6,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry,4/4
+2026-04-26T21:18:37,2,eat_berry_inv,,3186,Prioritize gathering berries to meet life goal before exploring.,14.81,9.78,100,100,29.7,95.6,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:18:41,2,eat_berry_inv,,3438,"Inventory has 1 berry, need to gather 10 before exploring unexplored_area",14.81,9.78,100,100,29.7,96.6,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:18:45,2,forage_bush,bush_7,3447,Need to gather 10 berries before exploring unexplored_area,14.81,9.78,100,100,29.7,97.6,0,24.0,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:18:49,2,eat_berry_inv,,3291,Prioritize gathering 10 berries to ensure survival before exploring unexplored areas.,15.25,9.76,100,100.0,29.7,97.3,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:18:53,2,forage_bush,bush_7,3369,Prioritize gathering berries to meet the life goal before exploring.,15.25,9.76,100,100,29.7,98.3,0,24.0,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:18:57,2,forage_bush,bush_5,3427,Prioritize gathering berries to meet life goal before exploring unexplored_area,15.76,9.25,100,100.0,29.6,97.9,0,24.0,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:19:05,2,eat_berry_inv,,3412,Gather remaining berries to meet goal before exploring unexplored_area.,14.14,6.79,100,99.8,29.5,97.2,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:19:09,2,eat_berry_inv,,3175,Gather remaining berries to meet goal before exploring unexplored_area,14.14,6.79,100,100,29.5,98.2,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:19:12,2,eat_berry_inv,,3058,Prioritize gathering more berries to meet life goal before exploring,14.14,6.79,100,100,29.5,99.2,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:19:17,2,forage_bush,bush_5,3491,"Inventory has 0 berries, need to gather 10 before exploring.",14.14,6.79,100,100,29.5,100,0,24.0,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:19:21,2,eat_berry_inv,,3377,"Inventory has 1 berry, need to gather 10 before exploring unexplored_area.",13.48,6.6,100,100.0,29.5,99.6,0,24.0,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:19:25,2,forage_bush,bush_5,3518,"Inventory has 0 berries, need to gather 10 before exploring.",13.48,6.6,100,100,29.5,100,0,24.0,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:19:33,2,forage_bush,bush_21,3504,Inventory has 1 berry; need 10 berries to meet goal,14.8,6.03,100,99.8,28.0,97.5,0,27.6,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:19:47,2,forage_bush,bush_21,3760,Prioritize gathering 10 berries to meet life goal before exploring unexplored_area.,24.69,19.6,100,99.0,27.3,95.5,0,27.6,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:19:51,2,wander_s,,3560,Current berries are sufficient for goal; prioritize exploring unexplored_area.,24.8,19.94,100,98.9,27.3,95.1,0,27.6,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:19:57,2,forage_bush,bush_32,3188,Inventory has 1 berry; need to gather 10 before exploring unexplored_area.,25,28,100,98.5,27.0,94.3,0,27.6,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:20:01,2,eat_berry_inv,,3216,Gather remaining berries to meet goal before exploring unexplored_area,25.53,28.41,100,98.5,27.0,93.9,0,27.6,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry,4/4
+2026-04-26T21:20:05,2,eat_berry_inv,,3183,Gather remaining berries to meet goal before exploring unexplored_area.,25.53,28.41,100,100,27.0,94.9,0,27.6,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:20:12,2,forage_bush,bush_32,3693,"Inventory has 0 berries, must gather 10 before exploring unexplored_area",25.53,28.41,100,100,27.0,95.9,0,27.6,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:20:16,2,forage_bush,bush_32,3693,Inventory has 1 berry; must gather 10 before exploring unexplored_area.,25.06,28.2,100,100.0,26.9,95.6,0,27.6,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:20:20,2,eat_berry_inv,,3150,Gather 10 berries before exploring unexplored_area,25.21,28.23,100,100.0,26.9,95.3,0,27.6,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry|berry,4/4
+2026-04-26T21:20:24,2,eat_berry_inv,,3152,Need to gather 10 berries before exploring unexplored_area,25.21,28.23,100,100,26.9,96.3,0,27.6,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry|berry,4/4
+2026-04-26T21:20:28,2,eat_berry_inv,,3339,"Inventory has 0 berries, need to gather 10 before exploring unexplored_area",25.21,28.23,100,99.9,25.5,95.2,0,31.2,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry|berry,4/4
+2026-04-26T21:20:32,2,eat_berry_inv,,3277,"Inventory has 0 berries, need to gather 10 before exploring unexplored_area",25.21,28.23,100,100,25.5,96.2,0,31.2,22,eat_berry,fruit|fruit|fruit|fruit|fruit|fruit|berry,4/4
+2026-04-26T21:20:37,2,wander_ne,,3710,"Inventory shows 6 fruit, but berry count is unclear. Prioritize gathering 10 berries before exploring.",25.21,28.23,100,100,25.5,97.2,0,31.2,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:20:49,2,wander_s,,3567,"Hunger is full, but need 10 berries to explore unexplored_area.",28,25,100,99.8,25.4,96.7,0,31.2,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:20:58,2,wander_se,,3173,"Inventory has 6 fruit, need 10 berries to explore unexplored_area.",28,27,100,99.7,25.3,96.5,0,31.2,22,walk_to,fruit|fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:21:04,2,eat_fruit_inv,,3560,"Inventory has 6 fruit, need 10 berries to explore unexplored_area",30,29,100,99.3,25.0,95.8,0,31.2,22,eat_fruit,fruit|fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:21:08,2,eat_fruit_inv,,2934,Prioritize gathering berries to meet life goal before exploring.,30,29,100,100,25.0,97.8,0,31.2,22,eat_fruit,fruit|fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:21:12,2,eat_fruit_inv,,3887,Prioritize gathering 10 berries to ensure survival before exploring unexplored_area.,30,29,100,100,25.0,99.8,0,31.2,22,eat_fruit,fruit|fruit|fruit|fruit,4/4
+2026-04-26T21:21:19,2,eat_fruit_inv,,3081,Prioritize gathering berries to meet life goal before exploring.,30,29,100,100,25.0,100,0,31.2,22,eat_fruit,fruit|fruit|fruit,4/4
+2026-04-26T21:21:27,2,eat_fruit_inv,,3184,Inventory has 2 fruit; need to gather 10 berries before exploring.,30,29,100,99.9,23.6,97.9,0,34.8,22,eat_fruit,fruit|fruit,4/4
+2026-04-26T21:21:30,2,eat_fruit_inv,,3160,Inventory has 1 fruit; need to gather 10 berries before exploring,30,29,100,100,23.6,99.9,0,34.8,22,eat_fruit,fruit,4/4
+2026-04-26T21:21:35,2,wander_w,,3499,Gather berries to meet life goal before exploring unexplored_area,30,29,100,100,23.6,100,0,34.8,22,walk_to,,4/4
+2026-04-26T21:21:44,2,wander_e,,3239,"Inventory is empty, need to gather 10 berries before exploring.",28,29,100,99.9,23.5,99.8,0,34.8,22,walk_to,,4/4
+2026-04-26T21:21:59,2,wander_w,,3584,"Inventory is empty, need to gather 10 berries before exploring unexplored_area.",38,29,100,99.4,23.1,98.8,0,34.8,22,walk_to,,4/4
+2026-04-26T21:22:07,2,wander_e,,3481,"Hunger and energy are stable, but need to gather 10 berries before exploring.",28,29,100,98.9,22.7,97.8,0,34.8,22,walk_to,,4/4
+2026-04-26T21:22:29,2,wander_e,,3249,"Inventory is empty, must gather 10 berries before exploring.",28,29,100,97.8,20.1,92.8,0,37.8,30,walk_to,,4/4
+2026-04-26T21:22:48,2,wander_e,,3272,"Inventory is empty, need to gather 10 berries before exploring.",28,29,100,96.8,19.3,90.8,0,37.8,30,walk_to,,4/4
+2026-04-26T21:23:02,2,shake_tree,tree_133,3194,"Inventory is empty, need to gather 10 berries before exploring",38,29,100,96.3,18.9,89.8,0,37.8,30,walk_to,,4/4
+2026-04-26T21:23:20,2,wander_s,,2632,Need to gather 10 berries before exploring unexplored_area. Current inventory is empty.,9.77,21.21,100,94.7,17.6,84.7,0,37.8,30,walk_to,,4/4
+2026-04-26T21:23:30,2,wander_ne,,3502,Gather 10 berries to ensure survival before exploring unexplored_area.,10,29,100,94.3,15.5,80.9,0,40.8,30,walk_to,,4/4
+2026-04-26T21:23:35,2,wander_s,,2744,"Inventory is empty, must gather 10 berries before exploring unexplored_area",13,26,100,94.0,15.3,80.4,0,40.8,30,walk_to,,4/4
+2026-04-26T21:23:40,2,wander_e,,3188,"Inventory is empty, need to gather 10 berries before exploring.",13,29,100,93.8,15.2,80.1,0,40.8,30,walk_to,,4/4
+2026-04-26T21:23:46,2,wander_w,,4002,"Hunger is high, need to gather 10 berries before exploring unexplored_area.",16,29,100,93.7,15.1,79.8,0,40.8,30,walk_to,,4/4
+2026-04-26T21:23:51,2,wander_e,,3207,"Inventory is empty, need to gather berries before exploring unexplored_area",12,29,100,93.5,14.9,79.4,0,40.8,30,walk_to,,4/4
+2026-04-26T21:24:00,2,wander_w,,3635,"Inventory is empty, need to gather berries before exploring.",16,29,100,93.3,14.7,79.0,0,40.8,30,walk_to,,4/4
+2026-04-26T21:24:05,2,wander_e,,2970,"Inventory is empty, need to gather berries before exploring",12,29,100,93.1,14.6,78.6,0,40.8,30,walk_to,,4/4
+2026-04-26T21:24:11,2,wander_w,,3885,"Current goal requires berries, but inventory is empty. Need to gather berries before exploring.",16,29,100,92.9,14.4,78.2,0,40.8,30,walk_to,,4/4
+2026-04-26T21:24:16,2,wander_e,,3123,"Inventory is empty, need to gather 10 berries before exploring.",12,29,100,92.7,14.3,77.8,0,40.8,30,walk_to,,4/4
+2026-04-26T21:24:22,2,wander_w,,3981,"Inventory is empty, need to gather 10 berries before exploring unexplored_area",16,29,100,92.5,14.1,77.4,0,40.8,30,walk_to,,4/4
+2026-04-26T21:24:27,2,wander_e,,3142,"Inventory is empty, need to gather berries before exploring unexplored_area",12,29,100,92.2,12.1,74.0,0,43.8,30,walk_to,,4/4
+2026-04-26T21:24:36,2,wander_w,,3873,"Inventory is empty, need to gather 10 berries before exploring.",16,29,100,92.0,12.0,73.6,0,43.8,30,walk_to,,4/4
+2026-04-26T21:24:41,2,wander_e,,2912,Inventory is empty; must gather berries before exploring.,12,29,100,91.8,11.8,73.2,0,43.8,30,walk_to,,4/4
+2026-04-26T21:24:47,2,wander_w,,3794,"Inventory is empty, need to gather 10 berries before exploring.",16,29,100,91.6,11.6,72.8,0,43.8,30,walk_to,,4/4
+2026-04-26T21:24:52,2,wander_e,,3051,"Inventory is empty, must gather 10 berries before exploring.",12,29,100,91.4,11.5,72.4,0,43.8,30,walk_to,,4/4
+2026-04-26T21:24:57,2,wander_w,,3679,Prioritize gathering berries to meet the life goal before exploring.,16,29,100,91.2,11.3,72.0,0,43.8,30,walk_to,,4/4
+2026-04-26T21:25:05,2,wander_e,,2827,"Inventory is empty, must gather berries before exploring.",12,29,100,91.0,11.2,71.6,0,43.8,30,walk_to,,4/4
+2026-04-26T21:25:11,2,wander_w,,3665,Prioritize gathering berries to meet life goal before exploring.,16,29,100,90.8,11.0,71.2,0,43.8,30,walk_to,,4/4
+2026-04-26T21:25:17,2,wander_e,,4011,Need to gather 10 berries before exploring unexplored_area; current inventory is empty.,12,29,100,90.6,10.8,70.8,0,43.8,30,walk_to,,4/4
+2026-04-26T21:25:23,2,wander_w,,3984,Need to gather 10 berries before exploring unexplored_area. Current inventory is empty.,16,29,100,90.4,10.7,70.4,0,43.8,30,walk_to,,4/4
+2026-04-26T21:25:28,2,wander_e,,2901,Prioritize gathering berries to meet life goal before exploring.,12,29,100,90.1,8.7,67.0,0,46.8,30,walk_to,,4/4
+2026-04-26T21:25:41,2,wander_w,,3398,Prioritize gathering berries to meet the life goal before exploring.,16,29,100,89.9,8.5,66.6,0,46.8,30,walk_to,,4/4
+2026-04-26T21:25:46,2,wander_e,,3052,"Inventory is empty, need to gather 10 berries before exploring.",12,29,100,89.7,8.4,66.2,0,46.8,30,walk_to,,4/4
+2026-04-26T21:25:52,2,wander_w,,3623,Need to gather 10 berries before exploring unexplored_area.,16,29,100,89.5,8.2,65.8,0,46.8,30,walk_to,,4/4
+2026-04-26T21:25:57,2,wander_e,,2905,"Inventory is empty, must gather berries before exploring.",12,29,100,89.3,8.1,65.4,0,46.8,30,walk_to,,4/4
+2026-04-26T21:26:03,2,wander_w,,3521,"Inventory is empty, must gather berries before exploring.",16,29,100,89.1,7.9,65.0,0,46.8,30,walk_to,,4/4
+2026-04-26T21:26:11,2,drink_river,,3322,"Hunger and energy are stable, but thirst is low. Prioritize drinking to avoid dehydration.",12,29,100,88.9,7.7,64.6,0,46.8,30,walk_to,,4/4
+2026-04-26T21:26:26,2,wander_se,,3005,"Inventory is empty, need to gather 10 berries before exploring.",29.76,8.76,100,87.4,29.8,59.4,0,49.8,30,walk_to,,4/4
+2026-04-26T21:26:31,2,wander_s,,3089,"Inventory is empty, must gather more berries before exploring.",32,11,100,87.2,29.7,59.0,0,49.8,30,walk_to,,4/4
+2026-04-26T21:26:36,2,wander_se,,3008,Prioritize gathering berries to meet life goal before exploring.,32,15,100,87.0,29.5,58.6,0,49.8,30,walk_to,,4/4
+2026-04-26T21:26:45,2,wander_e,,3366,Prioritize gathering berries to meet life goal before exploring unexplored_area.,34,17,100,86.7,29.3,58.0,0,49.8,30,walk_to,,4/4
+2026-04-26T21:26:55,2,wander_s,,2871,Prioritize gathering berries to meet life goal before exploring.,39,17,100,86.5,29.1,57.5,0,49.8,30,walk_to,,4/4
+2026-04-26T21:27:02,2,wander_n,,3906,Prioritize gathering more berries to meet the life goal before exploring.,39,23,100,86.2,28.8,56.9,0,49.8,30,walk_to,,4/4
+2026-04-26T21:27:08,2,wander_s,,3617,"Hunger is full, but need to gather 10 berries before exploring. Prioritize gathering berries.",39,17,100,85.9,28.6,56.3,0,49.8,30,walk_to,,4/4
+2026-04-26T21:27:17,2,wander_w,,3607,"Inventory is empty, need to gather berries before exploring.",39,23,100,85.6,28.4,55.7,0,49.8,30,walk_to,,4/4
+2026-04-26T21:27:25,2,wander_se,,3115,Gather remaining berries to meet goal before exploring unexplored_area,30,23,100,85.1,28.0,54.8,0,49.8,30,walk_to,,4/4
+2026-04-26T21:27:29,2,pee_now,,2897,"Bladder is rising, must relieve before it becomes urgent",32,25,100,84.9,26.0,51.4,0,52.8,30,walk_to,,4/4
+2026-04-26T21:27:34,2,wander_e,,3329,Need to gather 10 berries before exploring; current inventory is empty.,32.15,24.86,100,84.9,26.0,51.2,0,0,30,walk_to,,4/4
+2026-04-26T21:27:40,2,wander_ne,,3034,Prioritize gathering berries to fulfill life goal before exploring.,36,25,100,84.7,25.9,50.8,0,0,30,walk_to,,4/4
+2026-04-26T21:27:44,2,wander_sw,,2884,"Inventory is empty, must gather berries before exploring.",39,22,100,84.4,25.7,50.3,0,0,30,walk_to,,4/4
+2026-04-26T21:27:54,2,wander_se,,3056,"Hunger is full, but need to gather berries for exploration.",34,27,100,84.0,25.4,49.5,0,0,30,walk_to,,4/4
+2026-04-26T21:27:59,2,wander_e,,2946,"Inventory is empty, need to gather berries before exploring.",36,29,100,83.8,25.2,49.2,0,0,30,walk_to,,4/4
+2026-04-26T21:28:04,2,pickup_wood,wood_1777203627930,3471,"Need to gather berries before exploring, but current inventory is empty.",38,29,100,83.7,25.1,49.0,0,0,30,pickup_wood,,4/4
+2026-04-26T21:28:08,2,pickup_wood,,3463,Need to gather 10 berries before exploring unexplored_area,38,29,100,83.7,25.1,48.7,0,0,30,walk_to,wood,4/4
+2026-04-26T21:28:12,2,pickup_wood,,3569,"Need to gather berries for survival, but current inventory has no berries.",37.25,28.2,100,83.7,25.1,48.3,0,0,30,walk_to,wood|wood,4/4
+2026-04-26T21:28:16,2,wander_sw,,3630,Prioritize gathering berries to meet life goal before exploring.,36.8,27.04,100,83.6,25.0,47.8,0,0,30,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:23,2,wander_ne,,3385,"Hunger is full, but berries are needed for exploration. Prioritize gathering berries.",35,29,100,83.5,24.9,47.5,0,0,30,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:28,2,wander_s,,3435,Prioritize gathering berries to meet life goal before exploring unexplored_area.,37,27,100,83.2,23.4,43.6,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:34,2,wander_nw,,3628,"Hunger and energy are high, but life goal requires gathering berries first.",37,29,100,83.1,23.3,43.4,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:38,2,wander_se,,3008,Prioritize gathering berries to meet the life goal before exploring.,35,27,100,82.9,23.2,43.0,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:44,2,wander_n,,3785,Prioritize gathering berries to meet life goal before exploring.,37,29,100,82.7,23.0,42.7,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:49,2,wander_s,,3304,"Hunger is full, but need berries for exploration. Prioritize gathering before moving.",37,26,100,82.6,22.9,42.4,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:28:57,2,wander_n,,3867,"Current hunger is full, but need berries for exploration; prioritize gathering.",37,29,100,82.4,22.8,42.1,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:03,2,wander_s,,3735,"Need to gather berries before exploring, but current inventory lacks berries.",37,26,100,82.3,22.7,41.8,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:09,2,wander_n,,3898,"Hunger is full, but need berries for exploration. Prioritize gathering berries.",37,29,100,82.1,22.5,41.5,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:14,2,wander_s,,3179,Prioritize gathering berries to fulfill life goal before exploring.,37,26,100,82.0,22.4,41.2,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:19,2,wander_n,,3755,Prioritize gathering berries to meet life goal before exploring.,37,29,100,81.8,22.3,40.9,0,3,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:27,2,wander_s,,3358,"Hunger is full, but need berries for exploration; prioritize gathering before moving.",37,26,100,81.6,20.8,37.0,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:31,2,wander_n,,2981,Prioritize gathering berries to meet the life goal before exploring.,37,29,100,81.4,20.7,36.7,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:37,2,wander_s,,3147,Prioritize gathering berries to meet life goal before exploring unexplored_area.,37,26,100,81.3,20.5,36.4,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:42,2,wander_n,,3983,"Hunger is full, but need berries for exploration. Prioritize gathering berries.",37,29,100,81.1,20.4,36.1,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:48,2,wander_w,,3134,Prioritize gathering berries to meet life goal before exploring unexplored_area.,37,26,100,81.0,20.3,35.8,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:51,2,wander_e,,2919,Prioritize gathering berries to meet life goal before exploring.,35,26,100,80.9,20.2,35.6,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:29:56,2,wander_s,,3164,"Hunger is full, but need berries for survival exploration. Prioritize gathering berries.",37,26,100,80.8,20.1,35.4,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:04,2,wander_n,,3996,"Hunger is full, but need berries for exploration; prioritize gathering before moving.",37,29,100,80.6,20.0,35.1,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:09,2,wander_s,,3125,"Hunger is full, thirst is low, need berries for survival goal",37,26,100,80.5,19.9,34.8,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:15,2,wander_n,,3987,"Hunger is full, but need berries for exploration. Prioritize gathering before moving.",37,29,100,80.3,19.8,34.5,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:21,2,wander_s,,3766,"Prioritize gathering berries for survival, as exploration without food leads to death.",37,26,100,80.2,19.7,34.2,0,6,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:27,2,wander_n,,3831,Prioritize gathering berries to fulfill life goal before exploring unexplored_area.,37,29,100,79.9,18.1,30.3,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:35,2,shake_tree,tree_64,2554,"Hunger is moderate, but gathering berries is priority. Need to eat to survive exploration.",37,26,100,79.8,18.0,30.0,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:52,2,wander_ne,,3044,Prioritize gathering berries to meet life goal before exploring.,7.68,7.58,100,78.1,16.6,24.5,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:30:59,2,wander_e,,3922,"Hunger is moderate, but thirst is low; need to prioritize gathering berries for survival.",11,5,100,77.8,16.4,24.0,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:07,2,wander_s,,3253,"Hunger and thirst are moderate, but gathering berries is priority. Need to find berries before exploring.",16,5,100,77.5,16.2,23.5,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:15,2,wander_e,,3223,"Hunger is moderate, but need berries for survival before exploring.",16,15,100,77.0,15.8,22.5,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:22,2,wander_e,,3235,"Hunger is moderate, but priority is gathering berries before exploring.",27.25,15,100,76.5,15.4,21.4,0,9,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:28,2,wander_ne,,3085,Prioritize gathering berries to fulfill life goal before exploring.,32,15,100,76.1,13.8,17.3,0,12,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:33,2,wander_e,,3033,Prioritize gathering berries to meet life goal before exploring.,34,13,100,76.0,13.6,16.9,0,12,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:39,2,wander_se,,2917,Prioritize gathering berries to meet life goal before exploring.,36,13,100,75.9,13.6,16.7,0,12,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:45,2,pickup_wood,,3469,Prioritize gathering berries to meet life goal before exploring.,38,15,100,75.7,13.4,16.4,0,12,24,walk_to,wood|wood|wood,4/4
+2026-04-26T21:31:49,2,wander_s,,3421,Prioritize gathering berries to meet life goal before exploring unexplored_area.,37.2,14.11,100,75.6,13.4,16.0,0,12,24,walk_to,wood|wood|wood|wood,4/4
+2026-04-26T21:32:00,2,wander_ne,,2958,Prioritize gathering berries to fulfill life goal before exploring.,37,24,100,75.1,13.0,15.0,0,12,24,walk_to,wood|wood|wood|wood,4/4
+2026-04-26T21:32:06,2,wander_n,,3730,Prioritize gathering berries to meet life goal before exploring.,39,22,100,75.0,12.9,14.7,0,12,24,walk_to,wood|wood|wood|wood,4/4
+2026-04-26T21:32:14,2,wander_s,,3221,Hunger and energy are low; need to gather berries for survival.,39,18.25,100,74.7,12.6,14.1,0,12,24,walk_to,wood|wood|wood|wood,4/4
+2026-04-26T21:32:21,2,pickup_wood,,3801,"Energy is low, but hunger and thirst are manageable. Prioritize gathering berries for survival.",39,23,100,74.5,12.4,13.6,0,12,24,pickup_wood,wood|wood|wood|wood,4/4
+2026-04-26T21:32:26,2,wander_n,,3829,Hunger and energy are low; prioritize gathering berries to avoid starvation.,39,23,100,74.2,11.6,8.3,0,12.9,16,walk_to,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:32,2,sleep,,2767,Energy is critically low; prioritize rest to avoid collapse.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:36,2,sleep,,2712,Energy is critical; sleep regenerates it before exploring.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:43,2,sleep,,2656,"Energy is critically low, prioritize rest to avoid collapse.",39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:45,2,sleep,,2475,Energy is critically low; prioritize rest to survive.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:48,2,sleep,,2493,Energy is critically low; prioritize rest to avoid collapse.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:52,2,sleep,,2637,Energy is critically low; sleeping regenerates energy and prevents collapse.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:55,2,sleep,,2637,Energy is critically low; sleep is needed to recover before gathering berries.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:32:57,2,sleep,,2444,Energy is critically low; prioritize resting to survive.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:00,2,sleep,,2466,Energy is critically low; prioritize rest to survive.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:03,2,sleep,,2470,"Energy is critically low, must rest to survive.",39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:06,2,sleep,,2488,Energy is critically low; prioritize rest to avoid collapse.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:10,2,sleep,,2697,"Energy is critically low, but survival pressure demands immediate action to avoid collapse.",39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:12,2,sleep,,2463,"Energy is collapsed, must prioritize rest to survive.",39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:18,2,sleep,,2503,"Energy is collapsed, must prioritize resting to avoid death.",39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:21,2,sleep,,2602,Energy is critical; sleeping regenerates it while avoiding risk.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:24,2,sleep,,2658,Energy is critical; sleeping regenerates it while avoiding risk.,39,17,100,73.9,11.3,7.7,0,12.9,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:27,2,sleep,,2507,"Energy is critically low, prioritize rest to avoid collapse.",39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:30,2,sleep,,2572,Energy is critically low; sleeping regenerates it without risk.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:33,2,sleep,,2416,Energy is critically low; prioritize rest to survive.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:36,2,sleep,,2450,Energy is critically low; need to rest to survive.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:39,2,sleep,,2577,Energy is critically low; prioritize sleep to restore health and avoid collapse.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:42,2,sleep,,2567,Energy is critically low; sleeping regenerates energy and ensures survival.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:45,2,sleep,,2450,Energy is critically low; must prioritize resting to survive.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:51,2,sleep,,2432,"Energy is collapsed, must prioritize resting to survive.",39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:54,2,sleep,,2416,Energy is critically low; prioritize rest to survive.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:33:57,2,sleep,,2663,Energy is critically low; sleep regenerates energy to prevent collapse.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:00,2,sleep,,2614,"Energy is critical, but sleep regenerates it and is nearby.",39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:03,2,sleep,,2494,Energy is critically low; sleep is needed to survive.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:06,2,sleep,,2458,"Energy is collapsed, must prioritize rest to survive",39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:09,2,sleep,,2608,Energy is critically low; sleep regenerates energy to avoid collapse.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:12,2,sleep,,2615,Energy is critical; sleeping regenerates it while avoiding hunger risk.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:15,2,sleep,,2640,Energy is critically low; sleeping regenerates energy and is safest.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:21,2,sleep,,2686,"Energy is collapsed, must rest to survive. Prioritize recovery before gathering berries.",39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:24,2,sleep,,2629,Energy is critical; sleeping regenerates it while avoiding hunger risk.,39,17,100,73.7,10.5,2.7,0,13.8,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:27,2,sleep,,2520,"Energy is critically low, must rest to survive.",39,17,90,73.4,9.7,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,4/4
+2026-04-26T21:34:55,2,sleep,,2931,"Energy is 0, must rest to survive and gather berries.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:34:59,2,sleep,,2641,"Energy is 0, need to rest to survive and gather berries.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:01,2,sleep,,2523,"Energy is 0, must rest to survive before gathering berries.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:04,2,sleep,,2579,"Energy is 0, must sleep to restore it before gathering berries.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:08,2,sleep,,2651,"Energy is 0, must rest to survive. Prioritize sleep over gathering.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:10,2,sleep,,2608,"Energy is 0, need to rest to regain strength for berry gathering.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:14,2,sleep,,2638,"Energy is 0, need to sleep to restore it before gathering berries",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:16,2,sleep,,2500,"Energy is collapsed, must rest to survive before gathering berries",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:19,2,sleep,,2576,"Energy is 0, need to rest to survive and gather berries.",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:22,2,sleep,,2557,"Energy is 0, must rest to survive before gathering berries",31,9,90,72.7,9.1,0,0,14.7,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:28,2,sleep,,2418,Energy is collapsed; prioritize resting to restore vitality.,31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:31,2,sleep,,2646,"Energy is 0, must rest to survive. Prioritize sleep over gathering.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:34,2,sleep,,2671,"Energy is 0, must rest to survive. Prioritize sleep over gathering.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:37,2,sleep,,2560,"Energy is 0, need to rest to survive and gather berries.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:44,2,sleep,,2526,"Energy is 0, need to rest to survive.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:47,2,sleep,,2534,"Energy is 0, must rest to survive before gathering berries",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:50,2,sleep,,2670,"Energy is 0, must rest to survive. Sleep regenerates energy.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:53,2,sleep,,2620,"Energy is 0, need to rest to survive and gather berries.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:35:59,2,sleep,,2574,"Energy is 0, must sleep to restore energy before gathering berries",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:02,2,sleep,,2542,"Energy is collapsed, need to sleep to recover before gathering berries.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:05,2,sleep,,2686,"Energy is 0, must sleep to restore energy before gathering berries",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:08,2,sleep,,2608,"Energy is 0, must rest to survive before gathering berries.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:11,2,sleep,,2586,"Energy is 0, need to rest before gathering berries",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:14,2,sleep,,2598,"Energy is collapsed, need to rest to survive.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:17,2,sleep,,2798,"Energy is 0, need to sleep to restore it before gathering berries.",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:21,2,sleep,,2638,"Energy is 0, must rest to survive before gathering berries",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:24,2,sleep,,2484,"Energy is 0, need to rest to survive",31,9,80,72.5,8.3,0,0,15.6,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:27,2,sleep,,2676,"Energy is 0, must rest to survive. Prioritize sleeping to recover.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:33,2,sleep,,2543,"Energy is 0, must rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:36,2,sleep,,2534,"Energy is 0, must rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:39,2,sleep,,2519,"Energy is 0, must rest to survive before gathering berries.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:42,2,sleep,,2702,"Energy is 0, must rest to survive and gather berries.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:45,2,sleep,,2428,"Energy is 0, must rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:48,2,sleep,,2427,"Energy is 0, must rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:51,2,sleep,,2727,"Energy is 0, must rest to survive. Prioritize sleep over gathering.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:55,2,sleep,,2704,"Energy is 0, must rest to survive before gathering berries.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:36:58,2,sleep,,2529,"Energy is 0, must rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:01,2,sleep,,2547,"Energy is 0, must rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:07,2,sleep,,2854,"Energy is 0, need to rest to survive. Prioritize sleep over gathering.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:10,2,sleep,,2611,"Energy is 0, must rest to survive. Prioritize sleeping over gathering.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:13,2,sleep,,2313,"Energy is collapsed, must rest to survive",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:16,2,sleep,,2639,"Energy is 0, must rest to survive. Prioritize sleep over exploration.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:19,2,sleep,,2597,"Energy is 0, must rest to survive. Prioritize sleep over gathering.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:22,2,sleep,,2518,"Energy is 0, need to rest to survive before gathering berries",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:25,2,sleep,,2543,"Energy is 0, must rest to survive before gathering berries.",31,9,70,72.2,7.4,0,0,16.5,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:29,2,wander_se,,2996,Hunger and thirst are critical; need to gather berries and hydrate before exploring.,31,9,70,72.1,6.6,35.8,0,17.4,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:40,2,wander_s,,2589,Prioritize gathering berries to meet life goal and avoid starvation.,39,17,70,71.4,6.1,34.4,0,17.4,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:37:45,2,shake_tree,tree_117,2677,Prioritize gathering berries to avoid starvation before exploring.,39,23,70,71.1,5.8,33.8,0,17.4,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:04,2,shake_tree,tree_128,2919,Prioritize gathering berries to meet life goal before exploring.,3.23,17.23,70,69.3,4.4,28.1,0,17.4,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:14,2,wander_e,,3096,Prioritize gathering berries to meet life goal before exploring,1.43,20.32,70,69.0,4.2,25.7,0,17.4,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:22,2,wander_se,,3315,Prioritize gathering berries to avoid starvation before exploring.,11,20,70,68.6,3.8,24.7,0,17.4,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:26,2,wander_s,,2908,Prioritize gathering berries to meet life goal before exploring.,13,22,70,68.1,2.8,19.4,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:35,2,sleep,,2625,"Hunger is moderate, but health is hurt; prioritize rest to recover.",13,29,70,67.8,2.5,18.7,0,18.3,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:38,2,wander_e,,2877,Prioritize gathering berries to avoid starvation before exploring.,13,29,70,67.8,2.5,18.7,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:49,2,wander_w,,3070,Prioritize gathering berries to meet life goal before exploring unexplored_area.,16,29,70,67.6,2.4,18.4,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:38:55,2,wander_n,,3550,Prioritize gathering berries to meet life goal and prevent starvation,12,29,70,67.4,2.3,18.0,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:00,2,wander_se,,3545,Hunger and health are critical; need berries to survive and explore.,12,27,70,67.3,2.2,17.8,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:04,2,wander_e,,2900,Prioritize gathering berries to meet life goal before exploring.,14,29,70,67.2,2.1,17.5,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:08,2,drink_river,,2833,Hunger and thirst are critical; need to eat and drink before exploring.,16,29,70,67.1,2.0,17.3,0,18.3,16,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:32,2,sleep,,2693,Energy is critically low; prioritize resting to restore health and energy.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:34,2,sleep,,2523,Prioritize energy recovery before exploring to avoid collapse during exploration.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:37,2,sleep,,2553,"Energy is low, need to rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:40,2,sleep,,2533,Energy is critically low; prioritize sleeping to restore health and energy.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:43,2,sleep,,2551,"Energy is low, must rest to survive and complete berry gathering.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:49,2,sleep,,2515,"Energy is low, must rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:52,2,sleep,,2545,"Energy is low, need to rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:55,2,sleep,,2565,"Energy is low, need to rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:39:58,2,sleep,,2495,"Energy is low, must rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:01,2,sleep,,2501,"Energy is low, must rest to survive before gathering berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:04,2,sleep,,2573,Energy is critically low; sleep regenerates energy to survive.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:07,2,sleep,,2545,"Energy is low, need to rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:10,2,sleep,,2680,Energy is critically low; sleep regenerates energy to prepare for berry gathering.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:13,2,sleep,,2595,Prioritize energy recovery and berry gathering to avoid death from low energy.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:16,2,sleep,,2420,Energy is critically low; prioritize rest to survive.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:22,2,sleep,,2398,Energy is critically low; prioritize resting to survive.,26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:25,2,sleep,,2640,"Energy is low, need to rest to survive and gather berries.",26,9,70,65.4,25.0,9.9,0,19.2,16,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:28,2,sleep,,2441,Energy is critically low; prioritize resting to survive.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:31,2,sleep,,2431,Energy is critically low; must rest to survive.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:34,2,sleep,,2536,Energy is critically low; prioritize regaining energy before gathering berries.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:37,2,sleep,,2538,Energy is critically low; prioritize sleeping to restore health and energy.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:40,2,sleep,,2480,Energy is critically low; prioritize resting to avoid collapse.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:43,2,sleep,,2457,Energy is critically low; must rest to avoid collapse.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:46,2,sleep,,2460,Energy is critically low; prioritize rest to avoid collapse.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:49,2,sleep,,2542,Energy is critically low; must rest to survive before gathering berries.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:54,2,sleep,,2416,Energy is critically low; must rest to survive.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:40:58,2,sleep,,2460,Energy is critically low; prioritize resting to avoid collapse.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:01,2,sleep,,2538,Energy is critical; must rest to avoid collapse while gathering berries.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:04,2,sleep,,2474,"Energy is critically low, must prioritize rest to survive.",26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:07,2,sleep,,2463,Energy is critically low; must prioritize rest to survive.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:10,2,sleep,,2522,Energy is critically low; prioritize sleeping to restore health and energy.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:12,2,sleep,,2413,Energy is critically low; prioritize rest to avoid collapse.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:15,2,sleep,,2421,Energy is critically low; need to rest to survive.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:18,2,sleep,,2367,Energy is critically low; prioritize rest to survive.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:22,2,sleep,,2512,Energy is critically low; prioritize sleeping to restore health and energy.,26,9,70,65.3,23.6,7.8,0,22.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:27,2,sleep,,2483,"Energy is critically low, must prioritize rest to survive.",26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:30,2,sleep,,2378,Energy is critically low; must rest to survive.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:33,2,sleep,,2428,Energy is critically low; must rest to survive.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:36,2,sleep,,2521,Energy is critically low; prioritize sleeping to restore health and energy.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:39,2,sleep,,2381,Energy is critically low; must rest to survive.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:42,2,sleep,,2376,Energy is critically low; prioritize resting to survive.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:45,2,sleep,,2438,Energy is critically low; must prioritize rest to survive.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:48,2,sleep,,2414,Energy is critically low; prioritize rest to survive.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:51,2,sleep,,2433,"Energy is critically low, must prioritize rest to survive.",26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:41:54,2,sleep,,2550,Energy is critically low; sleeping regenerates energy to prevent collapse.,26,9,70,65.2,22.2,5.7,0,26.4,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:00,2,sleep,,2527,Energy is critically low; prioritize sleeping to restore health and energy.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:03,2,sleep,,2503,Energy is critical; sleeping regenerates it while ensuring survival.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:06,2,sleep,,2461,Energy is critically low; sleep is needed to restore it.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:09,2,sleep,,2557,Energy is critical; sleep regenerates it while avoiding hunger risk.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:12,2,sleep,,2518,Energy is critical; sleeping regenerates it while avoiding hunger loss.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:15,2,sleep,,2542,Energy is critically low; sleeping regenerates energy and prevents collapse.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:18,2,sleep,,2473,Energy is critical; sleeping regenerates it while staying alive.,26,9,70,65.1,20.8,3.6,0,30,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:21,2,sleep,,2521,Energy is critically low; sleeping regenerates energy to prevent collapse.,26,9,70,64.9,19.4,1.5,0,33.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:24,2,sleep,,2572,Energy is critically low; sleeping regenerates energy and prevents collapse.,26,9,70,64.9,19.4,1.5,0,33.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:27,2,sleep,,2407,Energy is critically low; prioritize rest to avoid collapse.,26,9,70,64.9,19.4,1.5,0,33.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:33,2,sleep,,2387,Energy is critically low; must prioritize rest to survive.,26,9,70,64.9,19.4,1.5,0,33.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:36,2,sleep,,2491,Energy is critical; sleep regenerates it while staying safe.,26,9,70,64.9,19.4,1.5,0,33.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:39,2,sleep,,2472,Energy is critical; sleeping regenerates it while staying safe.,26,9,70,64.9,19.4,1.5,0,33.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:42,2,sleep,,2529,Energy is critical; sleeping regenerates it while keeping health safe.,26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:45,2,sleep,,2539,Energy is critical for survival; must rest to recover before gathering berries.,26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:48,2,sleep,,2477,"Energy is 0, must rest to survive and gather berries.",26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:51,2,sleep,,2472,"Energy is 0, must rest to survive before gathering berries",26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:54,2,sleep,,2542,"Energy is 0, need to rest to survive and gather berries",26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:42:57,2,sleep,,2607,"Energy is 0, must rest to survive. Prioritize sleep over gathering.",26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:00,2,sleep,,2438,"Energy is collapsed, must rest to survive and gather berries.",26,9,60,64.8,18.0,0,0,37.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:08,2,sleep,,2491,"Energy is low, need to rest to survive and gather berries.",26,9,60,64.7,16.6,14,0,40.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:26,2,sleep,,2442,Energy is critically low; prioritize resting to survive.,34,17,60,63.9,14.2,9.6,0,43.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:32,2,sleep,,2387,Low energy and health require immediate rest to survive.,34,17,60,63.9,14.2,9.6,0,43.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:41,2,sleep,,2528,"Energy is low, need to rest to survive and gather berries.",34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:44,2,sleep,,2387,Energy is critically low; prioritize rest to survive.,34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:47,2,sleep,,2459,Energy is critical for survival; must rest to avoid collapse.,34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:50,2,sleep,,2530,Energy is critically low; sleeping regenerates energy and prevents collapse.,34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:53,2,sleep,,2439,Energy is collapsed; must rest to survive before gathering berries.,34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:56,2,sleep,,2393,Energy is critically low; prioritize rest to survive.,34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:43:59,2,sleep,,2361,Energy is critically low; must sleep to survive.,34,17,60,63.8,12.4,6.6,0,46.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:13,2,sleep,,2703,"Energy is low, need to rest to survive and gather berries.",39,17,60,63.5,10.4,14.1,0,49.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:16,2,sleep,,2554,"Energy is low, need to rest to survive and gather berries",39,17,60,63.5,10.4,14.1,0,49.8,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:20,2,wander_s,,3099,Prioritize gathering berries to meet life goal and avoid starvation.,39,17,60,63.5,10.4,14.1,0,49.8,30,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:28,2,pee_now,,2513,"Bladder is rising, must relieve before it becomes urgent",39,23,60,63.1,8.3,10.5,0,52.8,30,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:31,2,sleep,,2606,"Energy is low, must rest to survive. Prioritize sleep over exploration.",39.03,23.05,60,63.1,8.3,10.3,0,0,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:34,2,sleep,,2535,Health is critical; prioritize rest to recover energy and health.,39.03,23.05,60,63.1,8.3,10.3,0,0,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:51,2,sleep,,2775,Energy is critical; sleeping regenerates it while avoiding further depletion.,33,17,60,62.5,6.1,6.3,0,3,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:44:55,2,wander_se,,2731,Prioritize gathering berries to prevent death from hunger and low energy,33,17,60,62.5,6.1,6.3,0,3,30,walk_to,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:03,2,sleep,,2677,Energy is critically low; prioritize rest to survive.,39,23,60,61.9,3.8,2.3,0,6,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:06,2,sleep,,2457,Energy is critical; sleep to restore it before exploring.,39,23,60,61.9,3.8,2.3,0,6,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:12,2,sleep,,2395,Energy is critical; sleep to restore it before exploring.,39,23,60,61.9,3.8,2.3,0,6,30,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:21,2,sleep,,2599,Energy is critical; sleeping regenerates it while avoiding further depletion.,39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:23,2,sleep,,2497,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:27,2,sleep,,2594,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:41,2,sleep,,2173,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:44,2,sleep,,2136,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:50,2,sleep,,2139,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:53,2,sleep,,2250,"Energy is 0, must rest to survive and prepare for gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:56,2,sleep,,2131,Energy is collapsed; prioritize rest to recover before gathering berries.,39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:45:59,2,sleep,,2141,"Energy is collapsed, must rest to regain strength for berry gathering",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:02,2,sleep,,2130,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:05,2,sleep,,2128,"Energy is collapsed, must rest to regain strength for gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:08,2,sleep,,2129,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:11,2,sleep,,2175,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:14,2,sleep,,2215,"Energy is 0, must rest to regain strength for berry gathering",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:17,2,sleep,,2193,"Energy is collapsed, must rest to survive and prepare for gathering berries.",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:23,2,sleep,,2210,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:26,2,sleep,,2200,"Energy is 0, must rest to survive before gathering berries",39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:29,2,sleep,,2226,Energy is collapsed; must rest to survive before gathering berries.,39,23,50,61.8,2.4,0,0,9,24,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:32,2,sleep,,2354,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:35,2,sleep,,2353,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:38,2,sleep,,2286,"Energy is low, need to rest to meet subgoal energy 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:41,2,sleep,,2345,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:44,2,sleep,,2257,Energy is critically low; rest is needed to proceed with gathering berries.,39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:47,2,sleep,,2359,Energy is critically low; prioritize rest to meet subgoal energy 80,39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:50,2,sleep,,2382,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:56,2,sleep,,2393,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:46:59,2,sleep,,2341,"Energy is low, need to rest to meet subgoal energy 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:02,2,sleep,,2390,"Energy is low, must rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:05,2,sleep,,2421,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:08,2,sleep,,2396,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:11,2,sleep,,2205,Energy is critically low; rest is needed to survive.,39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:14,2,sleep,,2430,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:17,2,sleep,,2333,"Energy is low, must rest to meet subgoal energy 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:20,2,sleep,,2428,"Energy is low, need to rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:23,2,sleep,,2377,"Energy is low, must rest to meet subgoal energy level 80",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:29,2,sleep,,2482,"Energy is low, but health is critical; prioritize rest to recover health and energy.",39,23,50,61.7,1.0,14,0,12.6,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:31,2,sleep,,2399,Energy is critically low; must rest to survive and prepare for berry gathering.,39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:34,2,sleep,,2427,"Energy is low, need to rest to meet subgoal energy 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:37,2,sleep,,2441,"Energy is low, need to rest to meet subgoal energy 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:40,2,sleep,,2428,"Energy is low, must rest to meet subgoal energy 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:44,2,sleep,,2484,"Energy is low, need to rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:47,2,sleep,,2478,"Energy is low, need to rest to meet subgoal energy 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:50,2,sleep,,2486,"Energy is low, must rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:53,2,sleep,,2522,"Energy is low, need to rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:47:56,2,sleep,,2578,"Energy is low, need to rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:01,2,sleep,,2599,"Energy is low, must rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:04,2,sleep,,2527,Energy is low; prioritize resting to meet subgoal energy level 80,39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:07,2,sleep,,2552,Energy is low; need to rest to meet subgoal energy level 80,39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:10,2,sleep,,2555,"Energy is low, must rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:13,2,sleep,,2434,"Prioritize rest to boost energy for berry gathering, critical for survival.",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:16,2,sleep,,2598,"Energy is low, must rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:19,2,sleep,,2575,"Energy is low, must rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:22,2,sleep,,2604,"Energy is low, need to rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:25,2,sleep,,2581,"Energy is low, need to rest to meet subgoal energy 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:28,2,sleep,,2613,"Energy is low, must rest to meet subgoal energy level 80",39,23,30,61.5,0,11.9,0,16.2,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:34,2,sleep,,2601,"Energy is low, need to rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:37,2,sleep,,2551,"Energy is low, must rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:40,2,sleep,,2577,"Energy is low, must rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:43,2,sleep,,2631,"Energy is low, need to rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:46,2,sleep,,2546,"Health is critical; energy is low, need to rest before gathering berries.",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:49,2,sleep,,2651,"Energy is low, need to rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:52,2,sleep,,2598,"Energy is low, must rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:55,2,sleep,,2529,"Energy is low, must rest to reach 80 for exploration",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:48:58,2,sleep,,2492,Health is critical; prioritize rest to recover energy before gathering berries.,39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:01,2,sleep,,2510,"Energy is low, must rest to meet subgoal energy threshold",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:07,2,sleep,,2545,"Health is critical; energy is low, but rest can recover it.",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:10,2,sleep,,2502,"Energy is low, must rest to meet subgoal energy threshold",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:13,2,sleep,,2624,"Energy is low, must rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:16,2,sleep,,2691,"Energy is low, need to rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:19,2,sleep,,2669,"Energy is low, need to rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:22,2,sleep,,2617,"Energy is low, need to rest to meet subgoal energy 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:25,2,sleep,,2664,"Energy is low, need to rest to meet subgoal energy level 80",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:28,2,sleep,,2565,"Energy is low, must rest to reach 80 for exploration",39,23,10,61.4,0,25.9,0,19.8,22,sleep,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:31,2,sleep,,2398,"Energy is low, need to rest before gathering berries.",39,23,0,61.3,0,23.8,0,23.4,22,idle,wood|wood|wood|wood|wood,0/3
+2026-04-26T21:49:48,3,forage_bush,bush_12,3892,Prioritize gathering resources to sustain energy and prevent depletion.,12,13,100,100,100,100,0,0,25,walk_to,,1/3
+2026-04-26T21:49:53,3,wander_e,,3522,Drink from river to reduce thirst as per today's plan step 3,14.53,11.6,100,99.9,99.9,99.4,0,0,25,walk_to,berry,2/3
+2026-04-26T21:50:01,3,wander_n,,2616,Drink from river to satisfy thirst before exploring,17,12,100,99.7,99.8,99.2,0,0,25,walk_to,berry,2/3
+2026-04-26T21:50:06,3,wander_e,,2678,Drink from river to reduce thirst and prepare for exploration,17,6,100,99.4,99.5,98.6,0,0,25,walk_to,berry,2/3
+2026-04-26T21:50:12,3,wander_se,,2485,Drink from river to reduce thirst before exploring further,20,6,100,99.3,99.4,98.3,0,0,25,walk_to,berry,2/3
+2026-04-26T21:50:18,3,wander_s,,3132,"Thirst is already hydrated, but need to drink river to reduce it per plan",22,8,100,99.1,99.3,97.9,0,0,25,walk_to,berry,2/3
+2026-04-26T21:50:24,3,wander_n,,2801,"Thirst is maximized, but plan requires drinking from river to proceed",22,18,100,98.6,98.9,96.9,0,0,25,walk_to,berry,2/3
+2026-04-26T21:50:31,3,wander_nw,,2779,"Drink from river to reduce thirst, aligns with subgoal 3",22,8,100,98.0,97.1,93.8,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:50:37,3,wander_se,,2828,"Drink from river to reduce thirst as per plan, ensuring survival pressure is met",20,6,100,97.8,96.9,93.4,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:50:47,3,wander_nw,,2379,Drink from river to satisfy thirst and prepare for exploration,22,8,100,97.6,96.7,93.0,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:50:52,3,wander_se,,2669,Drink from river to reduce thirst before exploring new area,20,6,100,97.4,96.6,92.6,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:50:57,3,wander_nw,,2598,Drink from river to reduce thirst before exploring further,22,8,100,97.2,96.4,92.2,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:51:02,3,wander_se,,2552,Drink from river to reduce thirst before exploring further,20,6,100,97.0,96.3,91.8,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:51:08,3,wander_nw,,3104,"Thirst is near full, but drinking ensures hydration before exploring.",22,8,100,96.8,96.1,91.4,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:51:12,3,wander_se,,2684,"Thirst is slightly low, need to drink to maintain hydration.",20,6,100,96.6,95.9,91.0,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:51:20,3,wander_nw,,2675,Drink from river to satisfy thirst and prepare for exploration,22,8,100,96.4,95.8,90.6,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:51:25,3,wander_se,,2591,Drink from river to satisfy thirst and prepare for exploration,20,6,100,96.2,95.6,90.2,0,3.6,22,walk_to,berry,2/3
+2026-04-26T21:51:33,3,wander_nw,,2425,Drink from river to reduce thirst before exploring further,22,8,100,95.9,93.6,86.8,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:51:38,3,wander_se,,2565,Drink from river to satisfy thirst before exploring further,20,6,100,95.7,93.5,86.4,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:51:49,3,wander_nw,,2709,Drink from river to reduce thirst before exploring unexplored_area,22,8,100,95.5,93.3,86.0,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:51:54,3,wander_se,,2698,Drink from river to reduce thirst before exploring unexplored area,20,6,100,95.3,93.2,85.6,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:52:02,3,wander_nw,,2636,Thirst is slightly high; drink from river to maintain hydration.,22,8,100,95.1,93.0,85.2,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:52:07,3,wander_se,,2735,Drink from river to reduce thirst before exploring unexplored area,20,6,100,94.9,92.8,84.8,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:52:15,3,wander_nw,,2686,"Drink from river to reduce thirst as per plan, ensuring hydration for exploration",22,8,100,94.7,92.7,84.4,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:52:23,3,wander_se,,2879,"Drink from river to reduce thirst as per plan, prioritizing survival pressure",20,6,100,94.5,92.5,84.0,0,6.6,30,walk_to,berry,2/3
+2026-04-26T21:52:36,3,wander_sw,,3248,"Thirst is high, need to drink to maintain hydration.",27,8,100,93.9,90.3,80.1,0,9.6,30,walk_to,berry,2/3
+2026-04-26T21:53:11,3,wander_sw,,2821,Drink from river to reduce thirst before exploring unexplored area,22,18,100,92.8,89.5,77.9,0,9.6,30,walk_to,berry,2/3
+2026-04-26T21:53:18,3,wander_e,,3537,"Thirst is high, need to drink from river to stay hydrated",18,22,100,92.5,89.2,77.3,0,9.6,30,walk_to,berry,2/3
+2026-04-26T21:54:38,3,drink_river,,2557,Drink from river to reduce thirst before exploring,21,27,100,90.1,83.8,66.8,0,15.6,30,walk_to,berry,2/3
+2026-04-26T21:54:49,3,sleep,,2456,"Thirst is fully hydrated, but energy is moderate. Prioritize replenishing energy.",27.43,8.56,100,89.1,100,65.3,0,15.6,30,sleep,berry,3/3
+2026-04-26T21:56:37,3,pee_now,,2615,"Bladder is mild, so defecate to reduce pressure and conserve energy.",27.43,8.56,100,88.9,97.2,93.3,0,22.8,22,walk_to,berry,3/3
+2026-04-26T21:56:44,3,eat_berry_inv,,2567,"Hunger is high, need to eat to maintain fullness.",26.73,9.74,100,88.8,97.1,93.0,0,0,22,eat_berry,berry,3/3
+2026-04-26T21:56:47,3,forage_bush,bush_9,2483,Inventory is empty; need to gather resources before exploring.,26.73,9.74,100,90.8,97.1,94.0,0,0,22,walk_to,,3/3
+2026-04-26T21:56:49,3,eat_berry_inv,,2271,Hunger is slightly low; prioritize eating to maintain energy.,25.8,8.96,100,90.7,97.1,93.6,0,0,22,eat_berry,berry,3/3
+2026-04-26T21:56:53,3,forage_bush,bush_6,2552,Prioritize gathering resources to sustain energy and avoid dehydration.,25.8,8.96,100,92.7,97.1,94.6,0,0,22,walk_to,,3/3
+2026-04-26T21:56:58,3,forage_bush,bush_16,2799,Prioritize gathering more berries to sustain energy and hunger before exploring.,21.55,8.58,100,92.5,96.9,93.7,0,0,22,walk_to,berry,3/3
+2026-04-26T21:57:03,3,forage_bush,bush_14,2735,Prioritize gathering resources to sustain energy and avoid depletion.,19.47,12.4,100,92.3,96.7,93.0,0,0,22,walk_to,berry|berry,3/3
+2026-04-26T21:57:06,3,forage_bush,bush_7,2104,Hunger and energy are stable; prioritize gathering resources for long-term survival.,18.64,11.52,100,92.2,96.7,92.6,0,0,22,walk_to,berry|berry|berry,3/3
+2026-04-26T21:57:11,3,eat_berry_inv,,2674,"Hunger is high, need to eat berries to sustain energy and prevent depletion.",15.64,9.48,100,92.0,96.5,91.9,0,0,22,eat_berry,berry|berry|berry|berry,3/3
+2026-04-26T21:57:16,3,eat_berry_inv,,2429,"Hunger is high, need to eat berries to maintain fullness.",15.64,9.48,100,94.0,96.5,92.9,0,0,22,eat_berry,berry|berry|berry,3/3
+2026-04-26T21:57:20,3,forage_bush,bush_5,2785,"Hunger is nearly full, but need to replenish energy and gather resources.",15.64,9.48,100,96.0,96.5,93.9,0,0,22,walk_to,berry|berry,3/3
+2026-04-26T21:57:25,3,sleep,,2897,"Hunger is nearly full, but energy is high; prioritize replenishing energy through rest or food.",13.95,6.8,100,95.8,96.4,93.2,0,0,22,sleep,berry|berry|berry,3/3
+2026-04-26T21:57:29,3,wander_w,,2990,"Hunger is nearly full, but need to replenish energy before exploring.",13.95,6.8,100,95.8,96.4,93.2,0,0,22,walk_to,berry|berry|berry,3/3
+2026-04-26T21:57:34,3,wander_s,,3158,"Hunger is nearly full, but need to replenish energy and gather resources for exploration.",9,7,100,95.6,96.2,92.7,0,0,22,walk_to,berry|berry|berry,3/3
+2026-04-26T21:57:39,3,wander_n,,3434,"Hunger is full, thirst is hydrated, energy is fresh, so prioritize exploring unexplored areas.",9,10,100,95.3,94.6,90.3,0,3.6,22,walk_to,berry|berry|berry,3/3
+2026-04-26T21:57:45,3,forage_bush,bush_21,3037,Hunger and energy are high; foraging bushes provides sustenance without risk.,9,4,100,95.0,94.4,89.7,0,3.6,22,walk_to,berry|berry|berry,3/3
+2026-04-26T21:58:00,3,forage_bush,bush_31,3031,"Hunger and energy are stable, but need to replenish inventory for future gathering.",23.22,19.81,100,93.9,93.5,87.3,0,3.6,22,walk_to,berry|berry|berry|berry,3/3
+2026-04-26T21:58:07,3,forage_bush,bush_32,2370,Prioritize gathering berries to sustain energy and prevent hunger depletion,17.55,28.42,100,93.4,93.1,85.9,0,3.6,22,walk_to,berry|berry|berry|berry|berry,3/3
+2026-04-26T21:58:14,3,forage_bush,bush_11,2937,Prioritize gathering resources to sustain energy and avoid depletion.,24.77,28.23,100,93.1,92.8,84.9,0,3.6,22,walk_to,berry|berry|berry|berry|berry|berry,3/3
+2026-04-26T21:58:29,3,forage_bush,bush_15,3214,Prioritize gathering berries to maintain energy and hunger while preparing to explore.,34.23,10.23,100,92.0,92.0,82.5,0,3.6,22,walk_to,berry|berry|berry|berry|berry|berry|berry,3/3
+2026-04-26T21:58:32,3,wander_n,,2624,"Hunger is full, but energy is fresh; prioritize gathering resources for survival.",32.29,11.62,100,91.9,91.9,81.9,0,3.6,22,walk_to,berry|berry|berry|berry|berry|berry|berry|berry,3/3
+2026-04-26T21:58:37,3,wander_e,,3747,"Hunger is full, thirst is hydrated, energy is fresh. Prioritize gathering resources for long-term survival.",32,9,100,91.6,90.4,79.6,0,7.2,22,walk_to,berry|berry|berry|berry|berry|berry|berry|berry,3/3
+2026-04-26T21:58:43,3,eat_berry_inv,,2903,"Hunger is high, but energy is moderate; prioritize replenishing energy.",39,9,100,91.3,90.1,78.9,0,7.2,22,eat_berry,berry|berry|berry|berry|berry|berry|berry|berry,3/3
+2026-04-26T21:58:47,3,sleep,,2595,"Hunger is full, but energy is moderate. Prioritize rest to maintain stamina.",39,9,100,93.3,90.1,79.9,0,7.2,22,sleep,berry|berry|berry|berry|berry|berry|berry,3/3
+2026-04-26T22:00:02,3,eat_berry_inv,,2772,Study lessons to gather berries for inventory before exploring,39,9,100,93.2,88.7,93.9,0,10.8,22,eat_berry,berry|berry|berry|berry|berry|berry|berry,0/4
+2026-04-26T22:00:05,3,drink_river,,2469,"Thirst is high, need to drink river to stay hydrated",39,9,100,95.2,88.7,94.9,0,10.8,22,walk_to,berry|berry|berry|berry|berry|berry,1/4
+2026-04-26T22:00:10,3,pickup_wood,wood_1777210106057,3046,Prioritize gathering wood via shaking tree to advance subgoal,37.06,7.8,100,95.1,100,95.1,0,10.8,22,walk_to,berry|berry|berry|berry|berry|berry,2/4
+2026-04-26T22:00:15,3,pickup_wood,,3031,Need to shake tree for wood to complete subgoal,37.05,12.2,100,94.8,99.8,94.4,0,10.8,22,walk_to,berry|berry|berry|berry|berry|berry|wood,2/4
+2026-04-26T22:00:19,3,pickup_wood,,2886,Prioritize gathering wood to advance subgoal and maintain health,35.95,12.19,100,94.8,99.8,94.0,0,10.8,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood,2/4
+2026-04-26T22:00:25,3,wander_se,,2292,"Need wood to complete subgoal, prioritize shaking trees for wood.",36.03,14.05,100,94.7,99.7,93.5,0,10.8,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood,2/4
+2026-04-26T22:00:45,3,wander_se,,2771,Need to gather wood to complete subgoal 3 before exploring unexplored_area,33,17,100,94.1,99.3,92.4,0,10.8,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood,2/4
+2026-04-26T22:01:01,3,stay,,2480,"Need wood for plan step 3, but inventory already has 3 wood.",38.93,23.19,100,93.5,97.4,89.2,0,14.4,22,rest,berry|berry|berry|berry|berry|berry|wood|wood|wood,2/4
+2026-04-26T22:01:17,3,pickup_wood,,2578,Prioritize gathering wood via shaking tree to advance subgoal,38.93,23.19,100,93.5,97.4,89.2,0,14.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood,2/4
+2026-04-26T22:01:22,3,pickup_wood,,2984,Need to gather wood via shaking tree to complete subgoal,38.23,20.95,100,93.4,97.3,88.7,0,14.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood,2/4
+2026-04-26T22:01:26,3,pickup_wood,,2952,Shake tree for wood to advance subgoal and gather resources,36.77,19.9,100,93.3,97.2,88.2,0,14.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:01:30,3,pickup_wood,,2861,Prioritize gathering wood via tree shake to advance subgoal,37.75,19.22,100,93.2,97.2,87.7,0,14.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:01:34,3,pickup_wood,,3122,Need to gather wood via shaking tree to complete subgoal,39.0,20.17,100,93.1,97.1,87.2,0,14.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:01:41,3,wander_sw,,2783,Prioritize gathering wood via shaking trees to advance subgoal,39.12,17.09,100,92.9,97.0,86.6,0,14.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:01:48,3,stay,,2627,"Need to gather wood as per plan, but current inventory already has sufficient wood.",32,24,100,92.4,96.6,85.6,0,14.4,22,rest,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:02:18,3,wander_n,,3119,"Need wood for plan step 3, but inventory already has 8 wood.",32,24,100,92.4,96.2,89.1,0,15.5,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:02:24,3,wander_s,,2932,Need to shake tree for wood to advance subgoal,32,18,100,92.1,95.9,88.5,0,15.5,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:02:34,3,sleep,,2559,"Need to gather wood for subgoal 3, but energy is low from continuous picking.",32,25,100,91.7,95.6,87.8,0,15.5,22,sleep,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:03:19,3,wander_e,,3070,"Need to gather wood for subgoal 3, but current inventory already has 8 wood.",32,25,100,91.6,94.2,100,0,19.1,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:03:23,3,wander_sw,,2723,Need to shake tree for wood to complete subgoal,36,25,100,91.4,94.1,99.6,0,19.1,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:03:42,3,wander_n,,2873,Prioritize gathering wood to complete subgoal while maintaining health and energy.,39,22,100,90.7,92.2,96.3,0,22.7,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:03:52,3,wander_s,,2692,"Need to gather wood for subgoal 3, but must prioritize survival stats first.",39,17,100,90.5,92.0,95.8,0,22.7,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:04:24,3,wander_n,,3512,"Need wood for subgoal, but current inventory already has 8 wood.",39,23,100,88.9,88.2,89.0,0,29.9,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:04:29,3,wander_s,,2645,Need to shake tree for wood to advance subgoal,39,17,100,88.6,87.9,88.4,0,29.9,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:04:43,3,wander_s,,2789,Prioritize shaking tree for wood to advance subgoal 3,39,17,100,87.9,85.6,84.2,0,32.9,30,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:05:37,3,wander_s,,3461,"Prioritize gathering wood for subgoal, as inventory lacks wood despite recent pickups.",26,19,100,85.8,80.4,74.2,0,38.9,30,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:07:32,3,pee_now,,2964,"Bladder is rising, prioritize relieving it before proceeding.",15.74,29.1,100,82.5,68.6,49.0,0,56.9,24,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:07:57,3,wander_s,,3473,Prioritize completing subgoal 3 by shaking tree for wood to gather resource.,12,27,100,82.0,66.9,44.6,0,3,24,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:08:28,3,wander_w,,2999,Prioritize completing step 3 by shaking tree for wood to advance exploration plan,7,20,100,80.8,64.7,33.2,0,4.8,16,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:08:38,3,forage_bush,bush_29,3072,Need to shake tree for wood to complete subgoal,1,20,100,80.5,64.4,32.6,0,4.8,16,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T22:09:09,3,drink_river,,3419,Drink to reduce thirst before resting to prioritize health and prepare for exploration,3,22,100,79.4,62.2,20.9,0,6.6,16,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,0/4
+2026-04-26T22:09:24,3,sleep,,3342,"Energy is low; resting regenerates it, advancing subgoal 2.",17.93,5.8,100,77.9,85.4,14.1,0,7.5,16,sleep,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,1/4
+2026-04-26T22:11:11,3,drink_river,,3586,"Energy is high, but thirst is moderate; prioritize drinking to align with plan step 2.",10,16,100,76.3,79.4,93.7,0,17.4,22,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,2/4
+2026-04-26T22:12:24,3,sleep,,3475,"Hunger is moderate, but thirst is already high; prioritize rest for energy and prepare for exploration.",13.27,4.75,100,74.0,93.4,81.9,0,31.8,22,sleep,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,2/4
+2026-04-26T22:13:46,3,drink_river,,3355,"Current thirst is 85, need to drink to maintain hydration",16,5,100,72.5,85.3,89.8,0,43.8,30,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,2/4
+2026-04-26T22:14:25,3,shake_tree,tree_87,3239,Shaking tree for wood advances subgoal 3 and prepares for exploration,6,13,100,71.2,95.5,82.1,0,49.8,30,walk_to,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,2/4
+2026-04-26T22:14:29,3,eat_berry_inv,,3358,"Hunger is moderate, but priority is to eat fruit for 80 hunger as per plan",6.86,12.79,100,71.1,95.4,80.0,0,49.8,30,eat_berry,berry|berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,3/4
+2026-04-26T22:14:33,3,eat_berry_inv,,3298,"Hunger is 73, need to eat fruit to reach 80 as per plan.",6.86,12.79,100,73.1,95.4,81.0,0,49.8,30,eat_berry,berry|berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,3/4
+2026-04-26T22:14:37,3,eat_berry_inv,,3360,"Hunger is moderate, but energy is high; prioritize eating fruit to reach 80 hunger.",6.86,12.79,100,75.1,95.4,82.0,0,49.8,30,eat_berry,berry|berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,3/4
+2026-04-26T22:14:44,3,eat_berry_inv,,3309,"Hunger is moderate, but energy is high; prioritize eating to reach 80 hunger.",6.86,12.79,100,77.0,94.0,79.4,0,52.8,24,eat_berry,berry|berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,3/4
+2026-04-26T22:14:48,3,eat_berry_inv,,3482,"Hunger is at 79, need to eat fruit to reach 80 for subgoal completion",6.86,12.79,100,79.0,94.0,80.4,0,52.8,24,eat_berry,berry|berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,4/4
+2026-04-26T22:14:51,3,pee_now,,2894,"Bladder is rising, must relieve before it reaches urgent.",6.86,12.79,100,81.0,94.0,81.4,0,52.8,24,walk_to,berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,4/4
+2026-04-26T22:14:55,3,eat_berry_inv,,2957,Prioritize resource gathering to sustain energy and avoid depletion,6.87,12.99,100,81.0,94.0,81.1,0,0,24,eat_berry,berry|wood|wood|wood|wood|wood|wood|wood|wood|berry,4/4
+2026-04-26T22:15:00,3,eat_berry_inv,,3233,Prioritize gathering resources to sustain energy and avoid depletion.,6.87,12.99,100,83.0,94.0,82.1,0,0,24,eat_berry,wood|wood|wood|wood|wood|wood|wood|wood|berry,4/4
+2026-04-26T22:15:03,3,sleep,,2923,Prioritize rest to recover energy and prepare for resource gathering.,6.87,12.99,100,84.9,92.6,79.5,0,3,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:15:23,3,pickup_wood,,3252,Prioritize gathering resources to sustain energy and prepare for exploration.,6.87,12.99,100,84.8,91.2,91.5,0,6,24,pickup_wood,wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:15:28,3,drink_river,,3649,"Bladder is low, but hunger and thirst are high; prioritize hydration and rest.",6.87,12.99,100,84.8,91.2,91.2,0,6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:15:39,3,pickup_wood,,4019,Prioritize gathering resources to sustain energy and meet survival goals,14.86,4.79,100,84.0,100,90.0,0,6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:15:44,3,shake_tree,tree_66,2662,Prioritize gathering resources to sustain energy and meet survival goals.,17.81,8.04,100,83.6,98.4,85.7,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:15:56,3,sleep,,3416,"Bladder is low, but energy and thirst are high; prioritize rest to maintain health.",2.37,9.71,100,82.8,97.8,82.1,0,9,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:03,3,drink_river,,3370,Prioritize gathering resources to sustain energy and avoid dehydration.,2.37,9.71,100,82.7,96.9,99.8,0,9.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:13,3,sleep,,3575,"Bladder is low, but health is sacred; prioritize rest to maintain energy and avoid dehydration.",13.13,4.79,100,82.0,100,98.9,0,9.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:17,3,drink_river,,3522,Prioritize replenishing energy and maintaining hydration with nearby resources.,13.13,4.79,100,82.0,100,98.9,0,9.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:24,3,sleep,,3212,"Prioritize rest to maintain energy and health, as recent actions show energy fluctuations.",13.52,4.6,100,81.7,100,94.3,0,10.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:28,3,wander_sw,,3769,Prioritize resource gathering to sustain energy and avoid dehydration,13.52,4.6,100,81.7,100,94.3,0,10.8,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:35,3,sleep,,3469,"Bladder is low, but energy and health are high; prioritize rest or hydration.",9,10,100,81.4,99.7,93.6,0,10.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:16:39,3,sleep,,3347,"Prioritize rest to maintain energy and health, as sleep regenerates energy safely.",9,10,100,81.4,99.7,93.6,0,10.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T22:17:06,3,sleep,,4106,"Energy is high, but thirst is nearly full. Prioritize resting to prepare for exploration.",9,4,100,80.7,97.8,94.2,0,12.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:17:12,3,drink_river,,4367,"Energy is nearly full, but thirst is high; prioritize drinking to stay hydrated.",9,4,100,80.7,97.8,94.2,0,12.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:17:16,3,sleep,,3793,"Energy is nearly full, but thirst is fully hydrated. Prioritize rest to prepare for exploration.",8.79,3.77,100,80.6,100,94.6,0,12.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:17:20,3,sleep,,4219,"Energy is high, but thirst is fully hydrated. Prioritize rest to fully regenerate energy.",8.79,3.77,100,80.4,99.2,89.6,0,13.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:17:43,3,drink_river,,3429,"Energy is full, but thirst is high; prioritize drinking to maintain hydration.",8.79,3.77,100,80.2,98.3,99.8,0,14.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:17:48,3,drink_river,,3804,"Energy is full, thirst is high, need to drink to stay hydrated",8.56,3.67,100,80.2,100,100,0,14.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:17:55,3,drink_river,,3427,"Energy is fully restored, focus on quenching thirst before exploring.",8.84,3.78,100,80.2,100,100,0,14.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:02,3,drink_river,,3747,"Energy is fully regenerated, prioritize quenching thirst before exploration",9.05,3.8,100,80.0,99.2,95,0,15.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:06,3,sleep,,3441,"Energy is near full, but thirst is fully hydrated. Prioritize rest to prepare for exploration.",9.6,3.53,100,79.9,100,95.4,0,15.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:10,3,sleep,,3343,"Energy is nearly full, but need to rest to reach 100 for subgoal completion",9.6,3.53,100,79.9,100,95.4,0,15.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:14,3,sleep,,3626,"Energy is nearly full, but thirst is fully hydrated. Prioritize rest to prepare for exploration.",9.6,3.53,100,79.9,100,95.4,0,15.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:19,3,wander_sw,,4001,"Energy is nearly full, but thirst is fully replenished. Prioritize gathering wood for exploration.",9.6,3.53,100,79.9,100,95.4,0,15.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:24,3,sleep,,3489,"Energy is high, but thirst is nearly full. Prioritize resting to fully regenerate energy.",8,6,100,79.5,99.0,90.1,0,16.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:28,3,sleep,,3415,"Energy is high, but thirst is near full. Prioritize rest and gathering wood.",8,6,100,79.5,99.0,90.1,0,16.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:34,3,sleep,,2953,Prioritize resting to fully regenerate energy before gathering resources,8,6,100,79.5,99.0,90.1,0,16.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:39,3,sleep,,3787,"Energy is high, but thirst is near full; prioritize rest and gather resources.",8,6,100,79.5,99.0,90.1,0,16.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:44,3,drink_river,,4165,"Thirst is high, need to drink to maintain hydration.",8,6,100,79.4,97.6,100,0,19.8,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:47,3,sleep,,2681,Prioritize resting to maintain energy for resource gathering and exploration,6.64,4.71,100,79.3,100,100,0,19.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:53,3,sleep,,2583,Prioritize rest to maintain energy and prepare for resource gathering,6.64,4.71,100,79.3,100,100,0,19.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:56,3,sleep,,2577,Prioritize rest to maintain energy and prepare for exploration.,6.64,4.71,100,79.3,100,100,0,19.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:18:59,3,sleep,,2673,Prioritize resting to maintain energy and prepare for resource gathering.,6.64,4.71,100,79.3,100,100,0,19.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:05,3,sleep,,2641,Prioritize resting to maintain energy for resource gathering and exploration,6.64,4.71,100,79.2,98.6,100,0,23.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:08,3,sleep,,2604,Prioritize rest to maintain energy and prepare for resource gathering.,6.64,4.71,100,79.2,98.6,100,0,23.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:11,3,sleep,,2651,Prioritize rest to maintain energy and prepare for resource gathering.,6.64,4.71,100,79.2,98.6,100,0,23.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:14,3,sleep,,2883,"Prioritize rest to maintain energy, then drink to sustain hydration.",6.64,4.71,100,79.2,98.6,100,0,23.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:19,3,drink_river,,3276,"Thirst is near 100, but energy is full and health is sacred.",6.64,4.71,100,79.2,98.6,100,0,23.4,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:23,3,drink_river,,3266,"Energy is nearly full, but thirst is still high; prioritize drinking to maintain hydration.",7.25,4.76,100,79.1,100,98.3,0,27.0,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:26,3,sleep,,2629,Prioritize resting to fully restore energy for resource gathering,6.42,4.55,100,79.0,100,98.8,0,27.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:29,3,sleep,,2940,"Energy is nearly full, but need to rest to reach 100 for exploration readiness",6.42,4.55,100,79.0,100,98.8,0,27.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:34,3,drink_river,,3343,"Energy is nearly full, but thirst is fully hydrated. Prioritize gathering wood for exploration.",6.42,4.55,100,79.0,100,98.8,0,27.0,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:41,3,drink_river,,3461,"Energy is nearly full, but thirst is fully hydrated. Prioritize gathering wood for exploration.",5.22,5.77,100,78.8,98.6,97.0,0,30.6,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:45,3,sleep,,2557,Prioritize resting to fully regenerate energy for exploration preparation,5.17,5.78,100,78.8,100,97.5,0,30.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:48,3,sleep,,2899,"Energy is near full, but thirst is fully hydrated. Prioritize rest to prepare for exploration.",5.17,5.78,100,78.8,100,97.5,0,30.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:52,3,sleep,,2845,"Energy is nearly full, but thirst is fully hydrated. Prioritize rest to prepare for exploration.",5.17,5.78,100,78.8,100,97.5,0,30.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:19:56,3,sleep,,3137,"Energy is near max, but thirst is fully hydrated. Prioritize rest to meet subgoal 1.",5.17,5.78,100,78.8,100,97.5,0,30.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:00,3,sleep,,2525,Prioritize resting to fully restore energy for resource gathering,5.17,5.78,100,78.8,100,97.5,0,30.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:03,3,drink_river,,3260,"Prioritize rest and hydration to prepare for exploration, as thirst remains high and energy is already full.",4.81,5.78,100,78.7,98.6,100.0,0,34.2,22,drink,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:06,3,sleep,,2664,"Prioritize rest to maintain energy, then drink to sustain hydration.",4.81,5.78,100,78.7,100,100,0,34.2,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:14,3,drink_river,,4043,"Energy is full, thirst is hydrated, hunger is moderate. Prioritize gathering wood for exploration.",4.81,5.78,100,78.7,100,100,0,34.2,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:18,3,sleep,,2992,Prioritize rest to regenerate energy and prepare for exploration,5.43,5.67,100,78.7,100,100,0,34.2,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:22,3,sleep,,2952,"Prioritize rest to maintain energy, then drink to sustain hydration.",5.43,5.67,100,78.6,98.6,97.9,0,37.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:26,3,drink_river,,3189,"Energy is near full, but thirst remains high; prioritize drinking to maintain hydration.",5.43,5.67,100,78.6,98.6,97.9,0,37.8,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:29,3,sleep,,2500,Prioritize rest to fully regenerate energy for resource gathering,5.54,5.59,100,78.5,100,98.4,0,37.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:33,3,sleep,,2841,"Energy is near max, but thirst is fully hydrated. Prioritize rest to fully regenerate energy.",5.54,5.59,100,78.5,100,98.4,0,37.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:37,3,drink_river,,3164,"Energy is nearly full, but thirst is fully hydrated, so prioritize gathering wood for exploration.",5.54,5.59,100,78.5,100,98.4,0,37.8,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:44,3,drink_river,,3149,"Energy is nearly full, but thirst is still high; prioritize drinking to maintain hydration.",7.66,4.45,100,78.3,98.2,95.6,0,40.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:47,3,sleep,,2882,"Energy is high, but thirst is fully hydrated. Prioritize rest to prepare for exploration.",7.35,4.72,100,78.3,100,96.1,0,40.8,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:51,3,sleep,,2873,"Energy is high, but thirst is fully hydrated; prioritize rest to prepare for exploration.",7.35,4.72,100,78.3,100,96.1,0,40.8,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:20:56,3,wander_e,,3525,"Energy is nearly full, but thirst is fully hydrated. Prioritize gathering wood for exploration.",7.35,4.72,100,78.3,100,96.1,0,40.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:03,3,drink_river,,3722,"Energy is high, but thirst is near 100. Prioritize drinking to meet plan goal 2.",16,5,100,77.8,97.8,92.2,0,43.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:07,3,drink_river,,3449,"Energy is nearly full, but thirst is still high; prioritize drinking to meet subgoal 2.",15.82,4.78,100,77.8,100,92.7,0,43.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:11,3,drink_river,,3423,"Energy is nearly full, but thirst is still high; prioritize drinking to meet subgoal 2.",16.44,4.67,100,77.7,100,93.1,0,43.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:17,3,sleep,,2668,Prioritize regenerating energy and preparing for exploration by resting.,15.57,4.68,100,77.7,100,93.6,0,43.8,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:21,3,wander_sw,,3481,"Energy is nearly full, but thirst is fully hydrated. Prioritize gathering wood for exploration.",15.57,4.68,100,77.6,98.2,90.6,0,46.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:28,3,sleep,,3177,"Energy is high, but thirst is nearly full. Prioritize rest and gather resources.",10,11,100,77.1,97.8,89.6,0,46.8,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:43,3,drink_river,,3407,"Energy is nearly full, but thirst remains high; prioritize drinking to meet subgoal 2.",10,11,100,77.0,96.0,97.6,0,49.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:53,3,drink_river,,3593,"Energy is nearly full, but thirst is still high; prioritize drinking to maintain hydration.",13.61,4.51,100,76.7,100,97.4,0,49.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:21:57,3,wander_se,,3722,"Energy is nearly full, but thirst is fully quenched; prioritize gathering wood for exploration.",14.36,4.71,100,76.6,100,97.8,0,49.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:02,3,drink_river,,3427,"Energy is nearly full, but thirst is high; prioritize drinking to maintain hydration.",17,8,100,76.3,98.0,94.4,0,52.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:07,3,pee_now,,2878,Bladder is rising; prioritize relieving it before it becomes urgent.,18.26,5.76,100,76.2,100,94.6,0,52.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:11,3,drink_river,,3349,"Energy is nearly full, but thirst is high; prioritize drinking to maintain hydration.",18.01,7.93,100,76.1,99.9,94.2,0,0,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:16,3,drink_river,,3480,"Energy is high, but thirst is fully hydrated. Prioritize gathering wood for exploration.",19.41,5.54,100,75.9,100,94.4,0,0,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:22,3,sleep,,2622,Prioritize resting to fully restore energy for resource gathering,19.1,5.79,100,75.8,98.2,91.9,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:26,3,drink_river,,3280,"Energy is near full, but thirst remains high; prioritize drinking to quench.",19.1,5.79,100,75.8,98.2,91.9,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:30,3,drink_river,,3213,"Energy is nearly full, but thirst is high; prioritize drinking to stay hydrated.",19.62,5.51,100,75.8,100,92.3,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:33,3,sleep,,2582,Prioritize resting to fully regenerate energy for exploration preparation,20.34,5.72,100,75.7,100,92.7,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:37,3,sleep,,3048,"Energy is nearly full, but thirst is fully hydrated. Prioritize rest to meet subgoal 1.",20.34,5.72,100,75.7,100,92.7,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:22:41,3,sleep,,2981,"Energy is near full, but thirst is fully hydrated. Prioritize rest to fully regenerate energy.",20.34,5.72,100,75.6,98.6,89.1,0,6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:03,3,drink_river,,3201,"Energy is fully restored, focus on quenching thirst before exploration",20.34,5.72,100,75.5,97.2,100,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:10,3,drink_river,,3166,"Energy is full, thirst is high, need to drink to stay hydrated",19.73,5.75,100,75.5,100,100,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:14,3,drink_river,,3240,"Energy is fully regenerated, so focus on drinking to meet subgoal 2.",19.74,5.76,100,75.5,100,100,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:21,3,drink_river,,2997,"Energy is full, thirst is hydrated, hunger needs attention",19.43,5.56,100,75.4,98.6,96.4,0,12,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:29,3,drink_river,,3479,"Energy is nearly full, but thirst is still high; prioritize drinking to meet plan goal 2.",19.52,5.6,100,75.4,100,96.9,0,12,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:32,3,sleep,,2794,"Energy is nearly full, but need to rest to fully regenerate before exploring.",20.48,5.64,100,75.3,100,97.3,0,12,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:37,3,drink_river,,3602,"Energy is nearly full, but thirst is still high; prioritize drinking to meet plan goal 2",20.48,5.64,100,75.3,100,97.3,0,12,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:40,3,drink_river,,3271,"Energy is nearly full, but thirst is still high; prioritize drinking to quench.",19.94,5.8,100,75.2,98.6,94.1,0,15,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:45,3,drink_river,,3459,"Energy is nearly full, but thirst is still high; prioritize drinking to meet plan goal 2.",19.85,5.79,100,75.2,100,94.6,0,15,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:48,3,sleep,,2573,Prioritize rest to fully regenerate energy for exploration preparation,20.22,5.77,100,75.2,100,95.1,0,15,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:51,3,sleep,,2759,"Energy is nearly full, but need to rest to ensure full regeneration before exploration.",20.22,5.77,100,75.2,100,95.1,0,15,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:23:55,3,sleep,,3194,"Energy is near full, but thirst is fully hydrated; prioritize rest to complete subgoal 1.",20.22,5.77,100,75.2,100,95.1,0,15,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:02,3,drink_river,,3374,"Energy is nearly full, but thirst remains high; prioritize drinking to meet subgoal 2.",20.22,5.77,100,74.9,99.2,90.1,0,15.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:06,3,drink_river,,3378,"Energy is high, but thirst is fully replenished. Prioritize gathering wood for exploration.",20.11,5.79,100,74.9,100,90.6,0,15.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:10,3,drink_river,,3199,"Energy is nearly full, but thirst is still rising from frequent river drinking.",19.55,5.66,100,74.9,100,91.0,0,15.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:14,3,drink_river,,3435,"Energy is high, but thirst is fully hydrated. Prioritize gathering wood for exploration.",19.61,5.7,100,74.9,100,91.5,0,15.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:18,3,drink_river,,3336,"Energy is high, but thirst is fully hydrated; prioritize gathering wood for exploration.",20.33,5.73,100,74.8,100,91.9,0,15.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:22,3,wander_se,,3591,"Energy is near full, thirst is fully hydrated, so prioritize gathering wood for exploration.",19.71,5.75,100,74.6,99.2,87.4,0,16.8,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:28,3,drink_river,,3435,"Energy is fresh, but thirst remains high; prioritize drinking to stay hydrated.",22,8,100,74.4,99.0,87.0,0,16.8,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:35,3,wander_w,,3345,"Energy is high, but thirst is fully replenished; focus on gathering wood for exploration.",22.31,6.74,100,74.3,100,87.3,0,16.8,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:24:43,3,sleep,,3034,Prioritize resting to fully restore energy for resource gathering,12,7,100,73.5,98.7,81.3,0,17.7,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:25:08,3,drink_river,,5749,"Energy is already full, focus on drinking to maintain hydration and prepare for gathering.",12,7,100,73.4,97.9,99.8,0,18.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:13,3,drink_river,,3550,"Energy is full, thirst is hydrated, focus on gathering resources for exploration",12.62,4.71,100,73.3,100,100,0,18.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:16,3,sleep,,2877,"Energy is full, so prioritize rest to meet subgoal energy >=80",13.29,4.74,100,73.2,100,100,0,18.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:21,3,drink_river,,3463,"Energy is full, so rest is not needed. Prioritize gathering resources for exploration.",13.29,4.74,100,73.0,99.2,95,0,19.5,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:25,3,drink_river,,3224,"Energy is already high, focus on hydrating and gathering fruit for exploration",12.76,4.76,100,72.9,100,95.4,0,19.5,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:28,3,sleep,,2885,"Energy is near full, but need to rest to reach 80 for subgoal",12.66,4.73,100,72.9,100,95.9,0,19.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:33,3,sleep,,3344,"Energy is high, but thirst is managed. Prioritize rest to meet subgoal energy >= 80.",12.66,4.73,100,72.9,100,95.9,0,19.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:39,3,sleep,,3047,"Energy is high, but need to rest to meet subgoal energy >= 80",12.66,4.73,100,72.9,100,95.9,0,19.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:43,3,drink_river,,3230,"Energy is full, focus on hydrating and gathering fruit for exploration",12.66,4.73,100,72.8,99.2,99.8,0,20.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:47,3,drink_river,,3362,"Energy is full, so rest is not needed. Focus on gathering resources for exploration.",13.44,4.67,100,72.7,100,100,0,20.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:55,3,sleep,,3186,"Energy is full, thirst is hydrated, hunger moderate; prioritize rest to meet subgoal energy >=80",13.46,4.65,100,72.7,100,100,0,20.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:25:59,3,pee_now,,3260,"Energy is full, thirst is hydrated, focus on reducing bladder urgency before resting",13.12,5.86,100,72.7,100.0,99.9,0,20.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:03,3,sleep,,3057,"Energy is high, but need to rest to meet subgoal energy >=80",12.79,7.02,100,72.4,99.1,94.6,0,0,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:13,3,sleep,,3195,"Energy is high, but thirst is nearly full; prioritize rest to meet subgoal energy >= 80.",12.79,7.02,100,72.4,99.1,94.6,0,0,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:17,3,sleep,,2918,"Energy is near max, so rest to ensure readiness for gathering resources.",12.79,7.02,100,72.4,99.1,94.6,0,0,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:21,3,sleep,,3067,"Energy is high, but need to rest for subgoal 1. Drink to maintain hydration.",12.79,7.02,100,72.1,98.2,89.6,0,0.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:46,3,drink_river,,3511,"Energy is fully restored, focus on drinking to maintain hydration and gather fruit for exploration.",12.79,7.02,100,72.0,96.8,100,0,4.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:51,3,drink_river,,3557,"Energy is full, so rest is unnecessary; focus on gathering resources for exploration.",12.59,4.69,100,71.9,100,100,0,4.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:55,3,drink_river,,3093,Energy is fully restored; prioritize gathering resources for exploration.,13.62,4.5,100,71.8,100,100,0,4.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:26:59,3,drink_river,,3272,"Energy is fully restored, focus on drinking to maintain hydration and gather fruit.",14.12,4.79,100,71.8,100,100,0,4.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:07,3,drink_river,,3121,Energy is already high; focus on gathering resources for exploration.,13.57,4.67,100,71.7,100,98.3,0,8.1,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:11,3,drink_river,,3315,"Energy is already high, focus on drinking to maintain hydration and prepare for gathering.",13.52,4.64,100,71.7,100,98.8,0,8.1,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:18,3,drink_river,,3302,"Energy is already high, focus on maintaining hydration and preparing for exploration.",14.43,4.68,100,71.6,100,99.2,0,8.1,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:22,3,drink_river,,3168,"Energy is full, thirst is hydrated, hunger needs attention",14.58,4.55,100,71.5,98.6,97.6,0,11.7,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:29,3,drink_river,,3233,"Energy is already high, focus on restoring thirst before gathering resources",15.29,4.74,100,71.5,100,98.1,0,11.7,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:33,3,drink_river,,3285,"Energy is already high, so focus on gathering resources for exploration.",15.57,4.57,100,71.5,100,98.5,0,11.7,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:44,3,drink_river,,3604,"Energy is already high, focus on hydrating and gathering fruit for exploration",15,8,100,71.2,98.5,96.6,0,15.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:27:52,3,sleep,,3102,"Energy is already high, focus on completing rest subgoal before gathering resources",16.43,5.56,100,71.0,100,96.8,0,15.3,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:03,3,sleep,,2950,"Energy is near max, but need to rest to reach 80 for subgoal",14.46,4.59,100,70.8,98.5,94.5,0,18.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:07,3,drink_river,,3293,"Energy is sufficient, but thirst is high; prioritize drinking to maintain hydration.",14.46,4.59,100,70.8,98.5,94.5,0,18.9,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:11,3,drink_river,,3143,"Energy is already high, focus on restoring thirst before gathering resources",14.62,4.51,100,70.8,100,94.9,0,18.9,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:15,3,sleep,,2874,"Energy is high, but need to rest to meet subgoal threshold",15.36,4.71,100,70.8,100,95.4,0,18.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:22,3,drink_river,,3311,"Energy is already high, focus on restoring thirst before exploring.",15.36,4.71,100,70.6,98.6,93.3,0,22.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:26,3,sleep,,3205,"Energy is high, but need to rest to meet subgoal of 80. Drink to maintain hydration.",14.52,4.64,100,70.6,100,93.7,0,22.5,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:33,3,drink_river,,3205,"Energy is already high, focus on drinking to ensure hydration before gathering resources.",14.52,4.64,100,70.6,100,93.7,0,22.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:37,3,drink_river,,3273,"Energy is already high, focus on hydrating and gathering fruit for exploration",14.86,4.79,100,70.6,100,94.1,0,22.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:41,3,drink_river,,3228,"Energy is already high, focus on hydrating and gathering fruit for exploration",14.6,4.69,100,70.5,98.2,91.6,0,25.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:45,3,drink_river,,3311,"Energy is already high, focus on drinking to maintain hydration and prepare for gathering.",15.57,4.57,100,70.4,100,92.0,0,25.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:49,3,drink_river,,3321,Energy is already high; focus on restoring water to meet plan's drink requirement,16.42,4.68,100,70.4,100,92.4,0,25.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:28:56,3,sleep,,3147,"Energy is high, but thirst is low; prioritize rest to meet subgoal energy >=80",16.47,4.65,100,70.4,100,92.9,0,25.5,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:04,3,sleep,,3143,"Energy is high, but thirst is nearly full. Prioritize rest to meet subgoal 1.",16.47,4.65,100,70.3,98.2,89.9,0,28.5,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:26,3,drink_river,,3704,"Energy is high, but thirst is near 100; drink to maintain hydration.",16.47,4.65,100,70.2,96.4,97.9,0,31.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:30,3,drink_river,,3253,"Energy is already high, focus on hydrating and preparing for exploration",15.82,4.78,100,70.1,100,98.4,0,31.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:34,3,drink_river,,3203,"Energy is already high, focus on hydrating and preparing for exploration",16.43,4.67,100,70.1,100,98.8,0,31.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:38,3,drink_river,,3321,"Energy is already high, focus on hydrating and gathering fruit for exploration.",15.8,4.77,100,70.1,100,99.2,0,31.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:42,3,drink_river,,3252,"Energy is already max, focus on hydrating and gathering fruit for exploration",16.4,4.69,100,70.0,98.2,96.7,0,34.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:46,3,drink_river,,3214,"Energy is already high, focus on maintaining hydration and preparing for exploration",16.19,4.78,100,69.9,100,97.2,0,34.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:49,3,pee_now,,2888,"Energy is already high, focus on reducing bladder pressure before gathering resources",16.11,4.79,100,69.9,100,97.6,0,34.5,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:29:59,3,drink_river,,3183,"Energy is near max, focus on gathering resources for exploration",16.24,6.95,100,69.8,99.9,97.2,0,0,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:03,3,drink_river,,3258,"Energy is already high, focus on hydrating and gathering fruit for exploration.",17.48,5.64,100,69.6,100,94.5,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:07,3,drink_river,,3256,"Energy is already high, focus on restoring hydration and preparing for exploration.",17.46,5.65,100,69.6,100,95.0,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:11,3,drink_river,,3241,"Energy is high, focus on hydrating and gathering fruit for exploration.",16.48,5.61,100,69.6,100,95.4,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:15,3,sleep,,3116,"Energy is high, but thirst is stable. Prioritize resting to meet subgoal 1.",15.55,4.58,100,69.5,100,95.8,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:19,3,drink_river,,3218,"Energy is already high, focus on hydrating and gathering fruit for exploration",15.55,4.58,100,69.5,100,95.8,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:23,3,sleep,,2996,"Energy is near max, but need to rest to reach 80 for subgoal.",15.77,4.76,100,69.4,100,93.3,0,6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:27,3,sleep,,2884,"Energy is already high, prioritize rest to meet subgoal energy >=80",15.77,4.76,100,69.4,100,93.3,0,6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:34,3,sleep,,2802,"Energy is high, but need to rest to meet subgoal threshold",15.77,4.76,100,69.4,100,93.3,0,6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:38,3,sleep,,2983,"Energy is high, thirst is hydrated, rest is needed before gathering.",15.77,4.76,100,69.4,100,93.3,0,6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:42,3,drink_river,,3206,"Energy is already high, focus on restoring hydration and preparing for exploration",15.77,4.76,100,69.3,98.6,89.7,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:46,3,drink_river,,3291,"Energy is high, but thirst is rising. Prioritize drinking to maintain hydration.",16.05,4.8,100,69.3,100,90.2,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:30:53,3,sleep,,3029,Energy is already high; focus on meeting subgoal 1: rest until energy >=80,16.15,4.79,100,69.3,100,90.6,0,9,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:00,3,sleep,,2957,"Energy is high, but need to rest to meet subgoal of 80 energy",16.15,4.79,100,69.2,98.6,87.0,0,12,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:23,3,drink_river,,3416,"Energy is already high, focus on hydrating and gathering fruit for exploration",16.15,4.79,100,69.1,97.2,99.0,0,15,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:41,3,drink_river,,3247,"Energy is already high, focus on gathering resources for exploration",6,5,100,68.5,98.2,94.9,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:47,3,sleep,,2883,"Energy is near full, but need to rest to meet subgoal threshold",5.76,4.76,100,68.5,100,95.4,0,18,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:51,3,drink_river,,3184,"Energy is already high, focus on replenishing resources for exploration",5.76,4.76,100,68.5,100,95.4,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:55,3,drink_river,,3160,Energy is already high; focus on maintaining hydration and preparing for exploration.,5.48,5.64,100,68.4,100,95.8,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:31:59,3,drink_river,,3205,"Energy is already high, focus on hydrating and gathering fruit for exploration.",5.73,4.68,100,68.4,100,96.2,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:03,3,sleep,,2970,"Energy is near full, so rest to reach 80 for subgoal completion",5.05,4.2,100,68.1,100,91.6,0,18.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:10,3,drink_river,,3313,"Energy is already high, focus on hydrating and gathering resources for exploration",5.05,4.2,100,68.1,100,91.6,0,18.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:14,3,pee_now,,3112,Energy is already high; focus on reducing bladder pressure before rest.,5.65,4.53,100,68.0,100,92.0,0,18.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:19,3,sleep,,3014,"Energy is near full, but need to rest to meet subgoal threshold",7.86,6.07,100,67.9,99.9,91.6,0,0,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:23,3,drink_river,,3507,"Energy is full, so rest is done. Next, drink to maintain hydration and gather fruit for exploration.",7.86,6.07,100,67.8,99.1,99.8,0,0.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:28,3,sleep,,3014,"Energy is already max, prioritize rest to maintain health and prepare for gathering.",6.79,4.77,100,67.7,100,100,0,0.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:32,3,drink_river,,3238,"Energy is full, so focus on restoring hydration and preparing for exploration",6.79,4.77,100,67.7,100,100,0,0.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:32:36,3,drink_river,,3198,"Energy is full, thirst is high; prioritize drinking to maintain hydration.",6.63,4.71,100,67.7,100,100,0,0.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T22:33:05,3,sleep,,3024,Prioritize replenishing energy and preparing for exploration.,6,6,100,67.0,98.2,89.7,0,2.7,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:33:23,3,drink_river,,3089,"Thirst is high, need to replenish before exploring.",6,6,100,66.8,97.4,99.8,0,3.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:33:27,3,shake_tree,tree_64,3044,"Energy is fully restored, prioritize gathering wood for exploration readiness",7.72,4.36,100,66.7,100,100,0,3.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:33:33,3,sleep,,3394,"Energy is high, but thirst is fully replenished. Prioritize rest to meet subgoal energy >=95.",7.73,8.33,100,66.4,99.8,97.5,0,3.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:33:36,3,sleep,,2961,"Prioritize resting to maintain energy for exploration, as energy is already high but needs regeneration.",7.73,8.33,100,66.4,99.8,97.5,0,3.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:33:41,3,sleep,,3247,"Energy is fresh, thirst is full, hunger moderate. Prioritize rest to meet subgoal energy >=95.",7.73,8.33,100,66.2,99.0,92.5,0,4.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:33:45,3,sleep,,3091,"Energy is nearly full, but need to rest to meet subgoal energy >= 95",7.73,8.33,100,66.2,99.0,92.5,0,4.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:33:51,3,sleep,,2692,Prioritize resting to ensure energy is fully restored before exploring,7.73,8.33,100,66.2,99.0,92.5,0,4.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:33:54,3,drink_river,,3178,"Energy is high, but need to replenish thirst and prepare for exploration.",7.73,8.33,100,66.2,99.0,92.5,0,4.5,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:01,3,sleep,,3416,"Energy is high, but thirst is fully replenished. Prioritize rest to meet subgoal energy >=95.",11.82,4.78,100,65.7,99.2,87.4,0,5.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:24,3,sleep,,2995,Prioritize resting to regenerate energy for exploration readiness,11.82,4.78,100,65.5,98.3,99.8,0,6.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:28,3,sleep,,3028,"Prioritize rest to maintain energy for exploration, as previous sleep actions had no visible effect.",11.82,4.78,100,65.5,98.3,99.8,0,6.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:32,3,drink_river,,3115,"Energy is full, thirst is high; prioritize drinking to maintain hydration.",11.82,4.78,100,65.5,98.3,99.8,0,6.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:36,3,drink_river,,3046,"Energy is full, thirst is hydrated, hunger needs replenishment",11.31,4.41,100,65.5,100,100,0,6.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:40,3,sleep,,2849,"Prioritize resting to maintain energy for exploration, as energy is already maxed.",11.43,3.67,100,65.3,98.6,97.9,0,9.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:44,3,sleep,,3036,"Prioritize rest to maintain energy for exploration, as recent sleep had no visible effect but energy is high.",11.43,3.67,100,65.3,98.6,97.9,0,9.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:48,3,drink_river,,3325,"Energy is near max, but thirst is high; prioritize drinking to maintain hydration.",11.43,3.67,100,65.3,98.6,97.9,0,9.9,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:55,3,sleep,,3209,"Energy is high, but thirst is fully replenished. Focus on rest to meet subgoal energy >=95.",11.43,3.67,100,65.3,100,98.4,0,9.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:34:58,3,shake_tree,tree_81,2458,"Energy is high, but thirst is fully restored. Prioritize gathering wood for exploration.",11.43,3.67,100,65.3,100,98.4,0,9.9,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:05,3,sleep,,3226,"Energy is nearly full, but rest is needed to meet subgoal energy >= 95",9.53,10.4,100,64.9,98.3,93.6,0,13.5,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:09,3,sleep,,2865,"Energy is near max, but rest is needed for exploration readiness",9.53,10.4,100,64.9,98.3,93.6,0,13.5,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:13,3,sleep,,3016,"Energy is nearly full, but need to rest to meet subgoal energy >= 95",9.53,10.4,100,64.9,98.3,93.6,0,13.5,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:17,3,sleep,,3124,"Prioritize rest to maintain energy for exploration, as energy is already high but critical for survival.",9.53,10.4,100,64.9,98.3,93.6,0,13.5,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:21,3,sleep,,2927,"Energy is high, but thirst is near full. Prioritize rest to meet energy goal.",9.53,10.4,100,64.8,96.9,91.5,0,17.1,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:28,3,drink_river,,3207,"Energy is high, but thirst is rising; prioritize drinking to maintain hydration.",9.53,10.4,100,64.8,96.9,91.5,0,17.1,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:34,3,sleep,,3159,"Energy is high, but thirst is fully replenished. Prioritize rest to maintain energy for exploration.",13.25,4.76,100,64.4,100,91.3,0,17.1,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:38,3,sleep,,3071,"Energy is fresh, thirst is full, hunger moderate; prioritize rest to meet subgoal energy >=95",13.25,4.76,100,64.4,100,91.3,0,17.1,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:35:41,3,sleep,,2948,"Energy is high, but thirst is fully replenished. Prioritize rest to ensure readiness for exploration.",13.25,4.76,100,64.3,98.6,89.2,0,20.7,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:03,3,drink_river,,3386,"Energy is fully restored, so prioritize replenishing thirst and gathering resources for exploration",13.25,4.76,100,64.2,97.2,100,0,24.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:06,3,drink_river,,3076,"Energy is full, thirst is high; prioritize drinking to maintain hydration.",12.8,4.77,100,64.2,100,100,0,24.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:10,3,drink_river,,3072,"Energy is fully restored, focus on replenishing water and gathering resources",13.22,4.77,100,64.2,100,100,0,24.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:14,3,pee_now,,3013,"Energy is full, but bladder is at 24. Prioritize peeing to avoid sickness.",13.38,4.7,100,64.2,100,100,0,24.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:18,3,sleep,,3050,"Prioritize rest to maintain energy for exploration, as recent sleep had no visible effect but energy is already full.",13.0,6.85,100,64.0,99.9,99.6,0,0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:22,3,sleep,,2898,"Energy is near max, but need to rest to meet subgoal energy >= 95",13.0,6.85,100,63.9,98.5,97.5,0,3.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:26,3,drink_river,,3217,"Energy is nearly full, but thirst is high; prioritize drinking to maintain hydration.",13.0,6.85,100,63.9,98.5,97.5,0,3.6,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:33,3,shake_tree,tree_110,3131,"Energy is high, but thirst is fully restored. Focus on gathering wood for exploration.",13.15,4.79,100,63.8,100,97.8,0,3.6,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:41,3,sleep,,3224,"Energy is at 95, but recent actions show rest is needed to meet subgoal",12.8,15.97,100,63.2,97.7,91.7,0,6.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:45,3,sleep,,3001,"Energy is high, but thirst is near full. Prioritize rest to ensure safety before exploring.",12.8,15.97,100,63.2,97.7,91.7,0,6.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:49,3,sleep,,3094,"Energy is high, but thirst is near full. Prioritize rest to ensure readiness for exploration.",12.8,15.97,100,63.2,97.7,91.7,0,6.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:53,3,sleep,,2989,"Energy is high, but thirst is near full. Prioritize rest to ensure readiness for exploration.",12.8,15.97,100,63.2,97.7,91.7,0,6.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:36:57,3,drink_river,,3229,"Energy is high, but need to replenish thirst and prepare for exploration.",12.8,15.97,100,63.2,97.7,91.7,0,6.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:08,3,sleep,,3521,"Energy is high, but thirst is fully replenished. Prioritize rest to meet subgoal energy >= 95.",18.55,5.58,100,62.5,100,88.0,0,9.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:23,3,sleep,,3404,"Energy is high, but thirst is near max. Prioritize rest to meet subgoal energy >=95.",18.55,5.58,100,62.4,98.2,96.0,0,12.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:27,3,sleep,,3089,"Energy is high, but thirst is near full. Prioritize rest to meet subgoal energy >=95.",18.55,5.58,100,62.4,98.2,96.0,0,12.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:30,3,sleep,,2662,"Energy is high, but need to rest for subgoal completion",18.55,5.58,100,62.4,98.2,96.0,0,12.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:33,3,drink_river,,3180,"Energy is high, but thirst is nearly full. Prioritize replenishing hydration.",18.55,5.58,100,62.4,98.2,96.0,0,12.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:40,3,wander_sw,,2989,"Energy is high, but thirst is fully restored. Focus on gathering resources for exploration.",19.38,5.7,100,62.2,98.2,93.4,0,15.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:47,3,drink_river,,3376,"Energy is high, but thirst is rising; prioritize drinking to maintain hydration.",15,10,100,61.9,97.9,92.7,0,15.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:53,3,drink_river,,3363,"Energy is high, but thirst is rising; prioritize drinking to maintain hydration.",17.91,5.79,100,61.6,100,92.7,0,15.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:37:57,3,wander_e,,3102,"Energy is fresh, hydration is full; prioritize gathering resources for exploration",17.82,5.78,100,61.6,100,93.2,0,15.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:01,3,sleep,,3054,"Energy is fresh, but thirst is fully restored. Prioritize rest to meet subgoal energy >=95.",20,6,100,61.4,98.1,90.0,0,18.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:23,3,sleep,,3207,"Energy is high, but thirst is nearly full. Prioritize rest to ensure readiness for exploration.",20,6,100,61.3,96.3,98.0,0,21.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:27,3,drink_river,,3103,"Energy is high, but thirst is rising; prioritize drinking to stay hydrated.",20,6,100,61.3,96.3,98.0,0,21.6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:31,3,sleep,,2914,"Prioritize rest to maintain energy for exploration, as energy is already high but critical for survival.",19.86,5.79,100,61.3,100,98.4,0,21.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:35,3,sleep,,2859,"Energy is high, but bladder is mild. Prioritize resting to maintain health.",19.86,5.79,100,61.3,100,98.4,0,21.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:39,3,sleep,,2956,"Prioritize rest to maintain energy for exploration, as recent sleep has had no visible effect.",19.86,5.79,100,61.3,100,98.4,0,21.6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:46,3,sleep,,2719,"Energy is fully restored, prioritize rest to maintain readiness for exploration",19.86,5.79,100,61.2,98.6,100,0,24.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:50,3,wander_s,,3189,"Energy is full, hydration is high; prioritize gathering wood for exploration.",19.86,5.79,100,61.2,98.6,100,0,24.6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:55,3,sleep,,3026,"Prioritize rest to maintain energy for exploration, as energy is already maxed.",20,9,100,61.1,98.5,99.7,0,24.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:38:59,3,drink_river,,3114,"Energy is fully restored, prioritize replenishing thirst and preparing to explore.",20,9,100,61.1,98.5,99.7,0,24.6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:04,3,sleep,,2991,"Energy is high, but hunger and bladder need attention. Prioritize rest and hydration.",20.5,5.63,100,60.8,100,96.2,0,27.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:08,3,sleep,,3086,"Energy is high, but thirst is fully restored. Focus on completing rest to meet subgoal energy >=95.",20.5,5.63,100,60.8,100,96.2,0,27.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:12,3,sleep,,2691,"Energy is high, but bladder is mild; prioritize rest over exploration.",20.5,5.63,100,60.8,100,96.2,0,27.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:18,3,wander_se,,3394,"Energy is high, but thirst is fully restored. Prioritize gathering resources for exploration.",20.5,5.63,100,60.8,100,96.2,0,27.6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:24,3,sleep,,3119,"Energy is high, but thirst is near full; prioritize rest to meet subgoal energy >= 95",22,8,100,60.5,98.4,92.2,0,30.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:28,3,sleep,,2817,"Prioritize rest to maintain energy for exploration, as energy is near max but critical for survival.",22,8,100,60.5,98.4,92.2,0,30.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:32,3,sleep,,3177,"Energy is high, but thirst is near full. Prioritize rest to meet subgoal energy >=95.",22,8,100,60.5,98.4,92.2,0,30.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:35,3,sleep,,2734,"Energy is high, but thirst is nearly full; prioritize rest to meet energy goal.",22,8,100,60.5,98.4,92.2,0,30.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:39:40,3,sleep,,3003,"Energy is high, but thirst is near full; prioritize rest to meet subgoal energy >=95",22,8,100,60.4,97.0,88.6,0,33.6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:02,3,sleep,,3012,"Prioritize resting to maintain energy for exploration, as energy is already maxed.",22,8,100,60.2,96.2,99.8,0,34.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:06,3,drink_river,,3034,"Energy is full, but thirst is high; prioritize drinking to stay hydrated.",22,8,100,60.2,96.2,99.8,0,34.5,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:10,3,pee_now,,2868,"Energy is full, but bladder is 35. Prioritize relieving bladder to avoid urgency.",22.19,6.78,100,60.1,100,100,0,34.5,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:14,3,sleep,,2826,"Prioritize rest to maintain energy for exploration, as sleep regenerates energy.",22.29,8.99,100,60.0,99.9,99.6,0,0,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:21,3,drink_river,,3051,"Energy is fully restored, focus on replenishing thirst and preparing to explore.",22.29,8.99,100,59.8,99.1,94.6,0,0.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:25,3,sleep,,2797,"Energy is full, thirst is hydrated, hunger is moderate. Prioritize rest to maintain energy.",22.5,6.63,100,59.7,100,94.8,0,0.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:29,3,sleep,,2884,"Energy is sufficient, but need to rest to meet subgoal energy >=95",22.5,6.63,100,59.7,100,94.8,0,0.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:33,3,sleep,,2839,"Energy is high, thirst is full, hunger moderate. Prioritize rest to ensure readiness for exploration.",22.5,6.63,100,59.7,100,94.8,0,0.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:37,3,sleep,,2773,"Energy is high, but need to rest to ensure full regeneration before exploring.",22.5,6.63,100,59.7,100,94.8,0,0.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:40:41,3,shake_tree,tree_82,2856,"Energy is high, but hunger needs replenishment for exploration.",22.5,6.63,100,59.4,99.2,89.8,0,1.8,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:16,3,sleep,,5866,"Energy is fresh, but need to rest to meet subgoal energy >= 95",21,10,100,58.2,97.6,81.0,0,2.7,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:26,3,shake_tree,tree_118,3490,"Energy is full, but hunger is moderate; prioritize replenishing food.",21,10,100,58.1,96.7,99.8,0,3.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:33,3,sleep,,3082,"Energy is near max, but need to rest for subgoal 2",23.77,17.23,100,57.7,96.4,97.0,0,3.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:37,3,drink_river,,3448,"Energy is near max, but thirst is high; prioritize drinking to stay hydrated.",23.77,17.23,100,57.7,96.4,97.0,0,3.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:45,3,sleep,,3376,"Energy is near full, but need to rest to meet subgoal energy >= 95",27.22,8.17,100,57.0,100,91.5,0,4.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:49,3,sleep,,3075,"Energy is high, but thirst is fully restored. Prioritize replenishing energy through rest.",27.22,8.17,100,57.0,100,91.5,0,4.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:41:53,3,sleep,,3257,"Energy is high, but thirst is fully restored. Prioritize rest to meet subgoal energy >= 95.",27.22,8.17,100,57.0,100,91.5,0,4.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:00,3,shake_tree,tree_77,3296,"Energy is near max, but hunger is moderate; prioritize replenishing hunger.",27.22,8.17,100,56.7,99.2,86.5,0,5.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:06,3,sleep,,3312,"Energy is at 84, need to rest to meet subgoal energy >= 95",32.75,10.76,100,56.4,98.9,83.9,0,5.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:23,3,sleep,,3225,"Prioritize rest to maintain energy for exploration, as energy is already maxed.",32.75,10.76,100,56.3,98.1,99.8,0,6.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:27,3,drink_river,,3339,"Energy is full, thirst is high; prioritize drinking to maintain hydration.",32.75,10.76,100,56.3,98.1,99.8,0,6.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:35,3,drink_river,,3605,"Energy is fully restored, prioritize replenishing water and gathering resources for exploration",30.72,8.75,100,56.1,100,100.0,0,6.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:38,3,shake_tree,tree_90,3171,"Energy is fully restored, prioritize gathering wood for exploration",31.17,8.78,100,56.1,100,100,0,6.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:43,3,sleep,,3303,"Prioritize rest to maintain energy for exploration, as energy is already high but critical for survival.",34.48,11.39,100,55.7,98.4,95.4,0,9.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:48,3,sleep,,3393,"Energy is fresh, but thirst is near full. Prioritize rest to meet subgoal energy >= 95.",34.48,11.39,100,55.7,98.4,95.4,0,9.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:51,3,drink_river,,3313,"Energy is already high, focus on maintaining hydration and preparing to explore.",34.48,11.39,100,55.7,98.4,95.4,0,9.9,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:42:57,3,sleep,,3359,"Energy is near full, but need to rest to meet subgoal energy >= 95",33.58,8.68,100,55.6,100,95.6,0,9.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:00,3,sleep,,2954,"Energy is near max, but need to rest for subgoal 2",33.58,8.68,100,55.5,98.6,93.5,0,13.5,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:07,3,shake_tree,tree_96,3306,"Energy is nearly full, prioritize gathering wood to advance subgoal 3.",33.58,8.68,100,55.5,98.6,93.5,0,13.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:13,3,drink_river,,3607,"Energy is fresh, thirst is high; prioritize replenishing energy and hydration.",37.46,12.34,100,55.2,98.4,90.9,0,13.5,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:21,3,wander_sw,,4797,"Current energy is high, but thirst is fully restored. Prioritize gathering resources for exploration.",35.09,8.79,100,54.8,98.6,88.9,0,17.1,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:26,3,sleep,,3395,"Energy is high, but thirst is near full. Prioritize rest to meet subgoal energy >=95",32,12,100,54.5,98.4,88.3,0,17.1,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:43,3,drink_river,,3538,"Energy is fully restored, focus on replenishing hydration and gathering resources.",32,12,100,54.4,97.0,100,0,20.7,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:48,3,drink_river,,3698,"Energy is full, thirst is high, need to replenish and gather resources for exploration",31.31,8.74,100,54.3,100,100,0,20.7,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:52,3,shake_tree,tree_105,3203,"Energy is fully restored, prioritize gathering wood for exploration readiness",30.81,8.78,100,54.2,100,100,0,20.7,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:43:59,3,sleep,,3220,"Energy is high, but bladder is mild; prioritize rest to maintain readiness.",35.28,15.34,100,53.8,99.7,97.2,0,20.7,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:03,3,drink_river,,3440,"Energy is already high, so focus on maintaining hydration and gathering resources for exploration.",35.28,15.34,100,53.7,98.3,95.1,0,24.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:13,3,wander_s,,3436,"Energy is fresh, hydration is full; prioritize gathering resources for exploration.",34.11,8.79,100,53.4,100,94.9,0,24.3,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:21,3,sleep,,3197,"Energy is high, but need to rest to meet subgoal energy >=95",34,18,100,52.8,98.2,91.9,0,27.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:25,3,sleep,,3239,"Energy is high, but thirst is near full. Prioritize rest to meet subgoal energy >= 95.",34,18,100,52.8,98.2,91.9,0,27.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:29,3,shake_tree,tree_112,3208,"Energy is high, but hunger needs replenishment for safe exploration.",34,18,100,52.8,98.2,91.9,0,27.9,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:34,3,sleep,,3007,Prioritize resting to regenerate energy for safe exploration,38.41,16.54,100,52.5,98.0,89.3,0,27.9,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:45,3,sleep,,3238,"Prioritize rest to maintain energy for exploration, as sleep regenerates energy effectively.",38.41,16.54,100,52.4,96.2,97.3,0,30.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:50,3,sleep,,3405,"Energy is high, but thirst is near full. Prioritize rest to meet subgoal energy >= 95.",38.41,16.54,100,52.4,96.2,97.3,0,30.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:53,3,sleep,,3097,"Energy is near max, but need to rest to meet subgoal energy >= 95",38.41,16.54,100,52.4,96.2,97.3,0,30.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:44:57,3,sleep,,3016,"Energy is high, but thirst is nearly full; prioritize rest to meet subgoal energy >=95",38.41,16.54,100,52.4,96.2,97.3,0,30.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:01,3,drink_river,,3246,"Energy is near max, focus on replenishing hydration and gathering wood for exploration",38.41,16.54,100,52.3,94.4,94.3,0,33.9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:09,3,wander_sw,,3627,"Energy is high, but thirst is fully restored. Focus on gathering resources for exploration.",35.22,8.77,100,51.9,100,93.9,0,33.9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:18,3,wander_s,,3692,"Energy is high, but thirst is fully restored. Focus on gathering resources for exploration.",32,12,100,51.6,99.8,93.3,0,33.9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:22,3,shake_tree,tree_140,3278,"Energy is fresh, hydration is full. Prioritize gathering wood for exploration.",32,15,100,51.3,97.8,90.0,0,36.9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:30,3,sleep,,3066,"Energy is high, but hunger and bladder need attention. Prioritize rest and hydration.",25.33,22.56,100,50.8,97.4,87.0,0,36.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:43,3,sleep,,3292,"Energy is fresh, but thirst is near full. Prioritize rest to meet subgoal energy >=95.",25.33,22.56,100,50.7,95.6,95.0,0,39.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:50,3,drink_river,,3128,"Energy is already high, prioritize hydration and rest to prepare for exploration",25.33,22.56,100,50.7,95.6,95.0,0,39.9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:45:59,3,sleep,,3175,"Energy is high, but thirst is fully replenished; focus on advancing subgoal 2.",27.55,8.66,100,50.0,100,94.1,0,39.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:03,3,sleep,,2970,"Energy is high, but thirst is nearly full. Prioritize resting to meet energy goal.",27.55,8.66,100,49.9,98.2,91.1,0,42.9,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:06,3,pee_now,,2756,"Energy is high, but bladder needs relief to avoid sickness.",27.55,8.66,100,49.9,98.2,91.1,0,42.9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:11,3,sleep,,3219,"Energy is high, but thirst is nearly full. Prioritize rest to ensure readiness for exploration.",26.85,9.95,100,49.8,98.1,90.8,0,0,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:14,3,sleep,,2819,"Energy is near full, but need to rest for safety before exploring.",26.85,9.95,100,49.8,98.1,90.8,0,0,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:22,3,sleep,,3180,"Energy is high, but thirst is nearly full. Prioritize rest to meet subgoal energy >=95.",26.85,9.95,100,49.7,96.3,87.8,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:42,3,sleep,,3017,"Energy is full, thirst is high, need to replenish and rest for exploration",26.85,9.95,100,49.6,94.9,99.8,0,6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:46,3,sleep,,2863,"Energy is full, thirst is high. Prioritize rest to maintain energy and avoid dehydration.",26.85,9.95,100,49.6,94.9,99.8,0,6,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:53,3,drink_river,,3241,"Energy is fully restored, focus on replenishing thirst and gathering resources for exploration",26.85,9.95,100,49.6,94.9,99.8,0,6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:46:57,3,drink_river,,3043,"Energy is fully restored, focus on replenishing thirst and preparing to explore.",28.54,8.59,100,49.5,100,100,0,6,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:01,3,drink_river,,3029,"Energy is full, but thirst is high; prioritize drinking to maintain hydration.",28.45,8.58,100,49.4,98.6,96.4,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:05,3,sleep,,2944,"Energy is near max, thirst is full, hunger moderate. Prioritize rest to ensure energy for exploration.",27.54,8.66,100,49.4,100,96.8,0,9,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:09,3,sleep,,2808,"Energy is high, but need to rest to meet subgoal energy >= 95",27.54,8.66,100,49.4,100,96.8,0,9,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:13,3,wander_s,,3200,"Energy is high, but hunger is moderate; prioritize replenishing resources before exploring.",27.54,8.66,100,49.4,100,96.8,0,9,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:21,3,sleep,,3184,"Energy is near full, but need to rest to meet subgoal energy >= 95",28,19,100,48.8,98.2,92.2,0,12,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:28,3,sleep,,2786,"Energy is near max, but need to rest to ensure readiness for exploration",28,19,100,48.8,98.2,92.2,0,12,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:32,3,sleep,,3010,"Energy is high, but need to rest to meet subgoal energy >= 95",28,19,100,48.8,98.2,92.2,0,12,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:36,3,sleep,,3027,"Energy is high, but thirst is near full. Prioritize rest to meet subgoal energy >=95.",28,19,100,48.8,98.2,92.2,0,12,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:47:40,3,sleep,,3093,"Energy is high, but thirst is nearly full. Prioritize rest to meet subgoal energy >=95.",28,19,100,48.7,96.8,88.6,0,15,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:03,3,drink_river,,3362,"Energy is full, thirst is high, need to replenish and prepare for exploration",28,19,100,48.5,95.9,99.8,0,15.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:11,3,sleep,,3150,"Energy is near full, but thirst is fully replenished. Prioritize rest to maintain energy for exploration.",28.54,8.59,100,48.0,100,99.2,0,15.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:14,3,sleep,,2819,"Prioritize rest to maintain energy for exploration, as energy is already high but needs regeneration.",28.54,8.59,100,48.0,100,99.2,0,15.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:19,3,sleep,,3021,"Energy is near max, but need to rest to meet subgoal energy >= 95",28.54,8.59,100,48.0,100,99.2,0,15.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:22,3,sleep,,2850,"Energy is high, but thirst is nearly full; prioritize rest to meet subgoal energy >=95",28.54,8.59,100,47.7,99.2,94.2,0,16.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:26,3,sleep,,2772,"Energy is near max, but need to rest to ensure safety before exploration",28.54,8.59,100,47.7,99.2,94.2,0,16.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:33,3,sleep,,2708,"Energy is nearly full, but need to rest for safety before exploring.",28.54,8.59,100,47.7,99.2,94.2,0,16.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:36,3,sleep,,2842,"Energy is near full, but need to rest to meet subgoal energy >= 95",28.54,8.59,100,47.7,99.2,94.2,0,16.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:48:41,3,drink_river,,3242,"Energy is nearly full, but thirst is high; prioritize drinking to stay hydrated.",28.54,8.59,100,47.5,98.3,89.2,0,17.7,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:49:09,3,drink_river,,3369,"Drink to maintain hydration and energy, advancing subgoal 1",29,19,100,46.7,98.8,83.7,0,18.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:49:25,3,sleep,,2982,"Current energy is 78, need to rest to meet subgoal threshold",25,10,100,45.7,99.0,77.7,0,19.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:49:59,3,sleep,,3074,"Hunger is moderate, but energy is full; prioritize rest to maintain energy for exploration.",25,10,100,45.3,97.9,99.1,0,20.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:52:13,3,drink_river,,3203,"Energy is moderate, hunger is moderate, but thirst is high. Prioritize drinking to maintain hydration.",35,29,100,39.2,85.1,74.0,0,40.2,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:53:27,3,pee_now,,2554,"Bladder is rising, prioritize relieving it before energy drops.",23.85,8.81,100,35.5,92.8,56.9,0,52.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:53:40,3,wander_ne,,3014,Prioritize eating fruit to address low hunger before exploring,31,16,100,34.9,90.6,52.7,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:54:03,3,sleep,,2913,"Hunger is low, but energy is moderate; prioritize rest to meet subgoal energy >= 80.",25,22,100,33.9,88.0,47.9,0,6,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:05,3,drink_river,,3243,"Hunger is low, but energy is moderate; prioritize drinking to restore energy.",35.68,8.42,100,28.7,76.2,16.6,0,21.9,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:23,3,sleep,,2639,"Energy is low, must rest to meet subgoal energy >= 80",39,13,100,28.1,98.9,11.4,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:26,3,sleep,,2555,Energy is critically low; prioritize rest to survive and prepare for exploration.,39,13,100,28.1,98.9,11.4,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:30,3,sleep,,2754,"Energy is low, must prioritize rest to meet subgoal energy >= 80",39,13,100,28.1,98.9,11.4,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:33,3,sleep,,2620,Energy is critically low; prioritize rest to recover before exploring.,39,13,100,28.1,98.9,11.4,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:36,3,sleep,,2545,Energy is critically low; prioritize rest to regain strength before exploring.,39,13,100,28.1,98.9,11.4,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:56:42,3,sleep,,2671,"Energy is low, prioritize rest to meet subgoal energy >= 80",39,13,100,28.1,98.9,11.4,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:57:06,3,sleep,,2759,Prioritize rest to increase energy for exploration preparation,35.68,7.58,100,27.4,97.0,41.5,0,24.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:10,3,sleep,,2548,Prioritize energy restoration before exploration to avoid exhaustion,35.68,7.58,100,27.4,97.0,41.5,0,24.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:16,3,sleep,,2649,"Energy is moderate, but need to rest to reach 80 for exploration",35.68,7.58,100,27.4,97.0,41.5,0,24.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:19,3,sleep,,2578,"Energy is moderate, but need to rest to meet subgoal threshold",35.68,7.58,100,27.4,97.0,41.5,0,24.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:22,3,sleep,,2388,Prioritize rest to meet energy goal before exploring.,35.68,7.58,100,27.2,96.1,77.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:25,3,sleep,,2429,Prioritize completing rest goal to ensure energy for exploration,35.68,7.58,100,27.2,96.1,77.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:28,3,sleep,,2536,Prioritize rest to reach energy >=80 for exploration readiness,35.68,7.58,100,27.2,96.1,77.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:31,3,sleep,,2385,Prioritize rest to meet energy threshold before exploration,35.68,7.58,100,27.2,96.1,77.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:34,3,sleep,,2557,"Energy is moderate, but rest is needed to meet subgoal threshold",35.68,7.58,100,27.2,96.1,77.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:37,3,sleep,,2412,Prioritize rest to meet energy goal before exploration,35.68,7.58,100,27.2,96.1,77.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:40,3,sleep,,2595,"Energy is moderate, but need to rest to meet subgoal threshold",35.68,7.58,100,27.0,95.3,72.2,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:43,3,sleep,,2529,Prioritize rest to reach energy >=80 for exploration readiness,35.68,7.58,100,27.0,95.3,72.2,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:49,3,sleep,,2539,Prioritize rest to meet energy goal while hydrating and gathering fruit.,35.68,7.58,100,27.0,95.3,72.2,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:52,3,sleep,,2503,"Energy is moderate, but need to rest to meet subgoal threshold",35.68,7.58,100,27.0,95.3,72.2,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:54,3,sleep,,2406,Prioritize rest to reach energy >=80 before exploration,35.68,7.58,100,27.0,95.3,72.2,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:57:58,3,sleep,,2550,Prioritize completing rest to reach energy >=80 for exploration readiness,35.68,7.58,100,27.0,95.3,72.2,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:01,3,sleep,,2726,"Energy is moderate, but need to rest to meet subgoal energy >= 80",35.68,7.58,100,26.7,94.5,67.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:05,3,sleep,,2761,"Prioritize rest to reach energy >=80, then gather fruit for exploration.",35.68,7.58,100,26.7,94.5,67.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:09,3,sleep,,2774,"Prioritize rest to boost energy for exploration, as current energy is moderate.",35.68,7.58,100,26.7,94.5,67.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:13,3,sleep,,2785,"Prioritize rest to boost energy for exploration, as current energy is moderate.",35.68,7.58,100,26.7,94.5,67.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:17,3,sleep,,2924,"Prioritize rest to boost energy for exploration, as energy is moderate but needed for the plan.",35.68,7.58,100,26.7,94.5,67.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:23,3,sleep,,2471,"Prioritize rest to maintain energy, then gather fruit for sustenance.",35.68,7.58,100,26.6,93.6,99.8,0,28.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:26,3,sleep,,2678,Prioritize completing subgoal 2 by resting to ensure energy >= 80 before exploration,35.68,7.58,100,26.6,93.6,99.8,0,28.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:29,3,sleep,,2628,"Prioritize rest to maintain energy for exploration, as energy is already maxed.",35.68,7.58,100,26.6,93.6,99.8,0,28.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:32,3,sleep,,2571,"Prioritize rest to maintain energy for exploration, as energy is already maxed.",35.68,7.58,100,26.6,93.6,99.8,0,28.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:35,3,sleep,,2390,Prioritize rest to maintain energy and prepare for exploration,35.68,7.58,100,26.6,93.6,99.8,0,28.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:38,3,sleep,,2404,Prioritize rest to maintain energy and prepare for exploration.,35.68,7.58,100,26.6,93.6,99.8,0,28.2,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:41,3,drink_river,,2746,Prioritize drinking to maintain hydration and prepare for exploration.,35.68,7.58,100,26.5,92.2,97.7,0,31.8,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/4
+2026-04-26T22:58:46,3,sleep,,2852,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.5,100,98.1,0,31.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:58:50,3,sleep,,2836,"Energy is high, but rest is needed to meet subgoal energy >= 80",35.8,8.01,100,26.5,100,98.1,0,31.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:58:56,3,sleep,,2818,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.5,100,98.1,0,31.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:00,3,sleep,,2728,"Energy is already high, focus on maintaining hydration and preparing for exploration.",35.8,8.01,100,26.3,98.6,96.0,0,35.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:04,3,sleep,,3042,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.3,98.6,96.0,0,35.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:09,3,sleep,,3073,"Energy is high, but rest is needed for the subgoal. Prioritize resting to reach 80 energy.",35.8,8.01,100,26.3,98.6,96.0,0,35.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:12,3,sleep,,2976,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.3,98.6,96.0,0,35.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:17,3,sleep,,3061,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.3,98.6,96.0,0,35.4,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:20,3,sleep,,2927,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.2,97.2,93.9,0,39.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:27,3,sleep,,3152,"Energy is near full, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.2,97.2,93.9,0,39.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:31,3,sleep,,2722,"Energy is near max, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.2,97.2,93.9,0,39.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:35,3,sleep,,2923,"Energy is near full, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.2,97.2,93.9,0,39.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:39,3,sleep,,2690,"Energy is high, but rest is needed to meet subgoal energy >= 80",35.8,8.01,100,26.2,97.2,93.9,0,39.0,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:42,3,sleep,,2665,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.1,95.8,91.8,0,42.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:45,3,sleep,,2659,"Energy is high, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.1,95.8,91.8,0,42.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:48,3,sleep,,2714,"Energy is sufficient, but need to rest to meet subgoal energy >= 80",35.8,8.01,100,26.1,95.8,91.8,0,42.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:52,3,sleep,,2919,"Energy is sufficient, but rest is needed to meet the subgoal of energy >= 80",35.8,8.01,100,26.1,95.8,91.8,0,42.6,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T22:59:59,3,shake_tree,tree_124,3033,"Energy is high, but hunger is low; prioritize gathering fruit for sustenance.",35.8,8.01,100,26.1,95.8,91.8,0,42.6,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T23:00:10,3,sleep,,3156,"Energy is sufficient, but need to rest to meet subgoal energy >= 80",22.12,18.21,100,25.1,93.7,85.9,0,46.2,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T23:00:14,3,sleep,,2630,"Energy is sufficient, but need to rest to meet subgoal threshold",22.12,18.21,100,25.1,93.7,85.9,0,46.2,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T23:00:17,3,sleep,,2563,"Energy is sufficient, but need to rest to meet subgoal threshold",22.12,18.21,100,25.1,93.7,85.9,0,46.2,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T23:00:20,3,sleep,,2755,"Energy is sufficient, but need to rest to meet subgoal energy >= 80",22.12,18.21,100,25.0,92.3,83.8,0,49.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T23:00:24,3,drink_river,,3065,"Energy is already sufficient, focus on hydration and preparing for exploration",22.12,18.21,100,25.0,92.3,83.8,0,49.8,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/4
+2026-04-26T23:00:35,3,sleep,,2881,"Energy is already high, focus on completing rest to meet subgoal",27.97,8.8,100,24.5,100,83.2,0,49.8,22,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T23:00:39,3,shake_tree,tree_139,2884,Prioritize gathering fruit to advance subgoal while maintaining hydration and energy,27.97,8.8,100,24.5,100,83.2,0,49.8,22,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,2/4
+2026-04-26T23:00:50,3,pee_now,,2848,"Energy is moderate, but bladder is rising; prioritize peeing to avoid sickness.",16.36,22.53,100,23.5,97.5,76.4,0,52.8,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,3/4
+2026-04-26T23:00:53,3,sleep,,2752,"Energy is moderate, but need to rest to meet plan's energy >=80 goal",15.77,23.23,100,23.4,97.4,76.1,0,0,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,3/4
+2026-04-26T23:00:58,3,sleep,,2836,"Energy is moderate, but need to rest to meet plan's energy >= 80",15.77,23.23,100,23.4,97.4,76.1,0,0,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,3/4
+2026-04-26T23:01:04,3,shake_tree,tree_138,3060,"Energy is moderate, but hunger is low; prioritize gathering fruit for sustenance.",15.77,23.23,100,23.3,95.6,73.1,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,3/4
+2026-04-26T23:01:08,3,wander_e,,2943,"Hunger is low, but energy is moderate; prioritize resource gathering for sustenance.",14.43,22.33,100,23.2,95.5,71.0,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:14,3,sleep,,2937,"Hunger is low, but energy is moderate; prioritize rest to maintain health.",20,22,100,23.0,95.3,70.4,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:18,3,sleep,,2726,"Hunger is low, but energy is moderate; prioritize resting to sustain stamina.",20,22,100,23.0,95.3,70.4,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:22,3,pee_now,,2639,Prioritize replenishing energy and managing bladder to avoid sickness.,20,22,100,22.9,93.5,67.4,0,6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:25,3,shake_tree,tree_167,2019,Prioritize resource gathering to sustain energy and avoid dehydration,20.16,21.78,100,22.8,93.5,67.2,0,0,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:32,3,shake_tree,tree_174,2943,Prioritize replenishing energy and hunger with nearby resources.,27.21,28.15,100,22.3,93.1,64.2,0,0,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:39,3,shake_tree,tree_150,3031,"Hunger is low, but energy is moderate. Prioritize gathering resources to sustain exploration.",27.24,28.24,100,22.3,93.1,62.2,0,0,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:45,3,drink_river,,2924,Prioritize replenishing energy and avoiding dehydration with nearby river access.,30.69,25.74,100,22.0,91.1,56.7,0,3,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:01:57,3,sleep,,2864,"Hunger is low, but energy is moderate; prioritize rest to maintain stamina.",27.66,8.72,100,20.9,100,55.0,0,3,30,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:01,3,drink_river,,2829,Prioritize replenishing energy and avoiding dehydration,27.66,8.72,100,20.8,98.2,52.0,0,6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:05,3,drink_river,,3274,"Hunger is low, but energy is moderate. Prioritize replenishing energy through drinking or resting.",28.18,8.78,100,20.8,100,52.5,0,6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:12,3,drink_river,,2695,Prioritize hydration and energy recovery before exploring.,27.73,8.75,100,20.8,100,52.9,0,6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:15,3,wander_e,,2919,"Hydration is maintained, but energy is moderate; prioritize resource gathering for survival.",28.33,8.73,100,20.7,100,53.4,0,6,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:22,3,drink_river,,3251,"Prioritize hydration and energy, but recent drinks have maintained thirst at 100.",38,9,100,20.2,97.8,49.4,0,9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:26,3,drink_river,,2691,Prioritize hydration and energy recovery from nearby river.,36.65,7.72,100,20.1,100,49.7,0,9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:29,3,drink_river,,2980,"Thirst is fully hydrated, so prioritize energy regeneration from drinking river.",37.58,7.55,100,20.0,100,50.1,0,9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:33,3,wander_s,,3322,"Energy is moderate, hunger is low, focus on gathering resources for survival",37.45,7.58,100,20.0,100,50.6,0,9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:39,3,shake_tree,tree_146,3006,Hunger is critical; prioritize gathering food to avoid starvation.,37,12,100,19.8,99.8,50.2,0,9,30,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:50,3,shake_tree,tree_156,3278,"Hunger is critical, but energy is moderate. Prioritize gathering resources.",38.3,23.61,100,19.1,97.9,43.4,0,12,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:02:56,3,shake_tree,tree_157,3087,Hunger is critical; prioritize gathering food to avoid starvation.,33.78,25.23,100,18.8,97.7,40.9,0,12,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:01,3,shake_tree,tree_162,3111,Hunger is critical; prioritize gathering resources to avoid starvation.,37.2,26.09,100,18.6,96.2,34.9,0,15,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:06,3,shake_tree,tree_114,3239,Hunger is critical; prioritize eating to avoid starvation.,33.64,26.51,100,18.4,96.1,32.6,0,15,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:24,3,shake_tree,tree_133,3048,Hunger is critical; prioritize eating to avoid starvation.,9.8,17.0,100,16.8,93.4,23.9,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:30,3,shake_tree,tree_132,3245,Hunger is critical; prioritize gathering food to avoid starvation.,9.73,20.68,100,16.6,93.3,21.6,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:35,3,shake_tree,tree_117,3476,Hunger is critical; need to eat to survive before exploring.,6.67,21.44,100,16.4,93.1,19.1,0,18,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:41,3,shake_tree,tree_130,3447,Hunger is critical; need to eat fruit or gather resources.,2.79,18.77,100,15.9,91.5,12.9,0,21,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:48,3,shake_tree,tree_166,3223,Hunger is critical; prioritize gathering food to avoid starvation.,3.16,20.22,100,15.9,91.4,10.7,0,21,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:55,3,sleep,,2543,Energy is critically low; prioritize rest to survive.,5.97,27.2,100,15.4,91.0,7.8,0,21,24,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:03:58,3,shake_tree,tree_173,2888,Hunger is critical; prioritize gathering food to avoid starvation.,5.97,27.2,100,15.4,91.0,7.8,0,21,24,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:03,3,sleep,,2684,Energy is critically low; prioritize sleep to restore health.,8.79,28.23,100,15.0,90.1,0.5,0,21.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:06,3,sleep,,2475,Energy is critical; need to rest to recover before gathering.,8.79,28.23,100,15.0,90.1,0.5,0,21.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:09,3,sleep,,2424,Energy is critical; need to recover before shaking trees.,8.79,28.23,100,15.0,90.1,0.5,0,21.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:12,3,sleep,,2421,Energy is critical; need to rest before gathering resources.,8.79,28.23,100,15.0,90.1,0.5,0,21.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:15,3,sleep,,2551,Energy is critical; sleep regenerates it while maintaining hydration.,8.79,28.23,100,15.0,90.1,0.5,0,21.9,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:21,3,sleep,,2751,Energy is critical; need to rest to recover from multiple sleepless nights.,8.79,28.23,90,14.8,89.2,0,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:25,3,sleep,,2758,Energy is critical; need to rest to recover from multiple sleepless nights.,8.79,28.23,90,14.8,89.2,0,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:28,3,sleep,,2535,Energy is critically low; prioritize rest to recover.,8.79,28.23,90,14.8,89.2,0,0,22.8,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:04:32,3,drink_river,,2969,"Energy is at 0, must prioritize regaining energy before exploring.",8.79,28.23,90,14.8,89.2,0,0,22.8,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,4/4
+2026-04-26T23:05:12,3,drink_river,,3380,Energy is critical; drinking restores energy and hydration.,28,19,70,12.4,98.8,0,0,24.6,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,0/3
+2026-04-26T23:05:19,3,sleep,,2742,Energy is critically low; prioritize rest to recover before exploring.,28.33,8.73,70,11.8,100,0.5,0,24.6,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:26,3,sleep,,2839,"Energy is low, need to rest to meet subgoal energy >= 80",28.33,8.73,70,11.7,99.2,36.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:30,3,sleep,,2739,Prioritize energy recovery as it is critical for exploration and survival.,28.33,8.73,70,11.7,99.2,36.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:35,3,sleep,,3277,"Energy is low, but health is critical; prioritize resting to recover energy.",28.33,8.73,70,11.7,99.2,36.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:38,3,sleep,,2682,Prioritize restoring energy and hunger to safely explore unexplored_area.,28.33,8.73,70,11.7,99.2,36.2,0,25.5,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:41,3,drink_river,,3039,"Energy is low, but thirst is high; prioritize drinking to maintain hydration.",28.33,8.73,70,11.4,98.3,31.2,0,26.4,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:45,3,sleep,,2688,"Energy is low, need to rest and replenish before exploring.",28.51,8.61,70,11.4,100,31.7,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:48,3,sleep,,2806,"Energy is low, need to rest to meet subgoal energy >= 80",28.51,8.61,70,11.4,100,31.7,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:52,3,sleep,,2567,Prioritize energy recovery to meet rest subgoal before exploring,28.51,8.61,70,11.4,100,31.7,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:05:55,3,sleep,,2765,"Energy is low, need to rest to meet subgoal energy >= 80",28.51,8.61,70,11.4,100,31.7,0,26.4,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:06:02,3,sleep,,2814,"Energy is low, need to rest to meet subgoal energy >=80",28.51,8.61,70,11.2,99.2,26.7,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:06:06,3,drink_river,,3029,"Energy is low, but thirst is nearly full; prioritize restoring energy through drinking.",28.51,8.61,70,11.2,99.2,26.7,0,27.3,16,walk_to,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:06:10,3,sleep,,2534,"Energy is low, need to rest and replenish before exploring.",28.76,8.76,70,11.2,100,27.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:06:13,3,sleep,,2604,"Energy is low, but health is critical; prioritize rest to recover energy.",28.76,8.76,70,11.2,100,27.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3
+2026-04-26T23:06:16,3,sleep,,2521,Prioritize energy recovery as it's critical for exploration readiness,28.76,8.76,70,11.2,100,27.2,0,27.3,16,sleep,wood|wood|wood|wood|wood|wood|wood|wood|wood|wood,1/3

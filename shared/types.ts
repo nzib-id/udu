@@ -8,6 +8,10 @@ export type Stats = {
   // sickness ≥80 drains HP, regen when thriving (all drives satisfied + low
   // sickness + awake). Death = HP=0. Reserved for future damage sources.
   health: number;
+  // Body temperature (°C). Drifts toward phase ambient (or fire override
+  // when near lit fire). Out-of-comfort tiers drain drives indirectly →
+  // HP via existing drain rules. See TEMPERATURE_CONFIG.
+  temperature: number;
 };
 
 export type Position = { x: number; y: number };
@@ -15,20 +19,18 @@ export type Position = { x: number; y: number };
 export type ActionType =
   | 'idle'
   | 'walk_to'
-  | 'shake_tree'
-  | 'pickup_berry'
-  | 'pickup_fruit_ground'
-  | 'pickup_wood'
-  | 'eat_berry'
-  | 'eat_fruit'
+  | 'shake'
+  | 'pickup'
+  | 'eat'
   | 'drink'
   | 'hunt'
-  | 'eat_meat'
-  | 'cook_meat'
+  | 'cook'
   | 'defecate'
   | 'sleep'
   | 'rest'
-  | 'wander';
+  | 'wander'
+  | 'add_fuel'
+  | 'drop';
 
 export type Action = {
   type: ActionType;
@@ -72,6 +74,10 @@ export type LifeGoal = {
   reason: string;
   priority: number;
   setAtDay: number;
+  // Diagnose+prescribe pattern: the strategic insight the LLM produced about
+  // recurring lineage failures at the moment this goal was picked. Stored for
+  // trace/debug; NOT shown to next gen (next gen diagnoses fresh).
+  diagnosis?: string | null;
 };
 
 export type Alignment = 'advances' | 'maintains' | 'survival_override';
@@ -105,11 +111,17 @@ export type DailyGoal = {
 
 export type ResourceType =
   | 'bush'
-  | 'tree'
+  | 'tree_fruit'
+  | 'tree_vine'
+  | 'tree_wood'
   | 'river'
   | 'fire'
   | 'wood'
-  | 'fruit_on_ground'
+  | 'boulder'
+  | 'branch'
+  | 'vine'
+  | 'fruit'
+  | 'stone'
   | 'animal_chicken'
   | 'animal_fish';
 
@@ -157,10 +169,19 @@ export type GameState = {
   rules: Rule[];
   recentEvents: GameEvent[];
   aiLog: AiLogEntry[];
+  // "x,y" tile keys currently inside the character's vision cone (FOV + LOS,
+  // matching the same scan that drives spatial memory). Sent every state_update
+  // so the frontend fog-of-war can render exactly what the LLM perceives.
+  // Omitted when no live character.
+  visibleTiles?: string[];
+  // Cumulative union of every tile ever inside the vision cone this lifetime.
+  // Frontend uses this so a mid-life client reconnect shows true accumulated
+  // exploration. Cleared on respawn. Omitted when no live character.
+  exploredTiles?: string[];
 };
 
 export type ServerMessage =
-  | { type: 'state_update'; time: GameTime; character: Character | null; resources: Resource[]; recentEvents: GameEvent[]; aiLog: AiLogEntry[] }
+  | { type: 'state_update'; time: GameTime; character: Character | null; resources: Resource[]; recentEvents: GameEvent[]; aiLog: AiLogEntry[]; visibleTiles?: string[]; exploredTiles?: string[] }
   | { type: 'delta_update'; changes: Record<string, unknown> }
   | { type: 'reflection_complete'; gameDay: number; newRules: Rule[]; durationMs: number }
   | { type: 'lineage_event'; event: 'death' | 'respawn'; deceasedCharacterId?: number; reason?: string; lifespan?: { gameHours: number }; newIteration?: number }

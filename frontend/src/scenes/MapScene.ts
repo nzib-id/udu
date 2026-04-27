@@ -10,6 +10,8 @@ import { ResourceLayer } from '../entities/ResourceLayer';
 import { preloadResourceSprites, registerResourceAnimations } from '../entities/SpriteRegistry';
 import { TerrainLayer, preloadTerrainSprites } from '../entities/TerrainLayer';
 import { DayNightLayer } from '../entities/DayNightLayer';
+import { FireLightLayer } from '../entities/FireLightLayer';
+import { FogLayer } from '../entities/FogLayer';
 
 const FALLBACK_TILE_A = 0x1b2a1f;
 const FALLBACK_TILE_B = 0x223429;
@@ -22,6 +24,8 @@ export class MapScene extends Phaser.Scene {
   private pendingResources: Resource[] = [];
   private resourceLayer: ResourceLayer | null = null;
   private dayNightLayer: DayNightLayer | null = null;
+  private fireLightLayer: FireLightLayer | null = null;
+  private fogLayer: FogLayer | null = null;
   private currentTime: { day: number; hour: number; minute: number } = { day: 1, hour: 12, minute: 0 };
   // Follow character by default so the user always sees the AI on mount.
   // Any drag / pinch breaks follow; the on-screen "recenter" button or the
@@ -111,6 +115,10 @@ export class MapScene extends Phaser.Scene {
     registerResourceAnimations(this);
     this.resourceLayer = new ResourceLayer(this);
     this.dayNightLayer = new DayNightLayer(this);
+    this.fireLightLayer = new FireLightLayer(this);
+    this.fogLayer = new FogLayer(this);
+    // Allow main.ts toggle button to flip fog without poking through scene internals.
+    this.game.events.on('fog:set', (on: boolean) => this.fogLayer?.setEnabled(on));
 
     this.setupCameraControls();
 
@@ -118,6 +126,9 @@ export class MapScene extends Phaser.Scene {
       if (msg.character) this.pendingCharacter = msg.character;
       this.pendingResources = msg.resources;
       if (msg.time) this.currentTime = msg.time;
+      if (this.fogLayer) {
+        this.fogLayer.update(msg.character ?? null, msg.visibleTiles, msg.exploredTiles);
+      }
     });
 
     if (this.pendingCharacter) {
@@ -141,7 +152,7 @@ export class MapScene extends Phaser.Scene {
       this.characterSprite.update(delta, this.pendingCharacter);
       if (this.resourceLayer) {
         const act = this.pendingCharacter.currentAction;
-        const shakingId = act?.type === 'shake_tree' && act.target ? act.target : null;
+        const shakingId = act?.type === 'shake' && act.target ? act.target : null;
         this.resourceLayer.setShakingTree(shakingId);
         const pos = this.pendingCharacter.position;
         this.resourceLayer.setCharacterTile(pos.x, pos.y);
@@ -161,6 +172,12 @@ export class MapScene extends Phaser.Scene {
     // Day/night overlay must follow camera (zoom + scroll) every frame, so
     // update it after pan/follow so it sees the final viewport state.
     if (this.dayNightLayer) this.dayNightLayer.update(this.currentTime);
+    // Fire light pools sit on top of the day/night overlay; refresh resource
+    // list each frame so newly-lit / extinguished fires reflect immediately.
+    if (this.fireLightLayer) {
+      this.fireLightLayer.setResources(this.pendingResources);
+      this.fireLightLayer.update(this.currentTime);
+    }
   }
 
   private setupCameraControls(): void {

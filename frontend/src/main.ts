@@ -56,6 +56,7 @@ const hud = bindHud({
     energy: document.getElementById('bar-energy')!,
     sickness: document.getElementById('bar-sickness')!,
     health: document.getElementById('bar-health')!,
+    temperature: document.getElementById('bar-temperature')!,
   },
   vals: {
     hunger: document.getElementById('val-hunger')!,
@@ -64,6 +65,7 @@ const hud = bindHud({
     energy: document.getElementById('val-energy')!,
     sickness: document.getElementById('val-sickness')!,
     health: document.getElementById('val-health')!,
+    temperature: document.getElementById('val-temperature')!,
   },
 });
 
@@ -118,6 +120,31 @@ function bindSpeedToggle(): void {
   }
 }
 bindSpeedToggle();
+
+// Fog of war on/off — purely client-side, persists in localStorage so the
+// player's preference survives reloads. State is mirrored to the MapScene via
+// a Phaser game-event so we don't reach into scene internals from here.
+function bindFogToggle(): void {
+  const root = document.getElementById('fog-toggle');
+  if (!root) return;
+  const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-fog]'));
+  const KEY = 'udu-fog-enabled';
+  const setActive = (on: boolean): void => {
+    for (const b of buttons) b.classList.toggle('active', (b.dataset.fog === 'on') === on);
+  };
+  const apply = (on: boolean): void => {
+    setActive(on);
+    game.events.emit('fog:set', on);
+    try { localStorage.setItem(KEY, on ? '1' : '0'); } catch { /* ignore quota / disabled */ }
+  };
+  let initial = true;
+  try { initial = localStorage.getItem(KEY) !== '0'; } catch { /* default on */ }
+  apply(initial);
+  for (const b of buttons) {
+    b.addEventListener('click', () => apply(b.dataset.fog === 'on'));
+  }
+}
+bindFogToggle();
 
 export {};
 void MAP_CONFIG;

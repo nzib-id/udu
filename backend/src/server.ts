@@ -85,6 +85,12 @@ const http = createServer((req: IncomingMessage, res: ServerResponse) => {
     res.end(JSON.stringify({ goal }));
     return;
   }
+  if (req.method === 'GET' && req.url === '/api/admin/options') {
+    const data = loop.debugOptions();
+    res.writeHead(data ? 200 : 409, { 'content-type': 'application/json' });
+    res.end(JSON.stringify(data ?? { ok: false, error: 'no live character' }));
+    return;
+  }
   if (req.method === 'POST' && req.url === '/api/admin/kill') {
     const ok = loop.kill('admin');
     res.writeHead(ok ? 200 : 409, { 'content-type': 'application/json' });
@@ -102,15 +108,41 @@ const http = createServer((req: IncomingMessage, res: ServerResponse) => {
         const parsed = JSON.parse(body || '{}') as { stat?: string; value?: number };
         const stat = parsed.stat;
         const value = parsed.value;
-        const valid = ['hunger', 'thirst', 'bladder', 'energy', 'sickness', 'health'];
+        const valid = ['hunger', 'thirst', 'bladder', 'energy', 'sickness', 'health', 'temperature'];
         if (!stat || !valid.includes(stat) || typeof value !== 'number') {
           res.writeHead(400, { 'content-type': 'application/json' });
           res.end(JSON.stringify({ ok: false, error: 'expected {stat, value}', valid }));
           return;
         }
-        const ok = loop.setStat(stat as 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness' | 'health', value);
+        const ok = loop.setStat(
+          stat as 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness' | 'health' | 'temperature',
+          value,
+        );
         res.writeHead(ok ? 200 : 409, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ ok, stat, value }));
+      } catch {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'invalid json' }));
+      }
+    });
+    return;
+  }
+  if (req.method === 'POST' && req.url === '/api/admin/add-item') {
+    let body = '';
+    req.on('data', (chunk) => { body += chunk; if (body.length > 256) req.destroy(); });
+    req.on('end', () => {
+      try {
+        const parsed = JSON.parse(body || '{}') as { item?: string; count?: number };
+        const valid = ['berry', 'fruit', 'wood', 'branch', 'vine', 'stone', 'meat_raw', 'meat_cooked'];
+        if (!parsed.item || !valid.includes(parsed.item)) {
+          res.writeHead(400, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'expected {item}', valid }));
+          return;
+        }
+        const count = Math.min(parsed.count ?? 1, 20);
+        for (let i = 0; i < count; i++) loop.addItem(parsed.item!);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, item: parsed.item, count }));
       } catch {
         res.writeHead(400, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'invalid json' }));
@@ -141,6 +173,65 @@ const http = createServer((req: IncomingMessage, res: ServerResponse) => {
         loop.setTimeMultiplier(m);
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ ok: true, multiplier: loop.getTimeMultiplier() }));
+      } catch {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'invalid json' }));
+      }
+    });
+    return;
+  }
+  if (req.method === 'GET' && req.url === '/api/admin/character') {
+    // Compact character snapshot for observation tooling. Stats, position,
+    // inventory, current action, life/daily-goal. NOT for frontend rendering
+    // (that path uses WS state_update); intended for scripts/observe.py.
+    const ch = loop.snapshot().character;
+    if (!ch) {
+      res.writeHead(404, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: 'no character' }));
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(
+      JSON.stringify({
+        id: ch.id,
+        iteration: ch.iteration,
+        x: ch.position.x,
+        y: ch.position.y,
+        facing: ch.facing,
+        stats: ch.stats,
+        inventory: ch.inventory,
+        currentAction: ch.currentAction.type,
+        currentTarget: ch.currentAction.target ?? null,
+        lifeGoal: ch.lifeGoal?.text ?? null,
+        dailyGoalStep: ch.dailyGoal
+          ? `${ch.dailyGoal.currentStepIdx}/${ch.dailyGoal.subGoals.length}`
+          : null,
+      }),
+    );
+    return;
+  }
+  if (req.method === 'GET' && req.url === '/api/admin/cortex') {
+    res.writeHead(200, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ enabled: loop.getCortexEnabled() }));
+    return;
+  }
+  if (req.method === 'POST' && req.url === '/api/admin/cortex') {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+      if (body.length > 256) req.destroy();
+    });
+    req.on('end', () => {
+      try {
+        const parsed = JSON.parse(body || '{}') as { enabled?: boolean };
+        if (typeof parsed.enabled !== 'boolean') {
+          res.writeHead(400, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ ok: false, error: 'enabled must be boolean' }));
+          return;
+        }
+        loop.setCortexEnabled(parsed.enabled);
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, enabled: loop.getCortexEnabled() }));
       } catch {
         res.writeHead(400, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ ok: false, error: 'invalid json' }));
@@ -192,6 +283,8 @@ function payloadFromState() {
     resources: state.resources,
     recentEvents: state.recentEvents,
     aiLog: state.aiLog,
+    visibleTiles: state.visibleTiles,
+    exploredTiles: state.exploredTiles,
   };
 }
 
@@ -236,6 +329,8 @@ loop.start((state) => {
     resources: state.resources,
     recentEvents: state.recentEvents,
     aiLog: state.aiLog,
+    visibleTiles: state.visibleTiles,
+    exploredTiles: state.exploredTiles,
   });
 });
 

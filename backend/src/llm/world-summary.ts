@@ -10,6 +10,7 @@ import type { ChunkVisit } from '../chunk-visit-repo.js';
 import { chunkGridDims } from '../../../shared/spatial.js';
 import type { Character, ResourceType } from '../../../shared/types.js';
 import type { EventRepo } from '../event-repo.js';
+import type { CharacterRepo, LineageTrajectoryRow } from '../character-repo.js';
 
 export type WorldSummary = {
   text: string;
@@ -61,6 +62,30 @@ export function buildWorldSummary(
   ].join('\n') + lessonLine;
 
   return { text, allowedEntities: allowed };
+}
+
+// Lineage trajectory for diagnose+prescribe pattern in life-goal generation.
+// Each row = one past generation in this lineage with the goal it pursued and
+// what it actually accomplished by the time it died. The next gen reads this
+// to spot recurring failure patterns ("3 gens died of thirst at <2 chunks") and
+// pick a goal that addresses the bottleneck rather than rephrasing the same
+// aspiration. Returns empty array if first life or no past deaths.
+export function buildLineageTrajectoryText(
+  characterRepo: CharacterRepo,
+  lineageId: number,
+  limit: number,
+): string {
+  const rows: LineageTrajectoryRow[] = characterRepo.loadLineageTrajectory(lineageId, limit);
+  if (rows.length === 0) return '';
+  const lines = rows.map((r) => {
+    const goal = r.goalText ? `"${r.goalText}"` : '(no life goal)';
+    const days = r.daysLived.toFixed(1);
+    const chunks = r.chunksVisited;
+    const resources = r.resourcesDiscovered;
+    const death = r.deathReason ?? 'unknown cause';
+    return `- Gen ${r.iteration}: pursued ${goal} → lived ${days} days, visited ${chunks} chunks, discovered ${resources} resources, died of ${death}`;
+  });
+  return `Past lineage history (most recent first):\n${lines.join('\n')}`;
 }
 
 function loadRecentDeathReasons(eventRepo: EventRepo, limit: number): string[] {

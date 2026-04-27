@@ -9,7 +9,8 @@ import type { Resource } from '../../../shared/types';
 //   fireplace.png      16×16 × 4 frames — animated fire (lit)
 //   fireplace_off.png  16×16 single frame — cold/extinguished pit (no fuel)
 //   chicken.png 16×16 × 6 frames  — top-row walk cycle (bottom row reserved; use flipX for direction)
-//   items.png   16×16 × 4 frames  — [0]=fruit, [1]=berry, [2]=wood log, [3]=vine
+//   items.png   16×16 × 8 frames (4 cols × 2 rows) — [0]=fruit, [1]=berry, [2]=wood log, [3]=vine, [4]=stone
+//   boulder.png 32×32 single frame — mineable stone source (extends upward from tile)
 // (Character sprites are owned by CharacterSprite.ts, not duplicated here.)
 type SheetDef = {
   key: string;
@@ -29,9 +30,10 @@ const SHEETS: readonly SheetDef[] = [
   { key: 'bushes_big', path: '/sprites/tiles/bushes.png?v=4', frameWidth: 32, frameHeight: 16 },
   { key: 'fireplace', path: '/sprites/tiles/fireplace.png?v=3', frameWidth: 16, frameHeight: 16, animFrames: 4, fps: 6 },
   { key: 'fireplace_off', path: '/sprites/tiles/fireplace_off.png?v=1', frameWidth: 16, frameHeight: 16 },
-  { key: 'items', path: '/sprites/tiles/items.png?v=5', frameWidth: 16, frameHeight: 16 },
+  { key: 'items', path: '/sprites/tiles/items.png?v=7', frameWidth: 16, frameHeight: 16 },
+  { key: 'boulder', path: '/sprites/tiles/boulder.png?v=1', frameWidth: 32, frameHeight: 32 },
   { key: 'chicken_walk', path: '/sprites/tiles/chicken.png', frameWidth: 16, frameHeight: 16, animFrames: 6, fps: 6 },
-  { key: 'fish_idle', path: '/sprites/animals/fish_idle.png', frameWidth: 16, frameHeight: 16 },
+  { key: 'fish_idle', path: '/sprites/animals/fish_idle.png?v=3', frameWidth: 16, frameHeight: 16, animFrames: 5, fps: 5 },
 ] as const;
 
 const missing = new Set<string>();
@@ -74,6 +76,9 @@ export type ResourceVisual = {
   // tint. Used for visual state changes that don't justify a separate sheet
   // (e.g. unlit fire = gray dim of the lit frame).
   tint?: number;
+  // Optional alpha (Phaser setAlpha). 1 = opaque (default). Used to blend
+  // entities into their environment (e.g. fish into water).
+  alpha?: number;
 };
 
 export function preloadResourceSprites(scene: Phaser.Scene): void {
@@ -153,20 +158,30 @@ export function visualFor(scene: Phaser.Scene, r: Resource): ResourceVisual | nu
       // items.png frame 2 = chopped wood log, sitting on the ground (centre-anchor).
       return { sheetKey: 'items', frame: 2, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
     }
-    case 'fruit_on_ground': {
+    case 'fruit': {
       if (!available(scene, 'items')) return null;
       // items.png frame 0 = fruit, sitting where it fell from the canopy.
       return { sheetKey: 'items', frame: 0, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
     }
-    case 'branch_on_ground': {
+    case 'branch': {
       // Reuse wood log frame until a dedicated branch sprite lands.
       if (!available(scene, 'items')) return null;
       return { sheetKey: 'items', frame: 2, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
     }
-    case 'vine_on_ground': {
+    case 'vine': {
       if (!available(scene, 'items')) return null;
       // items.png frame 3 = vine.
       return { sheetKey: 'items', frame: 3, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
+    }
+    case 'stone': {
+      if (!available(scene, 'items')) return null;
+      // items.png frame 4 = stone (bottom-row, first column).
+      return { sheetKey: 'items', frame: 4, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
+    }
+    case 'boulder': {
+      if (!available(scene, 'boulder')) return null;
+      // 32×32 sprite, bottom-anchored to occupy its tile + extend upward.
+      return { sheetKey: 'boulder', frame: 0, anchorX: 0.5, anchorY: 1, animate: false, depthOffset: 0 };
     }
     case 'bush': {
       if (!available(scene, 'bushes')) return null;
@@ -225,7 +240,7 @@ export function visualFor(scene: Phaser.Scene, r: Resource): ResourceVisual | nu
     }
     case 'animal_fish': {
       if (!available(scene, 'fish_idle')) return null;
-      return { sheetKey: 'fish_idle', frame: 0, anchorX: 0.5, anchorY: 0.5, animate: false, depthOffset: 0 };
+      return { sheetKey: 'fish_idle', frame: 0, anchorX: 0.5, anchorY: 0.5, animate: true, depthOffset: 0, alpha: 0.75 };
     }
     default:
       return null;

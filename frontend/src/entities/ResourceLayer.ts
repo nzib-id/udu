@@ -3,7 +3,6 @@ import { MAP_CONFIG, NETWORK_CONFIG } from '../../../shared/config';
 import type { Resource } from '../../../shared/types';
 import { visualFor, type ResourceVisual } from './SpriteRegistry';
 
-const COLOR_RIVER_RIPPLE = 0x6db3d8;
 const COLOR_BUSH = 0x1f4f24;
 const COLOR_BUSH_BERRY = 0xc33a3a;
 const COLOR_TREE_TRUNK = 0x4a3523;
@@ -19,7 +18,7 @@ const COLOR_FISH = 0xb0d0e8;
 
 // Server emits continuous chicken positions per broadcast — tween just smooths across that interval.
 const MOVE_TWEEN_MS = NETWORK_CONFIG.stateBroadcastMs;
-// River tiles are painted by TerrainLayer; here we only track their positions for the ripple overlay.
+// River tiles are painted by TerrainLayer; we only need this set to skip rendering them as resources here.
 const RIVER_TYPES = new Set<Resource['type']>(['river']);
 
 type EntityGo = Phaser.GameObjects.Graphics | Phaser.GameObjects.Sprite;
@@ -50,21 +49,15 @@ const TREE_FADE_ALPHA = 0.35;
 const TREE_FADE_LERP = 0.18;
 
 export class ResourceLayer {
-  private rippleGfx: Phaser.GameObjects.Graphics;
   private entities = new Map<string, Entity>();
-  private riverTiles: Array<{ x: number; y: number }> = [];
-  // Tree currently being shaken by the character (server action `shake_tree`).
+  // Tree currently being shaken by the character (server action `shake`).
   // Canopy rotates while this is set; reset to null once action ends.
   private shakingTreeId: string | null = null;
   private shakeTween: Phaser.Tweens.Tween | null = null;
   private charTileX = -999;
   private charTileY = -999;
 
-  constructor(private scene: Phaser.Scene) {
-    this.rippleGfx = scene.add.graphics();
-    // Ripple floats just above the terrain atlas (depth 0) but well below any entity/character.
-    this.rippleGfx.setDepth(1);
-  }
+  constructor(private scene: Phaser.Scene) {}
 
   setShakingTree(treeId: string | null): void {
     if (this.shakingTreeId === treeId) return;
@@ -98,8 +91,6 @@ export class ResourceLayer {
   }
 
   render(resources: Resource[]): void {
-    this.riverTiles = resources.filter((r) => RIVER_TYPES.has(r.type)).map((r) => ({ x: r.x, y: r.y }));
-
     const seen = new Set<string>();
     const nowMs = performance.now();
     const { tileSize } = MAP_CONFIG;
@@ -133,7 +124,7 @@ export class ResourceLayer {
           lastResource: r,
         });
         // Fruit that just fell from a tree — drop it from ~1 tile above with a bounce.
-        if (r.type === 'fruit_on_ground' && visual) {
+        if (r.type === 'fruit' && visual) {
           const landY = go.y;
           go.y = landY - tileSize;
           this.scene.tweens.add({
@@ -183,9 +174,22 @@ export class ResourceLayer {
           drawShapeBody(g, r, tileSize);
         } else {
           // Same base sprite — but decoration count (fruits/berries) may have
-          // changed. Refresh the cached visual ref so tweenEntities sees the
-          // new decoration positions.
+          // changed, or the tint/animate state flipped (e.g. fire lit→unlit
+          // keeps frame=0 but swaps tint + stops the burn animation). Refresh
+          // tint + anim on the existing sprite so we don't pay a destroy/recreate.
           existing.visual = nextVisual;
+          if (existing.isSprite && nextVisual) {
+            const spr = existing.go as Phaser.GameObjects.Sprite;
+            if (nextVisual.tint !== undefined && nextVisual.tint !== 0xffffff) spr.setTint(nextVisual.tint);
+            else spr.clearTint();
+            spr.setAlpha(nextVisual.alpha ?? 1);
+            if (nextVisual.animate && this.scene.anims.exists(nextVisual.sheetKey)) {
+              spr.play(nextVisual.sheetKey, true);
+            } else if (!nextVisual.animate) {
+              spr.stop();
+              spr.setFrame(nextVisual.frame);
+            }
+          }
         }
         for (const d of existing.decorations) d.destroy();
         existing.decorations = this.createDecorations(r, nextVisual, tileSize);
@@ -239,12 +243,11 @@ export class ResourceLayer {
     return sprite;
   }
 
-  // Called every frame by MapScene — drives ambient flicker/ripple + tween interp.
+  // Called every frame by MapScene — drives ambient flicker + tween interp.
   tick(nowMs: number): void {
     this.tweenEntities(nowMs);
     this.animateFireShape(nowMs);
     this.animateFish(nowMs);
-    this.animateRipple(nowMs);
   }
 
   private createEntityGo(r: Resource, visual: ResourceVisual | null, ts: number): EntityGo {
@@ -257,7 +260,15 @@ export class ResourceLayer {
       );
       sprite.setOrigin(visual.anchorX, visual.anchorY);
       sprite.setDepth(sprite.y + visual.depthOffset);
+      if (visual.tint !== undefined && visual.tint !== 0xffffff) sprite.setTint(visual.tint);
+      if (visual.alpha !== undefined && visual.alpha !== 1) sprite.setAlpha(visual.alpha);
       if (visual.animate && this.scene.anims.exists(visual.sheetKey)) sprite.play(visual.sheetKey, true);
+      // Lit fire gets a tight rim glow on top of the wide FireLightLayer pool —
+      // the pool gives the room-lighting feel, this gives the flame itself an aura.
+      if (visual.sheetKey === 'fireplace' && sprite.preFX) {
+        sprite.preFX.setPadding(8);
+        sprite.preFX.addGlow(0xffaa55, 3, 0, false, 0.1, 8);
+      }
       return sprite;
     }
     // Shape fallback — draws at (0,0) in its own graphics coordinate space.
@@ -291,7 +302,7 @@ export class ResourceLayer {
         ent.overlay.setDepth(ent.go.y + ent.visual.overlay.depthBias);
       }
       // Tree fade: lerp trunk + canopy alpha when character occupies same tile.
-      if (ent.type === 'tree') {
+      if (ent.type === 'tree_fruit' || ent.type === 'tree_vine' || ent.type === 'tree_wood') {
         const dx = Math.abs(ent.toX - this.charTileX);
         const dy = Math.abs(ent.toY - this.charTileY);
         const target = dx <= 1 && dy <= 1 ? TREE_FADE_ALPHA : 1;
@@ -339,20 +350,6 @@ export class ResourceLayer {
     }
   }
 
-  private animateRipple(nowMs: number): void {
-    if (this.riverTiles.length === 0) return;
-    const { tileSize } = MAP_CONFIG;
-    const g = this.rippleGfx;
-    g.clear();
-    g.fillStyle(COLOR_RIVER_RIPPLE, 0.25);
-    for (let i = 0; i < 8; i++) {
-      const base = this.riverTiles[(i * 7) % this.riverTiles.length];
-      const t = (nowMs / 1800 + i * 0.13) % 1;
-      const offsetY = t * tileSize - tileSize / 2;
-      const size = 1.5 + Math.sin(nowMs / 600 + i) * 0.6;
-      g.fillCircle(base.x * tileSize + tileSize / 2, base.y * tileSize + offsetY, size);
-    }
-  }
 }
 
 function visualHeight(ent: Entity): number {
@@ -393,16 +390,20 @@ function drawShapeBody(g: Phaser.GameObjects.Graphics, r: Resource, ts: number):
       }
       return;
     }
-    case 'tree': {
+    case 'tree_fruit':
+    case 'tree_vine':
+    case 'tree_wood': {
       g.fillStyle(COLOR_TREE_TRUNK, 1);
       g.fillRect(ts / 2 - 1, ts - 5, 2, 5);
       g.fillStyle(COLOR_TREE_CANOPY, 1);
       g.fillCircle(ts / 2, ts / 2 - 1, ts / 2);
-      const fruits = Number(r.state?.fruits ?? 0);
-      g.fillStyle(COLOR_TREE_FRUIT, 1);
-      for (let i = 0; i < fruits; i++) {
-        const a = (i / Math.max(1, fruits)) * Math.PI * 2 + Math.PI / 6;
-        g.fillCircle(ts / 2 + Math.cos(a) * (ts / 3), ts / 2 - 1 + Math.sin(a) * (ts / 3), 1.4);
+      if (r.type === 'tree_fruit') {
+        const fruits = Number(r.state?.fruits ?? 0);
+        g.fillStyle(COLOR_TREE_FRUIT, 1);
+        for (let i = 0; i < fruits; i++) {
+          const a = (i / Math.max(1, fruits)) * Math.PI * 2 + Math.PI / 6;
+          g.fillCircle(ts / 2 + Math.cos(a) * (ts / 3), ts / 2 - 1 + Math.sin(a) * (ts / 3), 1.4);
+        }
       }
       return;
     }

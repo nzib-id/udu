@@ -1,0 +1,29 @@
+=== Udu observation run ===
+Started: 2026-04-26T16:52:55
+Ended:   2026-04-26T18:36:40
+Until-gen target: 6
+Total decisions: 552
+
+=== Decision distribution ===
+  sleep                      105  ( 19.0%)
+  wander_s                    87  ( 15.8%)
+  wander_n                    79  ( 14.3%)
+  eat_berry_inv               62  ( 11.2%)
+  forage_bush                 60  ( 10.9%)
+  wander_sw                   35  (  6.3%)
+  wander_nw                   23  (  4.2%)
+  drink_river                 19  (  3.4%)
+  wander_ne                   18  (  3.3%)
+  wander_e                    16  (  2.9%)
+  wander_se                   15  (  2.7%)
+  pee_now                     14  (  2.5%)
+  wander_w                     9  (  1.6%)
+  shake_tree                   6  (  1.1%)
+  warm_at_fire                 3  (  0.5%)
+  sleep_now                    1  (  0.2%)
+
+=== Deaths ===
+iter,reason,lifespan_gh,x,y,chunks_visited,resources_discovered,life_goal,diagnosis
+
+=== Rules by gen ===
+[start]

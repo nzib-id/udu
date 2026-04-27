@@ -1,0 +1,67 @@
+{
+  "rules": [
+    {
+      "id": "4707cf15-0596-49f2-a539-cff4725d2cce",
+      "text": "Eating fruit decreases hunger and energy",
+      "confidence": 0.99,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "2260587a-e73c-4233-8c4f-e0bbd375e125",
+      "text": "Sleeping regenerates energy",
+      "confidence": 0.99,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "776628dd-da0c-445c-8127-f3a26e6fa20d",
+      "text": "Walking in a direction increases path length",
+      "confidence": 0.99,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "a9243fe7-828a-4186-b3ae-19da89defc26",
+      "text": "Drinking from a river decreases thirst",
+      "confidence": 0.99,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "431e7f40-0f56-473a-971d-02d566d32b5c",
+      "text": "Shaking a tree without fruit drops no wood",
+      "confidence": 0.99,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "29b104ae-15b7-4f23-82e4-5c29de857ef1",
+      "text": "Picking up berries increases inventory count",
+      "confidence": 0.94,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "c4262440-c2f6-4c5e-863b-0712569cd6fb",
+      "text": "Shaking a tree without fruit causes no inventory change",
+      "confidence": 0.94,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "b97fdbc1-9296-459b-9e7b-d184e55f6bd3",
+      "text": "Defecating does not affect inventory",
+      "confidence": 0.9000000000000004,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    },
+    {
+      "id": "1c730ed7-c5ca-4d82-ba4a-4b51d79cb011",
+      "text": "Picking up fruit from ground increases inventory count",
+      "confidence": 0.6000000000000001,
+      "learnedAtDay": 3,
+      "learnedAtIteration": 2
+    }
+  ]
+}

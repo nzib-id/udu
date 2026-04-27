@@ -9,7 +9,7 @@
 // reflection, so a slow/dead Ollama can't freeze gameplay.
 
 import type { EventRepo } from '../event-repo.js';
-import type { RuleRepo } from '../rule-repo.js';
+import { applyConfidenceDecay, type RuleRepo } from '../rule-repo.js';
 import { generate, type OllamaOptions } from './ollama-client.js';
 import { buildReflectionPrompt } from './prompt-reflection.js';
 
@@ -18,7 +18,7 @@ import { buildReflectionPrompt } from './prompt-reflection.js';
 // think, so 90s leaves room for cold-start + a fat day.
 const REFLECTION_TIMEOUT_MS = 90_000;
 
-type RuleEmit = { text: string; confidence: number };
+type RuleEmit = { text: string; confidence: number; prior_idx: number | null };
 type ReflectionPayload = { rules: RuleEmit[]; summary?: string };
 
 export type ReflectionInput = {
@@ -64,13 +64,17 @@ export async function runReflection(
     return { ok: false, reason: 'parse' };
   }
 
-  const valid = parsed.rules.filter((r) => r.text.trim().length > 0 && r.confidence >= 0.4);
+  // Decay merge: boost confirmed priors, decay untested priors, drop below 0.40,
+  // pass through new rules. Result is the lineage's full active rule set after
+  // this reflection — replaces, not appends.
+  const merged = applyConfidenceDecay(priorRules, parsed.rules);
+  const valid = merged.filter((r) => r.text.trim().length > 0 && r.confidence >= 0.4);
   if (valid.length === 0) {
-    log('[reflection] no rules above confidence floor (0.4)');
+    log('[reflection] no rules above confidence floor (0.4) after decay');
     return { ok: false, reason: 'empty' };
   }
 
-  const added = rules.save(input.lineageId, input.iteration, input.gameDay, valid);
+  const added = rules.replaceActive(input.lineageId, input.iteration, input.gameDay, valid);
   const summary = parsed.summary ?? '';
   log(
     `[reflection] D${input.gameDay} iter=${input.iteration} +${added} rules in ${res.totalDurationMs}ms — ${summary}`,
@@ -93,7 +97,10 @@ function parsePayload(text: string): ReflectionPayload | null {
       const t = typeof rec.text === 'string' ? rec.text.trim() : '';
       const c = typeof rec.confidence === 'number' ? rec.confidence : NaN;
       if (t.length === 0 || !Number.isFinite(c)) continue;
-      rules.push({ text: t, confidence: clamp01(c) });
+      const priorIdx = typeof rec.prior_idx === 'number' && Number.isInteger(rec.prior_idx)
+        ? rec.prior_idx
+        : null;
+      rules.push({ text: t, confidence: clamp01(c), prior_idx: priorIdx });
     }
     const summary = typeof obj.summary === 'string' ? obj.summary : undefined;
     return { rules, summary };

@@ -13,13 +13,15 @@ import {
   REGEN_CONFIG,
   REST_CONFIG,
   SICKNESS_CONFIG,
+  SICKNESS_FUNNEL,
+  TEMPERATURE_CONFIG,
   THRESHOLDS,
   TILE_DECAY,
   TIME_CONFIG,
   VISION_CONFIG,
-  WOOD_CONFIG,
 } from '../../shared/config.js';
 import { CIRCADIAN, currentPhase } from '../../shared/circadian.js';
+import { canCarry } from '../../shared/inventory.js';
 import type { CharacterRepo } from './character-repo.js';
 import type { ResourceRepo } from './resource-repo.js';
 import type { EventRepo } from './event-repo.js';
@@ -28,7 +30,7 @@ import type { SpatialMemoryRepo, RememberedResource } from './spatial-memory-rep
 import type { ChunkVisitRepo, ChunkVisit } from './chunk-visit-repo.js';
 import type { DailyGoalRepo } from './daily-goal-repo.js';
 import { tileToChunk, chunkKey } from '../../shared/spatial.js';
-import { computeBlocked, decide, type ActionPlan } from './ai.js';
+import { computeBlocked, cortexDecide, decide, enumerateFeedOptions, enumerateWanderOptions, type ActionPlan, type DecideResult, type WanderHints } from './ai.js';
 import {
   LlmChoicePicker,
   RuleBasedChoicePicker,
@@ -68,10 +70,9 @@ export class GameLoop {
   private lineageId = 0;
   private lastHourKey = -1;
   private lastDayKey = -1;
-  private lastWoodDropHourKey = -1;
+  private lastTreeDropHourKey = -1;
   private lastChickenRespawnHourKey = -1;
   private lastFishRespawnHourKey = -1;
-  private cookTicksLeft = 0;
   private restEndsAtMs: number | null = null;
   // One-tick-deferred final action. Set when a plan's path empties; on the
   // following tick we run executeFinal and (for non-continuous actions) reset
@@ -91,7 +92,7 @@ export class GameLoop {
   private decideInFlight = false;
   private picker: ChoicePicker;
   // Action-effect log fed to the LLM so it can induce cause→effect from its own
-  // history (shake_tree gave 0 hunger, eat_fruit gave +5, etc.) instead of
+  // history (shake gave 0 hunger, eat fruit gave +5, etc.) instead of
   // being told the mechanics in the prompt. Reset on death — each generation
   // re-discovers, until reflection persists rules into spirit memory.
   private observations: Observation[] = [];
@@ -126,7 +127,34 @@ export class GameLoop {
   // on init/respawn; if the previous call hasn't returned, the next trigger
   // is dropped silently so Ollama isn't double-hit.
   private dailyGoalInFlight = false;
+  private pendingChunkVisitedNew = false;
+  // Set when the character is woken early from sleep by a triggered need. For
+  // one decide cycle, sleep is suppressed so the waking need gets a chance to
+  // be handled before the character immediately re-sleeps (thrash prevention).
+  private suppressSleepUntilTick = -1;
+  // Cortex mode — when true, every decide() call routes through cortexDecide()
+  // which presents the LLM with a flat menu of every possible action and lets
+  // it pick freely, bypassing utility-AI urgency triggers. Falls back to legacy
+  // decide() on LLM failure or invalid pick. Toggle via /api/admin/cortex.
+  private cortexEnabled = true;
+  // Pure-LLM escape valve: counts consecutive cortex cycles that returned null
+  // (LLM picked an invalid action / timeout / parse fail). At threshold the
+  // game-loop forces a random direction wander to change position → change
+  // rememberedSummary → break the prompt-repeats-itself loop. Reset on any
+  // valid pick. See triggerEscapeWander() for the mechanism.
+  private consecutiveCortexFailures = 0;
   private lastVisionTick = -1;
+  // Last vision-cone result — exposed via snapshot() so the frontend fog-of-war
+  // can render exactly the tiles the LLM perceives. Updated by
+  // scanVisionAndUpdateMemory(); empty between scans (every VISION_CONFIG.scanEveryTicks
+  // ticks the cone is recomputed). Cleared on respawn so the new character
+  // starts with no inherited visibility.
+  private lastVisibleTiles: Set<string> = new Set();
+  // Cumulative tiles ever inside the vision cone this lifetime — frontend fog
+  // uses this to paint "explored but not currently visible" so a mid-life
+  // client reconnect shows true accumulated exploration, not a partial trail
+  // built from when the WS handshake completed. Cleared on respawn.
+  private cumulativeExploredTiles: Set<string> = new Set();
   // Rolling AI debug feed surfaced via state_update so the HUD can render
   // recent decisions, vision discoveries, and lineage transitions. Newest at
   // index 0; capped at AI_LOG_MAX. Cleared on respawn so each new generation
@@ -167,7 +195,7 @@ export class GameLoop {
     const hourKey = t.day * TIME_CONFIG.gameHoursPerDay + t.hour;
     this.lastHourKey = hourKey;
     this.lastDayKey = t.day;
-    this.lastWoodDropHourKey = hourKey;
+    this.lastTreeDropHourKey = hourKey;
     this.lastChickenRespawnHourKey = hourKey;
     this.lastFishRespawnHourKey = hourKey;
     this.currentDayStartMs = Date.now();
@@ -265,6 +293,8 @@ export class GameLoop {
       knownResources: known,
       chunkVisits: visits,
       eventRepo: this.eventRepo,
+      characterRepo: this.repo,
+      lineageId: this.lineageId,
       cachedRules: this.cachedRules,
       ollama: opts,
       gameDay,
@@ -276,7 +306,13 @@ export class GameLoop {
         this.character.lifeGoal = goal;
         this.repo.persist(this.character);
         this.pushLog('pick', `life-goal: ${goal.text} (priority ${goal.priority})`);
-        this.logEvent('life_goal_set', { goal: goal.text, reason: goal.reason, priority: goal.priority });
+        if (goal.diagnosis) this.pushLog('pick', `diagnosis: ${goal.diagnosis}`);
+        this.logEvent('life_goal_set', {
+          goal: goal.text,
+          reason: goal.reason,
+          priority: goal.priority,
+          diagnosis: goal.diagnosis ?? null,
+        });
       })
       .catch((err) => {
         console.warn('[life-goal] uncaught error:', err);
@@ -357,6 +393,10 @@ export class GameLoop {
           summary: goal.summary,
           steps: goal.subGoals.length,
         });
+        if (this.pendingChunkVisitedNew) {
+          this.pendingChunkVisitedNew = false;
+          this.evaluateDailyGoalCheck({ kind: 'chunk_visited_new' });
+        }
       })
       .catch((err) => {
         console.warn('[daily-goal] uncaught error:', err);
@@ -373,7 +413,7 @@ export class GameLoop {
       this.maybeRespawn();
       this.applyHourlyDecay();
       this.applyDailyRegen();
-      this.applyWoodDrop();
+      this.applyTreeAutoDrop();
       this.applyAnimalRespawn();
       this.advanceAnimals();
       // Fire-and-forget — advanceAI mutates this.plan / character.currentAction
@@ -394,7 +434,7 @@ export class GameLoop {
     if (this.tickCount - this.lastVisionTick < VISION_CONFIG.scanEveryTicks) return;
     this.lastVisionTick = this.tickCount;
     const t = this.gameTime();
-    const range = visionRangeForHour(t.hour);
+    const range = visionRangeForHour(t.hour, { nearLitFire: this.isCharNearLitFire() });
     const result = scanVision(
       this.character.position,
       this.character.facing,
@@ -402,6 +442,8 @@ export class GameLoop {
       this.blocked,
       { range, fovDegrees: VISION_CONFIG.fovDegrees },
     );
+    this.lastVisibleTiles = result.tilesInCone;
+    for (const t of result.tilesInCone) this.cumulativeExploredTiles.add(t);
     const now = Date.now();
     const newlyDiscovered: Resource[] = [];
     for (const r of result.visibleResources) {
@@ -447,12 +489,28 @@ export class GameLoop {
     return true;
   }
 
-  /** Mutate a stat value directly (admin/test). Returns false if no live character or unknown stat. */
-  setStat(stat: 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness' | 'health', value: number): boolean {
+  /** Mutate a stat value directly (admin/test). Returns false if no live character or unknown stat.
+   * Temperature is unbounded (it's degrees C, not a 0-100 score) so it skips the cap. */
+  setStat(
+    stat: 'hunger' | 'thirst' | 'bladder' | 'energy' | 'sickness' | 'health' | 'temperature',
+    value: number,
+  ): boolean {
     if (!this.character || !this.character.isAlive) return false;
-    const max = stat === 'health' ? HEALTH_CONFIG.max : 100;
-    const v = Math.max(0, Math.min(max, value));
+    let v: number;
+    if (stat === 'temperature') {
+      v = value;
+    } else {
+      const max = stat === 'health' ? HEALTH_CONFIG.max : 100;
+      v = Math.max(0, Math.min(max, value));
+    }
     this.character.stats[stat] = v;
+    this.repo.persist(this.character);
+    return true;
+  }
+
+  addItem(item: string): boolean {
+    if (!this.character || !this.character.isAlive) return false;
+    this.character.inventory.push(item);
     this.repo.persist(this.character);
     return true;
   }
@@ -530,7 +588,34 @@ export class GameLoop {
       s.thirst = clamp(s.thirst - DECAY_RATES.thirstPerGameHour * CIRCADIAN.thirstDecay[phase] * restMul);
       s.bladder = clamp(s.bladder + DECAY_RATES.bladderPerGameHour * CIRCADIAN.bladderDecay[phase] * restMul);
       s.energy = clamp(s.energy - energyRate);
-      s.sickness = clamp((s.sickness ?? 0) - SICKNESS_CONFIG.decayPerGameHour);
+
+      // Sickness funnel: bladder pinned at 100 actively makes char sick;
+      // recovery only when bladder is comfortably low. Raw-meat lingering is
+      // approximated by the +20 spike from eating raw meat + slow -2/h recovery
+      // (≈10 game-hours to clear), so no extra "raw meat in system" tracker.
+      const sickness = s.sickness ?? 0;
+      if (s.bladder >= SICKNESS_FUNNEL.bladderFullThreshold) {
+        s.sickness = clamp(sickness + SICKNESS_FUNNEL.bladderFullDrainPerGameHour);
+      } else if (s.bladder < SICKNESS_FUNNEL.recoveryBladderCeil) {
+        s.sickness = clamp(sickness - SICKNESS_FUNNEL.recoveryPerGameHour);
+      } else {
+        s.sickness = sickness; // bladder mid-range: hold steady
+      }
+
+      // Fire fuel — burn one wood per game-hour while lit. Out of fuel → unlit.
+      // Run BEFORE temperature drift so the same hour's fire warmth uses the
+      // post-burn lit state (fuel ran out this hour → no warmth bonus).
+      this.burnFireForOneGameHour();
+
+      // Temperature drift toward ambient. Fire radius (lit only) overrides
+      // ambient to TEMPERATURE_CONFIG.fireWarmthAmbient. Drift rate caps at
+      // 18°C/game-hour (0.3°C/game-min × 60) so body temp lags strategic-fast,
+      // not instant.
+      this.applyTemperatureDriftForOneGameHour(hourOfDay);
+
+      // Temperature → drive drain. Cold burns hunger+energy, hot burns thirst.
+      // Sleep halves drain; sleeping in lit-fire radius = full immunity.
+      this.applyTemperatureDrainForOneGameHour(sleeping);
 
       // HP processing — drives at 0 drain at distinct rates, sickness ≥80
       // drains, regen kicks in when thriving and awake. Multiple drains stack
@@ -541,6 +626,90 @@ export class GameLoop {
 
     if (s.health <= 0 && this.character.isAlive) {
       this.triggerDeath(this.lastHpCause);
+    }
+  }
+
+  /** Find the fire resource (single fire pit; first hit wins). */
+  private findFire(): Resource | undefined {
+    return this.resources.find((r) => r.type === 'fire');
+  }
+
+  /** True if char is within warmth radius of a LIT fire. */
+  private isCharNearLitFire(): boolean {
+    if (!this.character) return false;
+    const fire = this.findFire();
+    if (!fire) return false;
+    if (fire.state.lit === false) return false;
+    const dx = this.character.position.x - fire.x;
+    const dy = this.character.position.y - fire.y;
+    return Math.hypot(dx, dy) <= FIRE_CONFIG.warmthRadius;
+  }
+
+  /** Target ambient °C for the current hour. Fire radius + lit overrides phase. */
+  private computeAmbient(hourOfDay: number): number {
+    if (this.isCharNearLitFire()) return TEMPERATURE_CONFIG.fireWarmthAmbient;
+    const phase = currentPhase(hourOfDay);
+    return TEMPERATURE_CONFIG.phaseAmbient[phase];
+  }
+
+  /** Drift body temperature toward ambient one game-hour at a time. */
+  private applyTemperatureDriftForOneGameHour(hourOfDay: number): void {
+    if (!this.character) return;
+    const s = this.character.stats;
+    const target = this.computeAmbient(hourOfDay);
+    const delta = target - s.temperature;
+    if (delta === 0) return;
+    const maxStep = TEMPERATURE_CONFIG.driftPerGameMinute * TIME_CONFIG.gameMinutesPerHour;
+    const step = Math.sign(delta) * Math.min(Math.abs(delta), maxStep);
+    s.temperature = s.temperature + step;
+  }
+
+  /** Apply one game-hour of temperature-driven drive drain. */
+  private applyTemperatureDrainForOneGameHour(sleeping: boolean): void {
+    if (!this.character) return;
+    const s = this.character.stats;
+    const t = s.temperature;
+    const tiers = TEMPERATURE_CONFIG.drainTiers;
+    let tier: { hunger: number; energy: number; thirst: number } | null = null;
+    if (t < tiers.coldExtreme.range[1]) tier = tiers.coldExtreme;
+    else if (t < tiers.coldSevere.range[1]) tier = tiers.coldSevere;
+    else if (t < tiers.coldMild.range[1]) tier = tiers.coldMild;
+    else if (t < tiers.hotMild.range[1]) tier = null; // 20-30 comfort
+    else if (t < tiers.hotSevere.range[0]) tier = tiers.hotMild;
+    else tier = tiers.hotSevere;
+    if (!tier) return;
+
+    // Sleep + fire-radius + lit = full immunity (Option B). Sleep alone = 0.5×.
+    let modifier = 1;
+    if (sleeping) {
+      if (TEMPERATURE_CONFIG.fireSleepImmunity && this.isCharNearLitFire()) {
+        modifier = 0;
+      } else {
+        modifier = TEMPERATURE_CONFIG.sleepDrainMultiplier;
+      }
+    }
+    if (modifier === 0) return;
+
+    s.hunger = clamp(s.hunger - tier.hunger * modifier);
+    s.energy = clamp(s.energy - tier.energy * modifier);
+    s.thirst = clamp(s.thirst - tier.thirst * modifier);
+  }
+
+  /** Burn one game-hour of fuel from each lit fire. Unlit when fuel hits 0. */
+  private burnFireForOneGameHour(): void {
+    for (const r of this.resources) {
+      if (r.type !== 'fire') continue;
+      const lit = r.state.lit !== false;
+      if (!lit) continue;
+      const fuel = typeof r.state.fuel === 'number' ? r.state.fuel : FIRE_CONFIG.initialFuel;
+      const next = fuel - FIRE_CONFIG.burnPerGameHour;
+      if (next <= 0) {
+        r.state = { ...r.state, fuel: 0, lit: false };
+        this.logEvent('fire_unlit', { id: r.id });
+      } else {
+        r.state = { ...r.state, fuel: next };
+      }
+      this.resourceRepo.persist(r);
     }
   }
 
@@ -592,7 +761,16 @@ export class GameLoop {
     c.isAlive = false;
     c.currentAction = { type: 'idle', startedAt: deathTime };
     this.plan = null;
-    this.repo.recordDeath(c.id, deathTime, reason, lifespanGameHours);
+    const chunksVisitedAtDeath = this.chunkVisits.size;
+    const resourcesDiscoveredAtDeath = this.knownResources.size;
+    this.repo.recordDeath(
+      c.id,
+      deathTime,
+      reason,
+      lifespanGameHours,
+      chunksVisitedAtDeath,
+      resourcesDiscoveredAtDeath,
+    );
     const t = this.gameTime();
     this.logEvent('death', {
       reason,
@@ -620,6 +798,8 @@ export class GameLoop {
     this.chunkVisitRepo.clearFor(c.id);
     this.chunkVisits.clear();
     this.lastChunkKey = null;
+    this.lastVisibleTiles.clear();
+    this.cumulativeExploredTiles.clear();
     this.respawnAt = Date.now() + DEATH_CONFIG.respawnDelayMs;
     this.lastHpCause = 'starvation';
   }
@@ -638,6 +818,9 @@ export class GameLoop {
     this.deathPosition = null;
     this.lastHpCause = 'starvation';
     this.observations = [];
+    this.pendingChunkVisitedNew = false;
+    this.suppressSleepUntilTick = -1;
+    this.consecutiveCortexFailures = 0;
     // New generation inherits the latest rules — pick up anything reflection
     // emitted during the previous life or in the gap between death and respawn.
     this.refreshRulesCache();
@@ -691,9 +874,13 @@ export class GameLoop {
     const currentDay = this.gameTime().day;
     if (currentDay <= this.lastDayKey) return;
     let bushGain = 0;
-    let treeGain = 0;
+    let fruitGain = 0;
+    let vineGain = 0;
+    let branchGain = 0;
     for (let day = this.lastDayKey + 1; day <= currentDay; day++) {
-      const treesRegenToday = day % REGEN_CONFIG.treeFruitEveryDays === 0;
+      const fruitRegenToday = day % REGEN_CONFIG.treeFruitEveryDays === 0;
+      const vineRegenToday = day % REGEN_CONFIG.treeVineEveryDays === 0;
+      // tree_wood refills 1 branch every game-day (treeWoodRefillGameHours=24).
       for (const r of this.resources) {
         if (r.state?.barren) continue;
         if (r.type === 'bush') {
@@ -704,21 +891,37 @@ export class GameLoop {
             this.resourceRepo.persist(r);
             bushGain += next - cur;
           }
-        } else if (r.type === 'tree' && treesRegenToday) {
+        } else if (r.type === 'tree_fruit' && fruitRegenToday) {
           const cur = Number(r.state?.fruits ?? 0);
           if (cur < REGEN_CONFIG.treeFruitsMax) {
             const next = Math.min(cur + REGEN_CONFIG.treeFruitPerCycle, REGEN_CONFIG.treeFruitsMax);
             r.state = { ...r.state, fruits: next };
             this.resourceRepo.persist(r);
-            treeGain += next - cur;
+            fruitGain += next - cur;
+          }
+        } else if (r.type === 'tree_vine' && vineRegenToday) {
+          const cur = Number(r.state?.vines ?? 0);
+          if (cur < REGEN_CONFIG.treeVinesMax) {
+            const next = Math.min(cur + 1, REGEN_CONFIG.treeVinesMax);
+            r.state = { ...r.state, vines: next };
+            this.resourceRepo.persist(r);
+            vineGain += next - cur;
+          }
+        } else if (r.type === 'tree_wood') {
+          const cur = Number(r.state?.branches ?? 0);
+          if (cur < REGEN_CONFIG.treeWoodBranchesMax) {
+            const next = Math.min(cur + 1, REGEN_CONFIG.treeWoodBranchesMax);
+            r.state = { ...r.state, branches: next };
+            this.resourceRepo.persist(r);
+            branchGain += next - cur;
           }
         }
       }
     }
     const previousDay = this.lastDayKey;
     this.lastDayKey = currentDay;
-    if (bushGain > 0 || treeGain > 0) {
-      this.logEvent('resource_regen', { day: currentDay, bushGain, treeGain });
+    if (bushGain > 0 || fruitGain > 0 || vineGain > 0 || branchGain > 0) {
+      this.logEvent('resource_regen', { day: currentDay, bushGain, fruitGain, vineGain, branchGain });
     }
     // Day boundary: kick off reflection asynchronously for the day that just
     // ended. Background — won't block the tick. New rules land in cachedRules
@@ -764,26 +967,71 @@ export class GameLoop {
       });
   }
 
-  private applyWoodDrop(): void {
+  // Phase A.1 — every `treeAutoDropGameHours`, each productive tree releases
+  // one item from its stash to an adjacent ground tile. Net daily yield is
+  // gated by refill (handled in applyDailyRegen), this loop just controls how
+  // long product sits "on the tree" before falling. Skipped if stash empty
+  // or no free adjacent tile.
+  private applyTreeAutoDrop(): void {
     const t = this.gameTime();
     const hourKey = t.day * TIME_CONFIG.gameHoursPerDay + t.hour;
-    if (hourKey - this.lastWoodDropHourKey < WOOD_CONFIG.dropEveryGameHours) return;
-    this.lastWoodDropHourKey = hourKey;
+    if (hourKey - this.lastTreeDropHourKey < REGEN_CONFIG.treeAutoDropGameHours) return;
+    this.lastTreeDropHourKey = hourKey;
 
-    const trees = this.resources.filter((r) => r.type === 'tree');
     const occupied = this.occupiedTiles();
-    let dropped = 0;
-    for (const tree of trees) {
+    let droppedFruit = 0;
+    let droppedBranch = 0;
+    let droppedVine = 0;
+
+    for (const tree of this.resources) {
+      let stashKey: 'fruits' | 'branches' | 'vines';
+      let groundType: 'fruit' | 'branch' | 'vine';
+      let idPrefix: string;
+      if (tree.type === 'tree_fruit') {
+        stashKey = 'fruits';
+        groundType = 'fruit';
+        idPrefix = 'fruit';
+      } else if (tree.type === 'tree_wood') {
+        stashKey = 'branches';
+        groundType = 'branch';
+        idPrefix = 'branch';
+      } else if (tree.type === 'tree_vine') {
+        stashKey = 'vines';
+        groundType = 'vine';
+        idPrefix = 'vine';
+      } else {
+        continue;
+      }
+
+      const stash = Number(tree.state?.[stashKey] ?? 0);
+      if (stash <= 0) continue;
+
       const spot = this.findAdjacentFreeTile(tree, occupied);
       if (!spot) continue;
-      const id = `wood_${++this.nextResourceId}`;
-      const wood: Resource = { id, type: 'wood', x: spot.x, y: spot.y, state: { source: tree.id } };
-      this.resources.push(wood);
-      this.resourceRepo.persist(wood);
+
+      const id = `${idPrefix}_${++this.nextResourceId}`;
+      const drop: Resource = {
+        id,
+        type: groundType,
+        x: spot.x,
+        y: spot.y,
+        state: { source: tree.id },
+      };
+      this.resources.push(drop);
+      this.resourceRepo.persist(drop);
       occupied.add(`${spot.x},${spot.y}`);
-      dropped++;
+
+      tree.state = { ...tree.state, [stashKey]: stash - 1 };
+      this.resourceRepo.persist(tree);
+
+      if (tree.type === 'tree_fruit') droppedFruit++;
+      else if (tree.type === 'tree_wood') droppedBranch++;
+      else droppedVine++;
     }
-    if (dropped > 0) this.logEvent('wood_drop', { count: dropped });
+
+    if (droppedFruit + droppedBranch + droppedVine > 0) {
+      this.logEvent('tree_auto_drop', { fruit: droppedFruit, branch: droppedBranch, vine: droppedVine });
+    }
   }
 
   private applyAnimalRespawn(): void {
@@ -859,7 +1107,7 @@ export class GameLoop {
     if (!char) return;
     const dtSec = TIME_CONFIG.tickMs / 1000;
     const persistThisTick = this.tickCount % 10 === 0;
-    // Cache each tick — cheap, and fruit_on_ground set mutates as chickens eat.
+    // Cache each tick — cheap, and fruit set mutates as chickens eat.
     const consumedFruits = new Set<string>();
 
     for (const r of this.resources) {
@@ -941,7 +1189,7 @@ export class GameLoop {
     let best: Resource | null = null;
     let bestDist = Number.POSITIVE_INFINITY;
     for (const r of this.resources) {
-      if (r.type !== 'fruit_on_ground') continue;
+      if (r.type !== 'fruit') continue;
       if (skip.has(r.id)) continue;
       const d = Math.hypot(r.x - chicken.x, r.y - chicken.y);
       if (d > RANGE) continue;
@@ -991,32 +1239,19 @@ export class GameLoop {
   private async advanceAI(): Promise<void> {
     if (!this.character || !this.character.isAlive) return;
 
-    // Run any final action deferred from last tick. Sleep & cook_meat install
+    // Run any final action deferred from last tick. Sleep & rest install
     // their own continuous state inside executeFinal — leave them alone.
     // Everything else is a one-shot, so reset to idle so the next broadcast
-    // shows the character has moved on.
+    // shows the character has moved on. Cook is now instant (no continuous tick).
     if (this.pendingFinal) {
       const finalAction = this.pendingFinal;
       this.pendingFinal = null;
       const before = this.snapshotForObservation();
-      this.executeFinal(finalAction);
-      this.recordObservation(finalAction, before);
-      // Continuous actions install their own currentAction inside executeFinal
-      // (sleep / cook_meat / rest). Everything else is one-shot — clear back to
-      // idle so the broadcast on the next tick reflects "moved on".
-      if (finalAction.type !== 'sleep' && finalAction.type !== 'cook_meat' && finalAction.type !== 'rest') {
+      const failReason = this.executeFinal(finalAction);
+      this.recordObservation(finalAction, before, failReason);
+      if (finalAction.type !== 'sleep' && finalAction.type !== 'rest') {
         this.character.currentAction = { type: 'idle', startedAt: Date.now() };
       }
-    }
-
-    // Cook is a duration-based action that keeps the character at the fire for N ticks.
-    if (this.character.currentAction.type === 'cook_meat') {
-      this.cookTicksLeft--;
-      if (this.cookTicksLeft > 0) return;
-      // Transform first raw meat → cooked.
-      this.cookMeatInInventory();
-      this.character.currentAction = { type: 'idle', startedAt: Date.now() };
-      return;
     }
 
     // Rest is a duration-based passive — character sits, decay throttles via
@@ -1026,10 +1261,11 @@ export class GameLoop {
     // window has to elapse before the character moves on.
     if (this.character.currentAction.type === 'rest') {
       const s = this.character.stats;
+      const restPhase = currentPhase(this.gameTime().hour);
       const needFiring =
         s.hunger <= THRESHOLDS.hungerTrigger ||
         s.thirst <= THRESHOLDS.thirstTrigger ||
-        s.energy <= THRESHOLDS.energyTrigger ||
+        s.energy <= CIRCADIAN.energySleepTrigger[restPhase] ||
         s.bladder >= THRESHOLDS.bladderTrigger;
       if (!needFiring && this.restEndsAtMs !== null && Date.now() < this.restEndsAtMs) return;
       this.restEndsAtMs = null;
@@ -1087,10 +1323,22 @@ export class GameLoop {
       return;
     }
 
-    // Sleep continues across ticks without a plan until energy recovers.
+    // Sleep continues across ticks without a plan until energy recovers — but
+    // any other critical need (or HP draining) wakes the char early. Without
+    // this, a char that fell asleep with thirst already low can dehydrate to
+    // death without ever standing up. Survival > deep recovery.
     if (this.character.currentAction.type === 'sleep') {
-      if (this.character.stats.energy < AI_CONFIG.sleepWakeEnergy) return;
+      const s = this.character.stats;
+      const wakeForNeed =
+        s.hunger <= THRESHOLDS.hungerTrigger ||
+        s.thirst <= THRESHOLDS.thirstTrigger ||
+        s.bladder >= THRESHOLDS.bladderTrigger;
+      if (!wakeForNeed && s.energy < AI_CONFIG.sleepWakeEnergy) return;
       this.character.currentAction = { type: 'idle', startedAt: Date.now() };
+      this.logEvent('sleep_end', { energy: s.energy, wakeForNeed });
+      // Woken early by a triggered need — suppress sleep for a few decide cycles
+      // so the need gets a chance to be handled before the character re-sleeps.
+      if (wakeForNeed) this.suppressSleepUntilTick = this.tickCount + 6;
     }
 
     // No plan — decide periodically. Skip if the previous decide is still in
@@ -1107,15 +1355,63 @@ export class GameLoop {
       // pulled by reference so any new entries since last decide are visible.
       const lastSeenById = new Map<string, number>();
       for (const [id, mem] of this.knownResources) lastSeenById.set(id, mem.lastSeenT);
-      result = await decide(
-        this.character,
-        this.materializeKnownResources(),
-        this.blocked,
-        this.picker,
-        this.observations,
-        this.cachedRules,
-        { lastSeenById, chunkVisits: this.chunkVisits, nowMs: Date.now() },
-      );
+      const t = this.gameTime();
+      const phase = currentPhase(t.hour);
+      const nearLitFire = this.isCharNearLitFire();
+      const gameTimeStamp = `D${t.day} ${String(t.hour).padStart(2, '0')}:${String(t.minute).padStart(2, '0')}`;
+      const hints = {
+        lastSeenById,
+        chunkVisits: this.chunkVisits,
+        nowMs: Date.now(),
+        phase,
+        nearLitFire,
+        gameTimeStamp,
+      };
+      const fallbackOptions = {
+        suppressSleep: this.tickCount < this.suppressSleepUntilTick,
+        phase,
+        nearLitFire,
+      };
+      if (this.cortexEnabled) {
+        result = await cortexDecide(
+          this.character,
+          this.materializeKnownResources(),
+          this.blocked,
+          this.picker,
+          this.observations,
+          this.cachedRules,
+          hints,
+          fallbackOptions,
+        );
+        if (result) {
+          this.consecutiveCortexFailures = 0;
+        } else {
+          this.consecutiveCortexFailures++;
+          if (this.consecutiveCortexFailures >= 2) {
+            const escape = this.buildEscapeWanderResult(hints);
+            this.consecutiveCortexFailures = 0;
+            if (escape) {
+              this.logEvent('cortex_escape_valve', {
+                pathLen: escape.plan.path.length,
+                target: escape.plan.path[escape.plan.path.length - 1] ?? null,
+              });
+              this.pushLog('pick', 'ESCAPE: cortex stuck 2x, forced random wander');
+              result = escape;
+            }
+          }
+        }
+      } else {
+        result = await decide(
+          this.character,
+          this.materializeKnownResources(),
+          this.blocked,
+          this.picker,
+          this.observations,
+          this.cachedRules,
+          hints,
+          fallbackOptions,
+        );
+      }
     } finally {
       this.decideInFlight = false;
     }
@@ -1181,7 +1477,10 @@ export class GameLoop {
   ): void {
     if (!this.character) return;
     const goal = this.character.dailyGoal;
-    if (!goal || goal.status !== 'in_progress') return;
+    if (!goal || goal.status !== 'in_progress') {
+      if (trigger.kind === 'chunk_visited_new') this.pendingChunkVisitedNew = true;
+      return;
+    }
     const idx = goal.currentStepIdx;
     const step = goal.subGoals[idx];
     const check = step?.check;
@@ -1327,84 +1626,114 @@ export class GameLoop {
     return this.dailyGoalRepo.loadActive(this.character.id);
   }
 
-  private executeFinal(action: Action): void {
-    if (!this.character) return;
+  private executeFinal(action: Action): string | undefined {
+    if (!this.character) return undefined;
     const s = this.character.stats;
+    // Track precondition fails per-action — surfaced to the LLM as the
+    // observation tail (eg "tree appears empty") so it doesn't keep retrying
+    // a dead target. Set inside fail branches; left undefined on success.
+    let failReason: string | undefined;
     switch (action.type) {
-      case 'eat_berry': {
-        // Consume a berry carried in inventory — harvesting happens in `pickup_berry`.
-        const idx = this.character.inventory.indexOf('berry');
-        if (idx < 0) break;
-        this.character.inventory.splice(idx, 1);
-        s.hunger = clamp(s.hunger + NUTRITION.hungerPerBerry);
-        s.energy = clamp(s.energy + NUTRITION.energyPerBerry);
-        this.logEvent('eat_berry', { hunger: s.hunger, energy: s.energy, invCount: this.character.inventory.length });
-        break;
-      }
-      case 'eat_fruit': {
-        // Consume a fruit carried in inventory — shake + ground pickup put it there.
-        const idx = this.character.inventory.indexOf('fruit');
-        if (idx < 0) break;
-        this.character.inventory.splice(idx, 1);
-        s.hunger = clamp(s.hunger + NUTRITION.hungerPerFruit);
-        s.energy = clamp(s.energy + NUTRITION.energyPerFruit);
-        this.logEvent('eat_fruit', { hunger: s.hunger, energy: s.energy, invCount: this.character.inventory.length });
-        break;
-      }
-      case 'pickup_berry': {
-        const bush = this.findResource(action.target);
-        if (bush && bush.type === 'bush' && Number(bush.state?.berries ?? 0) > 0) {
-          bush.state = { ...bush.state, berries: Number(bush.state?.berries ?? 0) - 1 };
-          this.resourceRepo.persist(bush);
-          this.character.inventory.push('berry');
-          s.energy = clamp(s.energy - ACTION_COSTS.pickupEnergy);
-          this.logEvent('pickup_berry', {
-            bush: bush.id,
-            invCount: this.character.inventory.length,
-          });
+      case 'eat': {
+        // Generic eat — target is the inventory item key.
+        const item = action.target;
+        if (!item) { failReason = 'eat missing target'; break; }
+        const idx = this.character.inventory.indexOf(item);
+        if (idx < 0) { failReason = `no ${item} in inventory`; break; }
+        if (item === 'berry') {
+          this.character.inventory.splice(idx, 1);
+          s.hunger = clamp(s.hunger + NUTRITION.hungerPerBerry);
+          s.energy = clamp(s.energy + NUTRITION.energyPerBerry);
+        } else if (item === 'fruit') {
+          this.character.inventory.splice(idx, 1);
+          s.hunger = clamp(s.hunger + NUTRITION.hungerPerFruit);
+          s.energy = clamp(s.energy + NUTRITION.energyPerFruit);
+        } else if (item === 'meat_raw') {
+          this.character.inventory.splice(idx, 1);
+          s.hunger = clamp(s.hunger + NUTRITION.hungerPerMeatRaw);
+          s.energy = clamp(s.energy + NUTRITION.energyPerMeatRaw);
+          s.sickness = clamp((s.sickness ?? 0) + NUTRITION.sicknessPerMeatRaw);
+        } else if (item === 'meat_cooked') {
+          this.character.inventory.splice(idx, 1);
+          s.hunger = clamp(s.hunger + NUTRITION.hungerPerMeatCooked);
+          s.energy = clamp(s.energy + NUTRITION.energyPerMeatCooked);
+        } else {
+          failReason = `${item} is not edible`;
+          break;
         }
+        this.logEvent('eat', { item, hunger: s.hunger, energy: s.energy, invCount: this.character.inventory.length });
         break;
       }
-      case 'shake_tree': {
-        const tree = this.findResource(action.target);
-        if (!tree || tree.type !== 'tree') break;
-        const fruitsToDrop = Number(tree.state?.fruits ?? 0);
-        if (fruitsToDrop <= 0) break;
-        tree.state = { ...tree.state, fruits: 0 };
-        this.resourceRepo.persist(tree);
+      case 'shake': {
+        const r = this.findResource(action.target);
+        if (!r) { failReason = 'no source to shake'; break; }
+        // Bush — burst harvest: all berries direct to inventory (no ground drop).
+        if (r.type === 'bush') {
+          const berries = Number(r.state?.berries ?? 0);
+          if (berries <= 0) { failReason = 'bush appears empty'; break; }
+          let picked = 0;
+          for (let i = 0; i < berries; i++) {
+            if (!canCarry(this.character.inventory, 'berry')) break;
+            this.character.inventory.push('berry');
+            picked++;
+          }
+          r.state = { ...r.state, berries: berries - picked };
+          this.resourceRepo.persist(r);
+          s.energy = clamp(s.energy - ACTION_COSTS.shakeTreeEnergy);
+          this.logEvent('shake', { source: r.id, type: 'bush', picked });
+          if (picked === 0) failReason = 'inventory too full to carry berries';
+          break;
+        }
+        // Tree — per-shake: drop 1 item to ground per shake action.
+        let stashKey: 'fruits' | 'branches' | 'vines';
+        let groundType: 'fruit' | 'branch' | 'vine';
+        let idPrefix: string;
+        if (r.type === 'tree_fruit') {
+          stashKey = 'fruits'; groundType = 'fruit'; idPrefix = 'fruit';
+        } else if (r.type === 'tree_wood') {
+          stashKey = 'branches'; groundType = 'branch'; idPrefix = 'branch';
+        } else if (r.type === 'tree_vine') {
+          stashKey = 'vines'; groundType = 'vine'; idPrefix = 'vine';
+        } else {
+          failReason = 'cannot shake that';
+          break;
+        }
+        const stashCount = Number(r.state?.[stashKey] ?? 0);
+        if (stashCount <= 0) { failReason = 'tree appears empty'; break; }
         const occupied = this.occupiedTiles();
-        let dropped = 0;
-        for (let i = 0; i < fruitsToDrop; i++) {
-          const spot = this.findAdjacentFreeTile(tree, occupied);
-          if (!spot) continue;
-          const id = `fruit_${++this.nextResourceId}`;
-          const fruit: Resource = {
-            id,
-            type: 'fruit_on_ground',
-            x: spot.x,
-            y: spot.y,
-            state: { source: tree.id },
-          };
-          this.resources.push(fruit);
-          this.resourceRepo.persist(fruit);
-          occupied.add(`${spot.x},${spot.y}`);
-          dropped++;
-        }
+        const spot = this.findAdjacentFreeTile(r, occupied);
+        if (!spot) { failReason = 'no space for it to fall'; break; }
+        r.state = { ...r.state, [stashKey]: stashCount - 1 };
+        this.resourceRepo.persist(r);
+        const id = `${idPrefix}_${++this.nextResourceId}`;
+        const drop: Resource = { id, type: groundType, x: spot.x, y: spot.y, state: { source: r.id } };
+        this.resources.push(drop);
+        this.resourceRepo.persist(drop);
         s.energy = clamp(s.energy - ACTION_COSTS.shakeTreeEnergy);
-        this.logEvent('shake_tree', { tree: tree.id, dropped });
+        this.logEvent('shake', { source: r.id, type: r.type, dropped: 1 });
         break;
       }
-      case 'pickup_fruit_ground': {
-        const fruit = this.findResource(action.target);
-        if (fruit && fruit.type === 'fruit_on_ground') {
-          this.character.inventory.push('fruit');
-          this.removeResource(fruit.id);
-          s.energy = clamp(s.energy - ACTION_COSTS.pickupEnergy);
-          this.logEvent('pickup_fruit_ground', {
-            fruit: fruit.id,
-            invCount: this.character.inventory.length,
-          });
+      case 'pickup': {
+        // Generic pickup — ground items only (bush/tree harvested via shake).
+        const r = this.findResource(action.target);
+        if (!r) { failReason = 'nothing here to pick up'; break; }
+        let invKey: string;
+        if (r.type === 'fruit') invKey = 'fruit';
+        else if (r.type === 'branch') invKey = 'branch';
+        else if (r.type === 'vine') invKey = 'vine';
+        else if (r.type === 'stone') invKey = 'stone';
+        else if (r.type === 'wood') invKey = 'wood';
+        else { failReason = 'cannot pick that up'; break; }
+        if (!canCarry(this.character.inventory, invKey)) {
+          this.logEvent('pickup_skipped', { reason: 'inventory_full', item: invKey });
+          failReason = `inventory too full to carry ${invKey}`;
+          break;
         }
+        this.character.inventory.push(invKey);
+        this.removeResource(r.id);
+        s.energy = clamp(s.energy - ACTION_COSTS.pickupEnergy);
+        this.logEvent('pickup', { item: invKey, resource: r.id, invCount: this.character.inventory.length });
+        this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
         break;
       }
       case 'drink': {
@@ -1421,6 +1750,7 @@ export class GameLoop {
       }
       case 'sleep': {
         this.character.currentAction = action;
+        this.logEvent('sleep_start', { energy: s.energy });
         this.evaluateDailyGoalCheck({ kind: 'action_performed', value: 'sleep' });
         return;
       }
@@ -1435,21 +1765,22 @@ export class GameLoop {
         this.evaluateDailyGoalCheck({ kind: 'action_performed', value: 'rest' });
         return;
       }
-      case 'pickup_wood': {
-        const wood = this.findResource(action.target);
-        if (wood && wood.type === 'wood') {
-          this.character.inventory.push('wood');
-          this.removeResource(wood.id);
-          s.energy = clamp(s.energy - ACTION_COSTS.pickupEnergy);
-          this.logEvent('pickup_wood', { wood: wood.id, invCount: this.character.inventory.length });
-        }
-        break;
-      }
       case 'hunt': {
         const animal = this.findResource(action.target);
-        if (!animal) break;
-        if (animal.type !== 'animal_chicken' && animal.type !== 'animal_fish') break;
-        if (!this.character.inventory.includes('wood')) break;
+        if (!animal) { failReason = 'no animal in range'; break; }
+        if (animal.type !== 'animal_chicken' && animal.type !== 'animal_fish') {
+          failReason = 'no animal in range';
+          break;
+        }
+        if (!this.character.inventory.includes('wood')) {
+          failReason = 'no wood to hunt with';
+          break;
+        }
+        if (!canCarry(this.character.inventory, 'meat_raw')) {
+          this.logEvent('pickup_skipped', { reason: 'inventory_full', item: 'meat_raw' });
+          failReason = 'inventory too full to carry meat';
+          break;
+        }
         this.removeResource(animal.id);
         this.character.inventory.push('meat_raw');
         s.energy = clamp(s.energy - ACTION_COSTS.huntEnergy);
@@ -1461,36 +1792,68 @@ export class GameLoop {
         });
         break;
       }
-      case 'cook_meat': {
-        // Begin cook: stay at fire for cookDurationTicks.
-        if (!this.character.inventory.includes('meat_raw')) break;
-        this.character.currentAction = { type: 'cook_meat', target: action.target, startedAt: Date.now() };
-        this.cookTicksLeft = FIRE_CONFIG.cookDurationTicks;
-        s.energy = clamp(s.energy - ACTION_COSTS.cookMeatEnergy);
-        this.logEvent('cook_start', { fire: action.target });
-        this.evaluateDailyGoalCheck({ kind: 'action_performed', value: 'cook_meat' });
-        return;
-      }
-      case 'eat_meat': {
-        const wantCooked = action.target === 'cooked';
-        const item = wantCooked ? 'meat_cooked' : 'meat_raw';
-        const idx = this.character.inventory.indexOf(item);
-        if (idx < 0) break;
+      case 'drop': {
+        // Drop one item of the targeted type from inventory. Vanishes — no
+        // on-ground spawn (Phase 1 simplicity). Frees up weight so char can
+        // pick up something else (e.g. drop wood to make room for berry).
+        const itemType = action.target;
+        if (!itemType) { failReason = 'drop missing target'; break; }
+        const idx = this.character.inventory.indexOf(itemType);
+        if (idx < 0) { failReason = `no ${itemType} to drop`; break; }
         this.character.inventory.splice(idx, 1);
-        if (wantCooked) {
-          s.hunger = clamp(s.hunger + NUTRITION.hungerPerMeatCooked);
-          s.energy = clamp(s.energy + NUTRITION.energyPerMeatCooked);
-        } else {
-          s.hunger = clamp(s.hunger + NUTRITION.hungerPerMeatRaw);
-          s.energy = clamp(s.energy + NUTRITION.energyPerMeatRaw);
-          s.sickness = clamp((s.sickness ?? 0) + NUTRITION.sicknessPerMeatRaw);
+        this.logEvent('drop', { item: itemType });
+        this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
+        break;
+      }
+      case 'add_fuel': {
+        // Refuel the fire from inventory branch (Phase A.1) or legacy wood.
+        // Must be adjacent (within FIRE_CONFIG.refuelRadius). Re-lights the
+        // fire if it was extinguished. Capped at FIRE_CONFIG.maxFuel. Branch
+        // and wood both feed +1 fuel — branch is the renewable supply since
+        // chop_tree (raw wood) is gated behind axe (Phase B).
+        const fire = this.findResource(action.target);
+        if (!fire || fire.type !== 'fire') { failReason = 'no fire here'; break; }
+        const dx = this.character.position.x - fire.x;
+        const dy = this.character.position.y - fire.y;
+        if (Math.hypot(dx, dy) > FIRE_CONFIG.refuelRadius + 0.5) {
+          failReason = 'too far from fire to refuel';
+          break;
         }
-        this.logEvent('eat_meat', {
-          kind: wantCooked ? 'cooked' : 'raw',
-          hunger: s.hunger,
-          energy: s.energy,
-          sickness: s.sickness,
-        });
+        let fuelIdx = this.character.inventory.indexOf('branch');
+        let fuelItem = 'branch';
+        if (fuelIdx < 0) {
+          fuelIdx = this.character.inventory.indexOf('wood');
+          fuelItem = 'wood';
+        }
+        if (fuelIdx < 0) { failReason = 'no fuel to add'; break; }
+        this.character.inventory.splice(fuelIdx, 1);
+        const currentFuel = typeof fire.state.fuel === 'number' ? fire.state.fuel : 0;
+        const nextFuel = Math.min(FIRE_CONFIG.maxFuel, currentFuel + 1);
+        fire.state = { ...fire.state, fuel: nextFuel, lit: true };
+        this.resourceRepo.persist(fire);
+        s.energy = clamp(s.energy - 0.5);
+        this.logEvent('add_fuel', { fire: fire.id, fuel: nextFuel, lit: true, item: fuelItem });
+        this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
+        break;
+      }
+      case 'cook': {
+        // Instant cook: meat_raw → meat_cooked, must be adjacent to a lit fire.
+        // Per design lock 2026-04-27: instant, no fuel cost, only meat scope.
+        const fire = this.findResource(action.target);
+        if (!fire || fire.type !== 'fire') { failReason = 'no fire here'; break; }
+        if (!fire.state?.lit) { failReason = 'fire not lit'; break; }
+        const dx = this.character.position.x - fire.x;
+        const dy = this.character.position.y - fire.y;
+        if (Math.hypot(dx, dy) > FIRE_CONFIG.refuelRadius + 0.5) {
+          failReason = 'too far from fire to cook';
+          break;
+        }
+        const idx = this.character.inventory.indexOf('meat_raw');
+        if (idx < 0) { failReason = 'no raw meat to cook'; break; }
+        this.character.inventory[idx] = 'meat_cooked';
+        s.energy = clamp(s.energy - ACTION_COSTS.cookMeatEnergy);
+        this.logEvent('cook', { fire: fire.id, invCount: this.character.inventory.length });
+        this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
         break;
       }
       default:
@@ -1499,6 +1862,7 @@ export class GameLoop {
     this.evaluateDailyGoalCheck({ kind: 'action_performed', value: action.type });
     this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
     this.character.currentAction = { type: 'idle', startedAt: Date.now() };
+    return failReason;
   }
 
   private applyTileDecay(tiles: number): void {
@@ -1507,15 +1871,6 @@ export class GameLoop {
     s.energy = clamp(s.energy - TILE_DECAY.energyPerTile * tiles);
     s.thirst = clamp(s.thirst - TILE_DECAY.thirstPerTile * tiles);
     s.hunger = clamp(s.hunger - TILE_DECAY.hungerPerTile * tiles);
-  }
-
-  private cookMeatInInventory(): void {
-    if (!this.character) return;
-    const idx = this.character.inventory.indexOf('meat_raw');
-    if (idx < 0) return;
-    this.character.inventory[idx] = 'meat_cooked';
-    this.logEvent('cook_complete', { invCount: this.character.inventory.length });
-    this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
   }
 
   private currentSpeedTilesPerSec(): number {
@@ -1600,6 +1955,68 @@ export class GameLoop {
       rules: [],
       recentEvents: [],
       aiLog: this.aiLog,
+      visibleTiles: this.character ? Array.from(this.lastVisibleTiles) : undefined,
+      exploredTiles: this.character ? Array.from(this.cumulativeExploredTiles) : undefined,
+    };
+  }
+
+  /** Admin/E2E: dump the wander + feed option lists the AI sees right now,
+   *  using the same enumeration helpers decide() uses. Lets a tester verify
+   *  pre-emptive options (pee_now, warm_at_fire, drink_river, etc.) actually
+   *  surface for the current character state without waiting for the LLM to
+   *  pick them. */
+  /**
+   * Pure-LLM escape valve: build a random direction-wander plan when the LLM
+   * has produced N consecutive invalid picks. Bypasses utility decide() — picks
+   * uniformly among walkable WANDER_DIRS so the character physically moves,
+   * which mutates rememberedSummary on the next cortex prompt and breaks
+   * prompt-repeats-itself loops. Returns null if no walkable direction exists
+   * (extremely rare — char fully boxed in).
+   */
+  private buildEscapeWanderResult(hints: WanderHints): DecideResult | null {
+    if (!this.character) return null;
+    const known = this.materializeKnownResources();
+    const opts = enumerateWanderOptions(this.character, this.blocked, known, hints);
+    const dirs = opts.filter((o) => o.kind !== 'stay' && o.path.length > 0);
+    if (dirs.length === 0) return null;
+    const pick = dirs[Math.floor(Math.random() * dirs.length)];
+    return {
+      plan: {
+        path: pick.path,
+        finalAction: { type: 'idle', startedAt: Date.now() },
+      },
+      source: 'rule',
+      choice: 'escape_wander',
+      reasoning: `Pure-LLM stuck (2 consecutive invalid picks) — forced random wander toward ${pick.kind}.`,
+    };
+  }
+
+  debugOptions(): { wander: unknown[]; feed: unknown[] } | null {
+    if (!this.character) return null;
+    const known = this.materializeKnownResources();
+    const lastSeenById = new Map<string, number>();
+    for (const r of known) lastSeenById.set(r.id, this.knownResources.get(r.id)?.lastSeenT ?? 0);
+    const wander = enumerateWanderOptions(
+      this.character,
+      this.blocked,
+      known,
+      { lastSeenById, chunkVisits: this.chunkVisits, nowMs: Date.now() },
+    );
+    const feed = enumerateFeedOptions(this.character, known, this.blocked);
+    return {
+      wander: wander.map((o) => ({
+        kind: o.kind,
+        dist: Number(o.distance.toFixed(1)),
+        annotation: o.annotation,
+        isUnexplored: o.isUnexplored,
+        hasFinalAction: !!o.finalAction,
+      })),
+      feed: feed.map((o) => ({
+        kind: o.kind,
+        target: o.target ?? null,
+        dist: Number(o.distance.toFixed(1)),
+        annotation: o.annotation ?? null,
+      })),
     };
   }
 
@@ -1618,6 +2035,7 @@ export class GameLoop {
   private recordObservation(
     action: Action,
     before: { hunger: number; thirst: number; energy: number; sickness: number; inv: string[] },
+    failReason?: string,
   ): void {
     const c = this.character;
     if (!c) return;
@@ -1640,8 +2058,12 @@ export class GameLoop {
     if (Math.abs(dEnergy) >= 0.1) obs.dEnergy = dEnergy;
     if (Math.abs(dSickness) >= 0.1) obs.dSickness = dSickness;
     if (invDelta) obs.inv = invDelta;
+    if (failReason) obs.failReason = failReason;
     this.observations.push(obs);
-    if (this.observations.length > 10) this.observations.shift();
+    // 60 obs ≈ 1 game-hour of recent action/effect history at decide-tick =
+    // 1-game-min cadence. Cover long-tail effects (sickness escalating ~hour
+    // after raw meat, day-night patterns, resource respawn) that 30 missed.
+    if (this.observations.length > 60) this.observations.shift();
   }
 
   private gameTime(): GameTime {
@@ -1670,6 +2092,14 @@ export class GameLoop {
     const currentGameMinutes = (now - this.startMs) / this.effectiveMsPerGameMinute();
     this.timeMultiplier = m;
     this.startMs = now - currentGameMinutes * this.effectiveMsPerGameMinute();
+  }
+
+  public getCortexEnabled(): boolean {
+    return this.cortexEnabled;
+  }
+
+  public setCortexEnabled(v: boolean): void {
+    this.cortexEnabled = !!v;
   }
 }
 

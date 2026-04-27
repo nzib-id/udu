@@ -462,8 +462,12 @@
       .stat-bar-fill.bar-hp.crit {
         background: #8e1010;
       }
+      /* Temperature: width fixed, hue set inline. blue(cold) → green(comfort) → red(hot). */
+      .stat-bar-fill.bar-temp {
+        background: #7fd18c;
+      }
       .stat-val {
-        width: 26px;
+        width: 36px;
         text-align: right;
         color: #e5e5e5;
         font-variant-numeric: tabular-nums;
@@ -530,6 +534,43 @@
       @media (max-width: 600px) {
         #speed-toggle .speed-label { display: none; }
         #speed-toggle button { padding: 4px 8px; min-width: 28px; }
+        #fog-toggle .speed-label { display: none; }
+        #fog-toggle button { padding: 4px 8px; min-width: 28px; }
+      }
+      #fog-toggle {
+        position: absolute;
+        top: 56px;
+        right: 12px;
+        z-index: 7;
+        display: flex;
+        gap: 4px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        padding: 4px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      #fog-toggle button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #c8d4e6;
+        border-radius: 4px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        min-width: 32px;
+        transition: background 0.12s ease, border-color 0.12s ease;
+      }
+      #fog-toggle button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      #fog-toggle button.active {
+        background: rgba(121, 184, 255, 0.18);
+        border-color: #79b8ff;
+        color: #ecf2ff;
+        font-weight: 600;
       }
       #status.ok {
         color: #7fd18c;
@@ -558,6 +599,7 @@
           <div class="stat"><span class="stat-label">Energy</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-energy"></div></div><span class="stat-val" id="val-energy">—</span></div>
           <div class="stat"><span class="stat-label">Sick</span><div class="stat-bar"><div class="stat-bar-fill" id="bar-sickness"></div></div><span class="stat-val" id="val-sickness">—</span></div>
           <div class="stat"><span class="stat-label">HP</span><div class="stat-bar"><div class="stat-bar-fill bar-hp" id="bar-health"></div></div><span class="stat-val" id="val-health">—</span></div>
+          <div class="stat"><span class="stat-label">Temp</span><div class="stat-bar"><div class="stat-bar-fill bar-temp" id="bar-temperature"></div></div><span class="stat-val" id="val-temperature">—</span></div>
         </div>
         <div id="hud-goal"></div>
         <div id="hud-goal-daily"></div>
@@ -586,6 +628,11 @@
       <button type="button" data-speed="1" class="active">1×</button>
       <button type="button" data-speed="2">2×</button>
       <button type="button" data-speed="3">3×</button>
+    </div>
+    <div id="fog-toggle" role="group" aria-label="Fog of war">
+      <span class="speed-label">Fog</span>
+      <button type="button" data-fog="on" class="active">On</button>
+      <button type="button" data-fog="off">Off</button>
     </div>
     <script>
       (function () {

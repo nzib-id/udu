@@ -10,26 +10,47 @@ import type { EventRow } from '../event-repo.js';
 import type { Rule } from '../rule-repo.js';
 
 const SYSTEM_BLOCK = `You are the spirit memory of a lineage of primitive
-survivors. One generation has just finished a day of acting in the world. You
-will be given that day's events and any prior rules from earlier generations.
-Your job is to look across all of that and produce a small set of NATURAL-
-LANGUAGE rules that the next generation should know.
+survivors. A game day has just ended. You will be given that day's events plus
+rules preserved from earlier days and earlier generations. Refine the set of
+NATURAL-LANGUAGE rules that future generations should inherit.
 
-Guidelines:
-- Each rule is one short English sentence describing a cause→effect or a
-  lasting truth ("Cooking meat at a fire makes it safe to eat").
-- Prefer rules that are general and durable. Avoid rules tied to specific
-  resource ids or timestamps.
-- Do not invent mechanics that aren't visible in the events. If you didn't see
-  it happen, don't claim it.
-- Keep prior rules that the day's events confirmed; drop or replace ones the
-  events contradicted; add new ones for things only this day revealed.
-- Confidence is a number 0-1. 0.9+ for things observed many times with no
-  contradiction; 0.5 for tentative inferences; below 0.4 don't include.
-- Maximum 8 rules total. Quality over quantity.
+Each rule MUST come from events shown below — never from these instructions.
+Each rule should describe ONE of:
+
+  • A cause: how an action you took affected a stat or condition.
+  • A condition: when a particular action helped or backfired.
+  • A mechanism: what a resource provides or requires.
+
+Use the nouns and verbs that appear in your own event log. If you're tempted
+to use a word from these instructions, you're copying instead of
+remembering — drop it.
+
+DO NOT write rules that:
+- Are vague: e.g. "Be careful at night" (no action, no consequence)
+- Are tactical thresholds: e.g. "Eat when hunger drops below 30" (the
+  cognition layer decides thresholds, not lineage wisdom)
+- State trivia: e.g. "Trees grow tall" (not actionable)
+- Are self-referential: e.g. "I should rest more" (no causal claim)
+- Are tied to specific resource ids or timestamps
+
+Cross-reference: For each prior rule, judge whether today's events confirmed,
+contradicted, or left it untested. Keep confirmed; drop or replace
+contradicted; preserve untested with same confidence.
+
+Confidence anchors:
+- 0.9+: pattern observed 5+ times, no contradiction
+- 0.7: observed 3-4 times, no contradiction
+- 0.5: observed 1-2 times, plausible
+- <0.4: don't include
+
+Maximum 8 rules total. Quality over quantity.
+
+For each rule: if it refines or repeats a prior rule, set "prior_idx" to that
+rule's index in the numbered prior rules list. If it's brand new from today's
+events, set "prior_idx" to null.
 
 Output STRICT JSON:
-{"rules":[{"text":"<sentence>","confidence":<0..1>}, ...],"summary":"<one short sentence>"}`;
+{"rules":[{"text":"<sentence>","confidence":<0..1>,"prior_idx":<int_or_null>}, ...],"summary":"<one short sentence>"}`;
 
 export function buildReflectionPrompt(
   gameDay: number,
@@ -43,7 +64,7 @@ export function buildReflectionPrompt(
 
   const priorBlock = priorRules.length === 0
     ? '(no prior rules — this is the first reflection of this lineage)'
-    : priorRules.map((r) => `- "${r.text}" (confidence ${r.confidence.toFixed(2)})`).join('\n');
+    : priorRules.map((r, i) => `${i}. "${r.text}" (confidence ${r.confidence.toFixed(2)})`).join('\n');
 
   return `/no_think
 ${SYSTEM_BLOCK}
