@@ -37,6 +37,10 @@ type Entity = {
   fromY: number;
   toX: number;
   toY: number;
+  // Phase 2 physics altitude. fromZ → toZ tweened the same way as x,y so the
+  // sprite hops/falls smoothly across broadcasts. Lift in pixels = z * tileSize.
+  fromZ: number;
+  toZ: number;
   stepStartMs: number;
   lastSignature: string;
   phase: number;
@@ -106,6 +110,7 @@ export class ResourceLayer {
         const go = this.createEntityGo(r, visual, tileSize);
         const overlay = this.createOverlaySprite(r, visual, tileSize);
         const decorations = this.createDecorations(r, visual, tileSize);
+        const initZ = r.z ?? 0;
         this.entities.set(r.id, {
           type: r.type,
           go,
@@ -117,39 +122,34 @@ export class ResourceLayer {
           fromY: r.y,
           toX: r.x,
           toY: r.y,
+          fromZ: initZ,
+          toZ: initZ,
           stepStartMs: nowMs,
           lastSignature: sig,
           phase: Math.random() * Math.PI * 2,
           lastFacingRight: true,
           lastResource: r,
         });
-        // Fruit that just fell from a tree — drop it from ~1 tile above with a bounce.
-        if (r.type === 'fruit' && visual) {
-          const landY = go.y;
-          go.y = landY - tileSize;
-          this.scene.tweens.add({
-            targets: go,
-            y: landY,
-            duration: 450,
-            ease: 'Bounce.Out',
-          });
-        }
         continue;
       }
 
-      if (r.x !== existing.toX || r.y !== existing.toY) {
+      const newZ = r.z ?? 0;
+      if (r.x !== existing.toX || r.y !== existing.toY || newZ !== existing.toZ) {
         const prevVisualCx = existing.isSprite ? existing.go.x : existing.go.x + tileSize / 2;
         const prevVisualCy = existing.isSprite
           ? existing.go.y - (existing.visual ? (existing.visual.anchorY - 0.5) * visualHeight(existing) : 0)
           : existing.go.y + tileSize / 2;
         existing.fromX = (prevVisualCx - tileSize / 2) / tileSize;
-        existing.fromY = (prevVisualCy - tileSize / 2) / tileSize;
+        // Subtract current z lift back out so fromY is the ground-anchored tile y.
+        existing.fromY = (prevVisualCy - tileSize / 2) / tileSize + existing.toZ;
+        existing.fromZ = existing.toZ;
         if (r.type === 'animal_chicken') {
           const dx = r.x - existing.toX;
           if (dx !== 0) existing.lastFacingRight = dx > 0;
         }
         existing.toX = r.x;
         existing.toY = r.y;
+        existing.toZ = newZ;
         existing.stepStartMs = nowMs;
       }
 
@@ -283,23 +283,29 @@ export class ResourceLayer {
   private tweenEntities(nowMs: number): void {
     const { tileSize } = MAP_CONFIG;
     for (const ent of this.entities.values()) {
-      if (ent.fromX !== ent.toX || ent.fromY !== ent.toY) {
+      const moving = ent.fromX !== ent.toX || ent.fromY !== ent.toY || ent.fromZ !== ent.toZ;
+      if (moving) {
         const duration = ent.type === 'animal_chicken' ? MOVE_TWEEN_MS : 300;
         const raw = Math.min(1, (nowMs - ent.stepStartMs) / duration);
         const t = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
         const fx = ent.fromX + (ent.toX - ent.fromX) * t;
         const fy = ent.fromY + (ent.toY - ent.fromY) * t;
-        positionEntity(ent, fx, fy, tileSize);
+        const fz = ent.fromZ + (ent.toZ - ent.fromZ) * t;
+        positionEntity(ent, fx, fy, fz, tileSize);
         if (ent.type === 'animal_chicken' && ent.isSprite) {
           (ent.go as Phaser.GameObjects.Sprite).setFlipX(!ent.lastFacingRight);
         }
+      } else if (ent.toZ !== 0) {
+        // Settled but still aloft (shouldn't happen after physics settles, but safe).
+        positionEntity(ent, ent.toX, ent.toY, ent.toZ, tileSize);
       }
       // Always refresh depth in case nearby entities have shifted (cheap, avoids z-fighting).
       ent.go.setDepth(depthFor(ent, tileSize));
       if (ent.overlay && ent.visual?.overlay) {
         ent.overlay.x = ent.go.x;
         ent.overlay.y = ent.go.y;
-        ent.overlay.setDepth(ent.go.y + ent.visual.overlay.depthBias);
+        const groundY = ent.toY * tileSize + tileSize * ent.visual.overlay.anchorY;
+        ent.overlay.setDepth(groundY + ent.visual.overlay.depthBias);
       }
       // Tree fade: lerp trunk + canopy alpha when character occupies same tile.
       if (ent.type === 'tree_fruit' || ent.type === 'tree_vine' || ent.type === 'tree_wood') {
@@ -358,21 +364,22 @@ function visualHeight(ent: Entity): number {
 }
 
 function depthFor(ent: Entity, ts: number): number {
-  if (ent.isSprite) {
-    // Sprite's y already points at the tile's anchored row — use that directly so tall sprites
-    // (tree trunks) sort by where they "stand" rather than where their canopy floats.
-    return ent.go.y + (ent.visual?.depthOffset ?? 0);
+  // Depth must use ground-anchored y, NOT go.y (which can be z-lifted in air).
+  // Otherwise a thrown item would sort in front/behind based on altitude.
+  if (ent.isSprite && ent.visual) {
+    return ent.toY * ts + ts * ent.visual.anchorY + (ent.visual.depthOffset ?? 0);
   }
-  return ent.go.y + ts;
+  return ent.toY * ts + ts;
 }
 
-function positionEntity(ent: Entity, fx: number, fy: number, ts: number): void {
+function positionEntity(ent: Entity, fx: number, fy: number, fz: number, ts: number): void {
+  const lift = fz * ts;
   if (ent.isSprite && ent.visual) {
     ent.go.x = fx * ts + ts / 2;
-    ent.go.y = fy * ts + ts * ent.visual.anchorY;
+    ent.go.y = fy * ts + ts * ent.visual.anchorY - lift;
   } else {
     ent.go.x = fx * ts;
-    ent.go.y = fy * ts;
+    ent.go.y = fy * ts - lift;
   }
 }
 

@@ -324,6 +324,36 @@ export const BOULDER_CONFIG = {
   initialGroundStones: 8, // scattered free stones on world gen
 } as const;
 
+// Phase 2 physics — items have continuous (x,y) + altitude z + velocity. Items
+// at rest skip the tick handler; only in-flight items (vel above threshold OR
+// z>0) consume cycles. Units: tiles per game-loop tick. Tick rate = 500ms.
+export const PHYSICS_CONFIG = {
+  gravity: 1.0,           // -z accel per tick (z=1 lands ~2 ticks ≈ 1 sec)
+  airFriction: 0.85,      // vx, vy multiplier per tick (decay so items settle)
+  settleThreshold: 0.05,  // |v| below this and z<=0 → settled, drop from queue
+  pickupRadius: 0.75,     // proximity gate for pickup (≈12px at tilesize 16)
+} as const;
+
+// Initial physics state for natural drops. Manual drop = item plops at char
+// pos with all zeros (item can overlap; no auto-offset). Tree shake / hunt /
+// future throw use these velocities to "throw" the item via gravity sim.
+export const DROP_INIT = {
+  treeShake: () => ({
+    z: 1.0,                                  // start at canopy height
+    vx: (Math.random() - 0.5) * 0.4,         // ±0.2 horizontal
+    vy: 0.3 + Math.random() * 0.3,           // 0.3..0.6 +y (south, toward viewer)
+    vz: 0,
+  }),
+  treeAutoDrop: () => ({
+    z: 1.0,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: 0.3 + Math.random() * 0.3,
+    vz: 0,
+  }),
+  hunt: { z: 0, vx: 0, vy: 0, vz: 0 },
+  manual: { z: 0, vx: 0, vy: 0, vz: 0 },
+} as const;
+
 // Terrain grid is generated once at module load from the shared seed. Both
 // frontend (rendering) and backend (water/fish spawn) consume this grid so map
 // layout stays identical across the stack.

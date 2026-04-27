@@ -381,7 +381,7 @@ function planPickupFruitGround(
   const fruits = resources.filter((r) => r.type === 'fruit');
   let best: { path: Position[]; fruit: Resource } | null = null;
   for (const f of fruits) {
-    const path = findPath(character.position, [{ x: f.x, y: f.y }], blocked);
+    const path = findPath(character.position, [{ x: Math.floor(f.x), y: Math.floor(f.y) }], blocked);
     if (path === null) continue;
     if (!best || path.length < best.path.length) best = { path, fruit: f };
   }
@@ -580,7 +580,7 @@ function planPickupGroundItem(
   const candidates = resources.filter((r) => r.type === resourceType);
   let best: { path: Position[]; target: Resource } | null = null;
   for (const c of candidates) {
-    const path = findPath(character.position, [{ x: c.x, y: c.y }], blocked);
+    const path = findPath(character.position, [{ x: Math.floor(c.x), y: Math.floor(c.y) }], blocked);
     if (path === null) continue;
     if (!best || path.length < best.path.length) best = { path, target: c };
   }

@@ -6,10 +6,12 @@ import {
   CHARACTER_CONFIG,
   DEATH_CONFIG,
   DECAY_RATES,
+  DROP_INIT,
   FIRE_CONFIG,
   HEALTH_CONFIG,
   MAP_CONFIG,
   NUTRITION,
+  PHYSICS_CONFIG,
   REGEN_CONFIG,
   REST_CONFIG,
   SICKNESS_CONFIG,
@@ -413,6 +415,7 @@ export class GameLoop {
       this.maybeRespawn();
       this.applyHourlyDecay();
       this.applyDailyRegen();
+      this.applyPhysicsTick();
       this.applyTreeAutoDrop();
       this.applyAnimalRespawn();
       this.advanceAnimals();
@@ -967,11 +970,58 @@ export class GameLoop {
       });
   }
 
+  // Phase 2 — server-side physics. Items in flight (z>0 OR |v|>threshold)
+  // integrate gravity + air friction each tick. Settled items skip entirely so
+  // a map full of dropped fruit doesn't burn cycles. Persisted on settle so
+  // restart resumes positions without resimulating from spawn pos.
+  private applyPhysicsTick(): void {
+    const g = PHYSICS_CONFIG.gravity;
+    const fr = PHYSICS_CONFIG.airFriction;
+    const eps = PHYSICS_CONFIG.settleThreshold;
+    for (const r of this.resources) {
+      const z = r.z ?? 0;
+      const vx = r.vx ?? 0;
+      const vy = r.vy ?? 0;
+      const vz = r.vz ?? 0;
+      // Resting on the ground with negligible velocity → not in flight.
+      if (z <= 0 && Math.abs(vx) < eps && Math.abs(vy) < eps && Math.abs(vz) < eps) continue;
+      // Semi-implicit Euler — apply gravity to vz first, then integrate.
+      let nvz = vz - g;
+      let nz = z + nvz;
+      let nvx = vx * fr;
+      let nvy = vy * fr;
+      let nx = r.x + nvx;
+      let ny = r.y + nvy;
+      // Ground impact — clamp z to 0 and zero vertical velocity. Horizontal
+      // velocity persists into a quick slide, friction soaks it up next ticks.
+      if (nz <= 0) {
+        nz = 0;
+        nvz = 0;
+        // Once landed, wipe small horizontal jitter so the item isn't a
+        // continually-twitching float.
+        if (Math.abs(nvx) < eps) nvx = 0;
+        if (Math.abs(nvy) < eps) nvy = 0;
+      }
+      // Map bounds clamp — items can't fly off the world.
+      nx = Math.max(0, Math.min(MAP_CONFIG.widthTiles - 0.001, nx));
+      ny = Math.max(0, Math.min(MAP_CONFIG.heightTiles - 0.001, ny));
+      r.x = nx;
+      r.y = ny;
+      r.z = nz === 0 ? undefined : nz;
+      r.vx = nvx === 0 ? undefined : nvx;
+      r.vy = nvy === 0 ? undefined : nvy;
+      r.vz = nvz === 0 ? undefined : nvz;
+      // Persist only on settle — mid-flight positions don't need to survive a
+      // crash mid-arc, the next spawn resims from canonical state. On full
+      // settle (z=0, all v=0) save once so restart picks up the landing pos.
+      const settled = nz === 0 && nvx === 0 && nvy === 0 && nvz === 0;
+      if (settled) this.resourceRepo.persist(r);
+    }
+  }
+
   // Phase A.1 — every `treeAutoDropGameHours`, each productive tree releases
-  // one item from its stash to an adjacent ground tile. Net daily yield is
-  // gated by refill (handled in applyDailyRegen), this loop just controls how
-  // long product sits "on the tree" before falling. Skipped if stash empty
-  // or no free adjacent tile.
+  // one item from its stash. Spawns at the tree's tile with physics so it
+  // arcs out via gravity (Phase 2 — replaces adjacent-tile placement).
   private applyTreeAutoDrop(): void {
     const t = this.gameTime();
     const hourKey = t.day * TIME_CONFIG.gameHoursPerDay + t.hour;
@@ -1006,20 +1056,21 @@ export class GameLoop {
       const stash = Number(tree.state?.[stashKey] ?? 0);
       if (stash <= 0) continue;
 
-      const spot = this.findAdjacentFreeTile(tree, occupied);
-      if (!spot) continue;
-
       const id = `${idPrefix}_${++this.nextResourceId}`;
+      const init = DROP_INIT.treeAutoDrop();
       const drop: Resource = {
         id,
         type: groundType,
-        x: spot.x,
-        y: spot.y,
+        x: tree.x,
+        y: tree.y,
         state: { source: tree.id },
+        z: init.z,
+        vx: init.vx,
+        vy: init.vy,
+        vz: init.vz,
       };
       this.resources.push(drop);
       this.resourceRepo.persist(drop);
-      occupied.add(`${spot.x},${spot.y}`);
 
       tree.state = { ...tree.state, [stashKey]: stash - 1 };
       this.resourceRepo.persist(tree);
@@ -1700,13 +1751,14 @@ export class GameLoop {
         }
         const stashCount = Number(r.state?.[stashKey] ?? 0);
         if (stashCount <= 0) { failReason = 'tree appears empty'; break; }
-        const occupied = this.occupiedTiles();
-        const spot = this.findAdjacentFreeTile(r, occupied);
-        if (!spot) { failReason = 'no space for it to fall'; break; }
         r.state = { ...r.state, [stashKey]: stashCount - 1 };
         this.resourceRepo.persist(r);
         const id = `${idPrefix}_${++this.nextResourceId}`;
-        const drop: Resource = { id, type: groundType, x: spot.x, y: spot.y, state: { source: r.id } };
+        const init = DROP_INIT.treeShake();
+        const drop: Resource = {
+          id, type: groundType, x: r.x, y: r.y, state: { source: r.id },
+          z: init.z, vx: init.vx, vy: init.vy, vz: init.vz,
+        };
         this.resources.push(drop);
         this.resourceRepo.persist(drop);
         s.energy = clamp(s.energy - ACTION_COSTS.shakeTreeEnergy);
@@ -1715,6 +1767,8 @@ export class GameLoop {
       }
       case 'pickup': {
         // Generic pickup — ground items only (bush/tree harvested via shake).
+        // Proximity gate: char must be within PHYSICS_CONFIG.pickupRadius of the
+        // item's continuous (x,y). Prevents teleport-pickup across tiles.
         const r = this.findResource(action.target);
         if (!r) { failReason = 'nothing here to pick up'; break; }
         let invKey: string;
@@ -1723,7 +1777,16 @@ export class GameLoop {
         else if (r.type === 'vine') invKey = 'vine';
         else if (r.type === 'stone') invKey = 'stone';
         else if (r.type === 'wood') invKey = 'wood';
+        else if (r.type === 'berry') invKey = 'berry';
+        else if (r.type === 'meat_raw') invKey = 'meat_raw';
+        else if (r.type === 'meat_cooked') invKey = 'meat_cooked';
         else { failReason = 'cannot pick that up'; break; }
+        const dx = this.character.position.x - r.x;
+        const dy = this.character.position.y - r.y;
+        if (Math.hypot(dx, dy) > PHYSICS_CONFIG.pickupRadius) {
+          failReason = 'too far to pick up';
+          break;
+        }
         if (!canCarry(this.character.inventory, invKey)) {
           this.logEvent('pickup_skipped', { reason: 'inventory_full', item: invKey });
           failReason = `inventory too full to carry ${invKey}`;
@@ -1776,32 +1839,48 @@ export class GameLoop {
           failReason = 'no wood to hunt with';
           break;
         }
-        if (!canCarry(this.character.inventory, 'meat_raw')) {
-          this.logEvent('pickup_skipped', { reason: 'inventory_full', item: 'meat_raw' });
-          failReason = 'inventory too full to carry meat';
-          break;
-        }
+        const ax = animal.x;
+        const ay = animal.y;
         this.removeResource(animal.id);
-        this.character.inventory.push('meat_raw');
+        const meatId = `meat_raw_${++this.nextResourceId}`;
+        const meatInit = DROP_INIT.hunt;
+        const meatDrop: Resource = {
+          id: meatId, type: 'meat_raw', x: ax, y: ay, state: { source: animal.id },
+          z: meatInit.z, vx: meatInit.vx, vy: meatInit.vy, vz: meatInit.vz,
+        };
+        this.resources.push(meatDrop);
+        this.resourceRepo.persist(meatDrop);
         s.energy = clamp(s.energy - ACTION_COSTS.huntEnergy);
         s.thirst = clamp(s.thirst - ACTION_COSTS.huntThirst);
         this.logEvent('hunt', {
           animal: animal.id,
           kind: animal.type,
-          invCount: this.character.inventory.length,
+          dropId: meatId,
         });
         break;
       }
       case 'drop': {
-        // Drop one item of the targeted type from inventory. Vanishes — no
-        // on-ground spawn (Phase 1 simplicity). Frees up weight so char can
-        // pick up something else (e.g. drop wood to make room for berry).
+        // Drop one item of the targeted type from inventory. Spawns at char's
+        // exact (x,y) with no offset — items can overlap. Picks up gravity-free
+        // (manual init: z=0, all velocities 0).
         const itemType = action.target;
         if (!itemType) { failReason = 'drop missing target'; break; }
         const idx = this.character.inventory.indexOf(itemType);
         if (idx < 0) { failReason = `no ${itemType} to drop`; break; }
         this.character.inventory.splice(idx, 1);
-        this.logEvent('drop', { item: itemType });
+        const dropId = `${itemType}_${++this.nextResourceId}`;
+        const dropInit = DROP_INIT.manual;
+        const droppedItem: Resource = {
+          id: dropId,
+          type: itemType as ResourceType,
+          x: this.character.position.x,
+          y: this.character.position.y,
+          state: { source: 'manual_drop' },
+          z: dropInit.z, vx: dropInit.vx, vy: dropInit.vy, vz: dropInit.vz,
+        };
+        this.resources.push(droppedItem);
+        this.resourceRepo.persist(droppedItem);
+        this.logEvent('drop', { item: itemType, dropId });
         this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
         break;
       }

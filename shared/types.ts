@@ -122,6 +122,9 @@ export type ResourceType =
   | 'vine'
   | 'fruit'
   | 'stone'
+  | 'berry'
+  | 'meat_raw'
+  | 'meat_cooked'
   | 'animal_chicken'
   | 'animal_fish';
 
@@ -131,6 +134,13 @@ export type Resource = {
   x: number;
   y: number;
   state: Record<string, unknown>;
+  // Phase 2 physics. Present on items that can fly/fall/be thrown; absent or 0
+  // on static sources (tree/bush/fire/river). Server is authoritative; ticks
+  // until |v|<settleThreshold AND z=0, then dropped from physics queue.
+  z?: number;
+  vx?: number;
+  vy?: number;
+  vz?: number;
 };
 
 export type Rule = {

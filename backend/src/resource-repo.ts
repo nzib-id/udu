@@ -20,6 +20,10 @@ type ResourceRow = {
   x: number;
   y: number;
   state: string;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
 };
 
 export class ResourceRepo {
@@ -38,11 +42,14 @@ export class ResourceRepo {
   persist(r: Resource): void {
     this.db
       .prepare(
-        `INSERT INTO resource_state (id, type, x, y, state) VALUES (?, ?, ?, ?, ?)
+        `INSERT INTO resource_state (id, type, x, y, state, z, vx, vy, vz)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
-           type = excluded.type, x = excluded.x, y = excluded.y, state = excluded.state`,
+           type = excluded.type, x = excluded.x, y = excluded.y, state = excluded.state,
+           z = excluded.z, vx = excluded.vx, vy = excluded.vy, vz = excluded.vz`,
       )
-      .run(r.id, r.type, r.x, r.y, JSON.stringify(r.state));
+      .run(r.id, r.type, r.x, r.y, JSON.stringify(r.state),
+        r.z ?? 0, r.vx ?? 0, r.vy ?? 0, r.vz ?? 0);
   }
 
   delete(id: string): void {
@@ -157,7 +164,15 @@ function rowToResource(row: ResourceRow): Resource {
     const v = JSON.parse(row.state);
     if (v && typeof v === 'object') state = v as Record<string, unknown>;
   } catch { /* ignore */ }
-  return { id: row.id, type: row.type as Resource['type'], x: row.x, y: row.y, state };
+  const r: Resource = { id: row.id, type: row.type as Resource['type'], x: row.x, y: row.y, state };
+  // Only carry physics fields when non-zero — keeps payloads to LLM/clients
+  // small for the 99% of resources that are static. Settled items load with
+  // all zeros and don't enter the physics queue until something moves them.
+  if (row.z !== 0) r.z = row.z;
+  if (row.vx !== 0) r.vx = row.vx;
+  if (row.vy !== 0) r.vy = row.vy;
+  if (row.vz !== 0) r.vz = row.vz;
+  return r;
 }
 
 function mulberry32(seed: number): () => number {
