@@ -19,7 +19,7 @@
 import type { Character, DailyGoal } from '../../../shared/types.js';
 import type { FeedOption, Observation, WorldStatus } from './choice-picker.js';
 import { groupInventory, totalWeight } from '../../../shared/inventory.js';
-import { INVENTORY_WEIGHTS, MAX_INVENTORY_WEIGHT, TEMPERATURE_CONFIG } from '../../../shared/config.js';
+import { INVENTORY_WEIGHTS, MAX_INVENTORY_WEIGHT, TEMPERATURE_CONFIG, maskTarget } from '../../../shared/config.js';
 import { severity } from './severity.js';
 
 // Hard-coded short labels for the system block (model never sees the full
@@ -44,8 +44,8 @@ Keep these LOW (act when they rise):
 - bladder: 0=empty, 100=urgent
 - sickness: 0=healthy, 100=very sick
 
-Other:
-- temperature: body in °C (comfort ${TEMPERATURE_CONFIG.comfortMin}–${TEMPERATURE_CONFIG.comfortMax}°C)
+Keep this in the comfort band (drift outside drains health directly):
+- temperature: body in °C. ${TEMPERATURE_CONFIG.comfortMin}–${TEMPERATURE_CONFIG.comfortMax}°C is safe. Below ${TEMPERATURE_CONFIG.comfortMin} or above ${TEMPERATURE_CONFIG.comfortMax} hurts you. Sleeping inside a lit fire's warmth is fully safe from cold.
 
 Inventory has a total weight cap of ${MAX_INVENTORY_WEIGHT}. Items have weights:
 wood ${INV_WEIGHT_HINT.wood}, meat_raw ${INV_WEIGHT_HINT.meat_raw}, meat_cooked ${INV_WEIGHT_HINT.meat_cooked}, fruit ${INV_WEIGHT_HINT.fruit}, berry ${INV_WEIGHT_HINT.berry}.
@@ -89,7 +89,7 @@ export function buildFeedPrompt(
 
   const opts = options.map((o) => formatOption(o)).join('\n');
   const obs = observations.length > 0
-    ? observations.map((o) => formatObservation(o)).join('\n')
+    ? observations.map((o) => formatObservation(o, character.glossary)).join('\n')
     : '(none yet — no actions taken so far)';
   const lessonsBlock = rules.length === 0
     ? ''
@@ -133,8 +133,9 @@ function formatOption(o: FeedOption): string {
   return `- ${parts.join(' ')}`;
 }
 
-function formatObservation(o: Observation): string {
-  const head = o.target ? `${o.action}(${o.target})` : o.action;
+function formatObservation(o: Observation, glossary: Character['glossary']): string {
+  const maskedTarget = o.target ? maskTarget(o.target, glossary) : undefined;
+  const head = maskedTarget ? `${o.action}(${maskedTarget})` : o.action;
   const effects: string[] = [];
   if (o.dHunger !== undefined) effects.push(`hunger${signed(o.dHunger)}`);
   if (o.dThirst !== undefined) effects.push(`thirst${signed(o.dThirst)}`);

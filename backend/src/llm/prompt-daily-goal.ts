@@ -18,16 +18,16 @@ const SYSTEM_BLOCK = `You are the cognition of a primitive survival character pl
 Constraints:
 - Each sub-goal MUST be concrete (verb + object). "Find a new water source" is concrete. "Be productive" is not.
 - Sub-goals MUST be sequential: complete #1 before starting #2.
-- "referenced_entities" must contain ONLY names that appear verbatim in "Allowed entities" below. Stats (hunger, thirst, energy, sickness) and inventory item types (berry, fruit, wood, meat_raw, meat_cooked) are NOT entities — do not list them.
-- success_criteria for each sub-goal should describe an observable end-state in one short clause ("inventory has fruit", "drink action performed", "visited a new chunk").
+- "referenced_entities" must contain ONLY names that appear verbatim in "Allowed entities" below. Stats and inventory item types are NOT entities — do not list them.
+- success_criteria for each sub-goal should describe an observable end-state in one short clause ("inventory has <item>", "drink action performed", "visited a new chunk").
 - Each sub-goal MAY include a structured "check" field — set it ONLY when the goal maps cleanly to ONE of these three shapes. The server auto-completes the step the moment the signal fires, so use the right shape:
   - {"type":"action_performed","value":"<action_kind>"}: the step finishes when this exact action fires once. Allowed values: drink, sleep, defecate, shake, pickup, eat, hunt, cook, rest, add_fuel, drop. Do NOT use 'wander' or 'walk_to' — those run constantly.
-  - {"type":"inventory_has","item":"<item>"}: the step finishes the first tick the character holds this item. Allowed items: berry, fruit, wood, meat_raw, meat_cooked.
+  - {"type":"inventory_has","item":"<item>"}: the step finishes the first tick the character holds this item. Use only item names that appear in the world summary below.
   - {"type":"chunk_visited_new"}: the step finishes when the character walks into a chunk they have never visited before.
   - Omit "check" entirely for goals that don't fit (e.g. "rest until energy >= 80", "build a stash") — the LLM choice picker will self-tag completion in those cases.
 - alignment values:
   - "advances": today's plan pushes the life goal forward.
-  - "maintains": stats need recovery / prep before pursuing the life goal — eat, drink, rest, gather wood/fruit/berry into inventory. There is no water container; drinking is instantaneous and does not stockpile.
+  - "maintains": stats need recovery / prep before pursuing the life goal — eat, drink, rest, gather basic items into inventory. There is no water container; drinking is instantaneous and does not stockpile.
   - "survival_override": one or more stats are critical and the life goal is paused for the day.
 
 Output STRICT JSON, summary first:

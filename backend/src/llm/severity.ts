@@ -52,10 +52,13 @@ export function severity(stat: string, value: number): string {
     return 'urgent';
   }
   if (stat === 'temperature') {
-    if (value < 12) return 'cold';
-    if (value < 18) return 'cool';
-    if (value <= 25) return 'comfortable';
-    if (value <= 32) return 'warm';
+    // Bands aligned to HEALTH_CONFIG temp HP drain thresholds:
+    //   <10 → severe HP drain, 10-20 → mild HP drain, 20-30 → safe (regen),
+    //   30-40 → mild HP drain, >40 → severe HP drain.
+    if (value < 10) return 'cold';
+    if (value < 20) return 'cool';
+    if (value <= 30) return 'comfortable';
+    if (value <= 40) return 'warm';
     return 'hot';
   }
   return '';

@@ -13,6 +13,7 @@ import {
   NUTRITION,
   PHYSICS_CONFIG,
   REGEN_CONFIG,
+  RESOURCE_TRUTH,
   REST_CONFIG,
   SICKNESS_CONFIG,
   SICKNESS_FUNNEL,
@@ -31,6 +32,7 @@ import type { RuleRepo } from './rule-repo.js';
 import type { SpatialMemoryRepo, RememberedResource } from './spatial-memory-repo.js';
 import type { ChunkVisitRepo, ChunkVisit } from './chunk-visit-repo.js';
 import type { DailyGoalRepo } from './daily-goal-repo.js';
+import type { GlossaryRepo } from './glossary-repo.js';
 import { tileToChunk, chunkKey } from '../../shared/spatial.js';
 import { computeBlocked, cortexDecide, decide, enumerateFeedOptions, enumerateWanderOptions, type ActionPlan, type DecideResult, type WanderHints } from './ai.js';
 import {
@@ -45,7 +47,7 @@ import { generateDailyGoal } from './llm/daily-goal.js';
 import type { OllamaOptions } from './llm/ollama-client.js';
 import { scanVision, visionRangeForHour } from './vision.js';
 
-export type DeathReason = 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'admin';
+export type DeathReason = 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'exposure' | 'admin';
 
 export type LineageEvent =
   | { event: 'death'; deceasedCharacterId: number; reason: DeathReason; lifespanGameHours: number }
@@ -172,6 +174,7 @@ export class GameLoop {
     private spatialRepo: SpatialMemoryRepo,
     private chunkVisitRepo: ChunkVisitRepo,
     private dailyGoalRepo: DailyGoalRepo,
+    private glossaryRepo: GlossaryRepo,
   ) {
     this.picker = buildPicker();
     this.ollamaOptions = ollamaOptionsFromEnv();
@@ -193,6 +196,10 @@ export class GameLoop {
         `[game-loop] spawned new character id=${this.character.id} at (${this.character.position.x},${this.character.position.y})`,
       );
     }
+    // Phase 3 — seed baseline (river etc.) then load. Baseline is idempotent
+    // so it's safe to call on every init; lineage inheritance is preserved.
+    this.glossaryRepo.seedBaseline(this.character.id, Date.now());
+    this.character.glossary = this.glossaryRepo.load(this.character.id);
     const t = this.gameTime();
     const hourKey = t.day * TIME_CONFIG.gameHoursPerDay + t.hour;
     this.lastHourKey = hourKey;
@@ -616,13 +623,10 @@ export class GameLoop {
       // not instant.
       this.applyTemperatureDriftForOneGameHour(hourOfDay);
 
-      // Temperature → drive drain. Cold burns hunger+energy, hot burns thirst.
-      // Sleep halves drain; sleeping in lit-fire radius = full immunity.
-      this.applyTemperatureDrainForOneGameHour(sleeping);
-
       // HP processing — drives at 0 drain at distinct rates, sickness ≥80
-      // drains, regen kicks in when thriving and awake. Multiple drains stack
-      // so neglecting two needs at once kills faster than one.
+      // drains, body-temp drift (<20 or >30) drains directly with sleep+fire
+      // modifiers, regen kicks in when thriving and awake. Multiple drains stack
+      // so neglecting drives AND warmth at once kills faster.
       this.applyHpForOneGameHour(sleeping);
       if (s.health <= 0) break;
     }
@@ -667,35 +671,28 @@ export class GameLoop {
     s.temperature = s.temperature + step;
   }
 
-  /** Apply one game-hour of temperature-driven drive drain. */
-  private applyTemperatureDrainForOneGameHour(sleeping: boolean): void {
-    if (!this.character) return;
-    const s = this.character.stats;
-    const t = s.temperature;
-    const tiers = TEMPERATURE_CONFIG.drainTiers;
-    let tier: { hunger: number; energy: number; thirst: number } | null = null;
-    if (t < tiers.coldExtreme.range[1]) tier = tiers.coldExtreme;
-    else if (t < tiers.coldSevere.range[1]) tier = tiers.coldSevere;
-    else if (t < tiers.coldMild.range[1]) tier = tiers.coldMild;
-    else if (t < tiers.hotMild.range[1]) tier = null; // 20-30 comfort
-    else if (t < tiers.hotSevere.range[0]) tier = tiers.hotMild;
-    else tier = tiers.hotSevere;
-    if (!tier) return;
+  /** Compute one game-hour of temperature-driven HP drain. Replaces the old
+   * drives-drain path: cold/hot now drains health directly so the AI sees a
+   * single clear cause→effect signal (temp drift → HP drop) instead of having
+   * cold's punishment laundered through hunger/energy. */
+  private computeTemperatureHpDrain(sleeping: boolean): number {
+    if (!this.character) return 0;
+    const t = this.character.stats.temperature;
+    const tiers = HEALTH_CONFIG.drainPerGameHour;
+    let raw = 0;
+    if (t < 10) raw = tiers.tempColdSevere;
+    else if (t < 20) raw = tiers.tempColdMild;
+    else if (t > 40) raw = tiers.tempHotSevere;
+    else if (t > 30) raw = tiers.tempHotMild;
+    if (raw === 0) return 0;
 
-    // Sleep + fire-radius + lit = full immunity (Option B). Sleep alone = 0.5×.
-    let modifier = 1;
+    // Sleep + fire-radius + lit = full immunity (the load-bearing learn).
+    // Sleep alone = 0.5×. Awake = 1×.
     if (sleeping) {
-      if (TEMPERATURE_CONFIG.fireSleepImmunity && this.isCharNearLitFire()) {
-        modifier = 0;
-      } else {
-        modifier = TEMPERATURE_CONFIG.sleepDrainMultiplier;
-      }
+      if (TEMPERATURE_CONFIG.fireSleepImmunity && this.isCharNearLitFire()) return 0;
+      return raw * TEMPERATURE_CONFIG.sleepDrainMultiplier;
     }
-    if (modifier === 0) return;
-
-    s.hunger = clamp(s.hunger - tier.hunger * modifier);
-    s.energy = clamp(s.energy - tier.energy * modifier);
-    s.thirst = clamp(s.thirst - tier.thirst * modifier);
+    return raw;
   }
 
   /** Burn one game-hour of fuel from each lit fire. Unlit when fuel hits 0. */
@@ -726,7 +723,8 @@ export class GameLoop {
     const drainSickness = (s.sickness ?? 0) >= HEALTH_CONFIG.sicknessDrainThreshold
       ? HEALTH_CONFIG.drainPerGameHour.sickness80
       : 0;
-    const totalDrain = drainHunger + drainThirst + drainEnergy + drainSickness;
+    const drainTemp = this.computeTemperatureHpDrain(sleeping);
+    const totalDrain = drainHunger + drainThirst + drainEnergy + drainSickness + drainTemp;
 
     if (totalDrain > 0) {
       s.health = Math.max(0, s.health - totalDrain);
@@ -735,6 +733,7 @@ export class GameLoop {
         { name: 'dehydration', drain: drainThirst },
         { name: 'exhaustion', drain: drainEnergy },
         { name: 'illness', drain: drainSickness },
+        { name: 'exposure', drain: drainTemp },
       ];
       causes.sort((a, b) => b.drain - a.drain);
       this.lastHpCause = causes[0].name;
@@ -813,9 +812,21 @@ export class GameLoop {
 
     const deathPos = this.deathPosition ?? { x: CHARACTER_CONFIG.spawnX, y: CHARACTER_CONFIG.spawnY };
     const pos = this.pickRespawnPosition(deathPos);
+    const parentId = this.character?.id ?? null;
     const newIteration = this.repo.incrementIteration(this.lineageId);
     const fresh = this.repo.spawn(this.lineageId, newIteration, pos);
     this.character = fresh;
+    // Phase 3 — lineage inheritance. Copy parent's full glossary to the new
+    // gen so it doesn't relearn what the bloodline already discovered. Gen 1
+    // (no parent) writes nothing and starts blank.
+    if (parentId !== null) {
+      const inherited = this.glossaryRepo.inherit(parentId, fresh.id, Date.now());
+      if (inherited > 0) {
+        console.log(`[game-loop] glossary: inherited ${inherited} entries from char ${parentId} → ${fresh.id}`);
+      }
+    }
+    this.glossaryRepo.seedBaseline(fresh.id, Date.now());
+    this.character.glossary = this.glossaryRepo.load(fresh.id);
 
     this.respawnAt = null;
     this.deathPosition = null;
@@ -1127,7 +1138,13 @@ export class GameLoop {
       const key = `${x},${y}`;
       if (occupied.has(key) || this.blocked.has(key)) continue;
       const id = `chicken_${++this.nextResourceId}`;
-      const res: Resource = { id, type: 'animal_chicken', x, y, state: {} };
+      const res: Resource = {
+        id,
+        type: 'animal_chicken',
+        x,
+        y,
+        state: { hunger: ANIMAL_CONFIG.chickenHungerStart },
+      };
       this.resources.push(res);
       this.resourceRepo.persist(res);
       return res;
@@ -1161,18 +1178,46 @@ export class GameLoop {
     // Cache each tick — cheap, and fruit set mutates as chickens eat.
     const consumedFruits = new Set<string>();
 
+    // Per-tick hunger decay: convert 'per game hour' into 'per real tick'.
+    const dtGameHours =
+      (TIME_CONFIG.tickMs / TIME_CONFIG.realMsPerGameMinute) /
+      TIME_CONFIG.gameMinutesPerHour;
+    const hungerDecayPerTick = ANIMAL_CONFIG.chickenHungerDecayPerGameHour * dtGameHours;
+
+    const starvedIds: string[] = [];
     for (const r of this.resources) {
       if (r.type !== 'animal_chicken') continue;
 
       const distToChar = Math.hypot(r.x - char.position.x, r.y - char.position.y);
       const shouldFlee = distToChar < ANIMAL_CONFIG.chickenFleeRange;
-      const state = (r.state ?? {}) as { target?: Position; fleeing?: boolean };
+      const state = (r.state ?? {}) as {
+        target?: Position;
+        fleeing?: boolean;
+        fruitCooldownUntil?: number;
+        hunger?: number;
+      };
       const wasFleeing = state.fleeing ?? false;
+      // Decay hunger and starve when it bottoms out. Existing chickens that
+      // pre-date the field default to chickenHungerStart on first read.
+      let hunger = state.hunger ?? ANIMAL_CONFIG.chickenHungerStart;
+      hunger = Math.max(0, hunger - hungerDecayPerTick);
+      r.state = { ...state, hunger };
+      if (hunger <= 0) {
+        starvedIds.push(r.id);
+        continue;
+      }
+      // Suspend fruit-chasing for a window after the last failed step so the
+      // chicken can wander out of a forest pocket instead of re-locking on
+      // the same unreachable fruit every tick. Also gate by hunger — sated
+      // chickens ignore fruit so they don't vacuum the map.
+      const cooldownExpired = this.tickCount >= (state.fruitCooldownUntil ?? 0);
+      const isHungry = hunger <= ANIMAL_CONFIG.chickenHungerChaseThreshold;
+      const canChaseFruit = cooldownExpired && isHungry;
 
       // While not fleeing, head for the nearest fruit on the ground within range.
       // Lets chickens naturally declutter dropped fruit that the character ignored.
       let fruitTarget: Resource | null = null;
-      if (!shouldFlee) {
+      if (!shouldFlee && canChaseFruit) {
         fruitTarget = this.findNearestFruitForChicken(r, consumedFruits);
       }
 
@@ -1181,8 +1226,12 @@ export class GameLoop {
         if (Math.hypot(fruitTarget.x - r.x, fruitTarget.y - r.y) < 0.5) {
           consumedFruits.add(fruitTarget.id);
           this.removeResource(fruitTarget.id);
-          this.logEvent('chicken_ate_fruit', { chicken: r.id, fruit: fruitTarget.id });
-          r.state = { ...r.state, target: undefined, fleeing: false };
+          const filled = Math.min(
+            ANIMAL_CONFIG.chickenHungerMax,
+            hunger + ANIMAL_CONFIG.chickenHungerPerFruit,
+          );
+          this.logEvent('chicken_ate_fruit', { chicken: r.id, fruit: fruitTarget.id, hunger: filled });
+          r.state = { ...r.state, target: undefined, fleeing: false, hunger: filled };
           continue;
         }
         r.state = {
@@ -1217,18 +1266,56 @@ export class GameLoop {
         ? ANIMAL_CONFIG.chickenFleeSpeedTilesPerSec
         : ANIMAL_CONFIG.chickenSpeedTilesPerSec;
       const step = speed * dtSec;
-      const nx = dist <= step ? target.x : r.x + (dx / dist) * step;
-      const ny = dist <= step ? target.y : r.y + (dy / dist) * step;
+      let nx = dist <= step ? target.x : r.x + (dx / dist) * step;
+      let ny = dist <= step ? target.y : r.y + (dy / dist) * step;
 
-      // If the tile under the proposed position is blocked, drop target and try again next tick.
-      if (this.blocked.has(`${Math.round(nx)},${Math.round(ny)}`)) {
-        r.state = { ...r.state, target: undefined, fleeing: shouldFlee };
+      // Tile-based blocked check with two escape valves so chickens don't
+      // freeze when surrounded by trees:
+      //   (A) sub-tile movement within the same logical tile is always allowed
+      //       — lets a chicken trapped inside a blocked tile crawl out.
+      //   (B) when the full step lands on a blocked tile, try sliding along
+      //       walls by zeroing one axis at a time.
+      const proposedTile = `${Math.round(nx)},${Math.round(ny)}`;
+      const currentTile = `${Math.round(r.x)},${Math.round(r.y)}`;
+      // Cooldown trigger: when a step toward a fruit fails, suspend fruit-chase
+      // so the chicken doesn't re-lock onto the same unreachable target.
+      const FRUIT_COOLDOWN_TICKS = 30;
+      const failHandler = () => {
+        const next = { ...r.state, target: undefined, fleeing: shouldFlee } as typeof state;
+        if (fruitTarget) next.fruitCooldownUntil = this.tickCount + FRUIT_COOLDOWN_TICKS;
+        r.state = next;
+      };
+      if (proposedTile !== currentTile && this.blocked.has(proposedTile)) {
+        const xOnlyTile = `${Math.round(nx)},${Math.round(r.y)}`;
+        const yOnlyTile = `${Math.round(r.x)},${Math.round(ny)}`;
+        if (!this.blocked.has(xOnlyTile)) {
+          ny = r.y;
+        } else if (!this.blocked.has(yOnlyTile)) {
+          nx = r.x;
+        } else {
+          failHandler();
+          continue;
+        }
+      }
+
+      // If slide produced zero movement (cardinal target hitting a wall), drop
+      // the target so we repick next tick instead of looping silently.
+      if (Math.abs(nx - r.x) < 1e-6 && Math.abs(ny - r.y) < 1e-6) {
+        failHandler();
         continue;
       }
 
       r.x = nx;
       r.y = ny;
       if (persistThisTick) this.resourceRepo.persist(r);
+    }
+
+    // Remove starved chickens after iteration so we don't mutate the list
+    // we're traversing. Respawn loop fills slots back up after
+    // chickenRespawnGameHours.
+    for (const id of starvedIds) {
+      this.logEvent('chicken_starve', { chicken: id });
+      this.removeResource(id);
     }
   }
 
@@ -1242,6 +1329,9 @@ export class GameLoop {
     for (const r of this.resources) {
       if (r.type !== 'fruit') continue;
       if (skip.has(r.id)) continue;
+      // Fruits that landed on a blocked tile (under the parent tree) are
+      // unreachable — chasing them would lock the chicken in a target loop.
+      if (this.blocked.has(`${Math.round(r.x)},${Math.round(r.y)}`)) continue;
       const d = Math.hypot(r.x - chicken.x, r.y - chicken.y);
       if (d > RANGE) continue;
       if (d < bestDist) {
@@ -1852,6 +1942,9 @@ export class GameLoop {
         this.resourceRepo.persist(meatDrop);
         s.energy = clamp(s.energy - ACTION_COSTS.huntEnergy);
         s.thirst = clamp(s.thirst - ACTION_COSTS.huntThirst);
+        // Phase 3 — transformation auto-reveal. Char produced raw meat from
+        // their own kill; full tag set is known immediately (no observe needed).
+        this.revealGlossary('meat_raw');
         this.logEvent('hunt', {
           animal: animal.id,
           kind: animal.type,
@@ -1931,7 +2024,79 @@ export class GameLoop {
         if (idx < 0) { failReason = 'no raw meat to cook'; break; }
         this.character.inventory[idx] = 'meat_cooked';
         s.energy = clamp(s.energy - ACTION_COSTS.cookMeatEnergy);
+        // Phase 3 — cooking transforms raw → cooked; cooked is auto-known.
+        this.revealGlossary('meat_cooked');
         this.logEvent('cook', { fire: fire.id, invCount: this.character.inventory.length });
+        this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
+        break;
+      }
+      case 'observe': {
+        // Phase 3 — gateway action. Target is either a map resource id (look
+        // up resource.type) or an inventory item key (use directly). For
+        // edible/drinkable types the char eats/drinks in the same action so
+        // the outcome (sickness or not) matches the revealed tag set. For
+        // inedible-only types observe is a free no-op reveal.
+        const target = action.target;
+        if (!target) { failReason = 'observe missing target'; break; }
+
+        let resourceType: string;
+        let resource: Resource | null = null;
+        let invIdx = -1;
+        // Inventory keys (e.g. 'fruit', 'berry') are bare ResourceType names;
+        // resource ids are unique with `_<num>` suffix. Try inventory first.
+        invIdx = this.character.inventory.indexOf(target);
+        if (invIdx >= 0) {
+          resourceType = target;
+        } else {
+          resource = this.findResource(target);
+          if (!resource) { failReason = 'cannot observe that'; break; }
+          resourceType = resource.type;
+          const dx = this.character.position.x - resource.x;
+          const dy = this.character.position.y - resource.y;
+          if (Math.hypot(dx, dy) > PHYSICS_CONFIG.pickupRadius + (resourceType === 'river' ? 0.5 : 0)) {
+            failReason = 'too far to observe';
+            break;
+          }
+        }
+
+        const truth = RESOURCE_TRUTH[resourceType] ?? ['inedible'];
+        const isEdible = truth.includes('edible');
+        const isDrinkable = truth.includes('drinkable');
+
+        if (isEdible) {
+          // Consume the item — same nutrition path as eat. If from ground we
+          // remove the resource; if from inventory we splice. Either way, one
+          // unit gets consumed regardless of canCarry — observe must succeed.
+          if (invIdx >= 0) {
+            this.character.inventory.splice(invIdx, 1);
+          } else if (resource) {
+            this.removeResource(resource.id);
+          }
+          if (resourceType === 'fruit') {
+            s.hunger = clamp(s.hunger + NUTRITION.hungerPerFruit);
+            s.energy = clamp(s.energy + NUTRITION.energyPerFruit);
+          } else if (resourceType === 'berry') {
+            s.hunger = clamp(s.hunger + NUTRITION.hungerPerBerry);
+            s.energy = clamp(s.energy + NUTRITION.energyPerBerry);
+          } else if (resourceType === 'meat_raw') {
+            s.hunger = clamp(s.hunger + NUTRITION.hungerPerMeatRaw);
+            s.energy = clamp(s.energy + NUTRITION.energyPerMeatRaw);
+            s.sickness = clamp((s.sickness ?? 0) + NUTRITION.sicknessPerMeatRaw);
+          } else if (resourceType === 'meat_cooked') {
+            s.hunger = clamp(s.hunger + NUTRITION.hungerPerMeatCooked);
+            s.energy = clamp(s.energy + NUTRITION.energyPerMeatCooked);
+          }
+        } else if (isDrinkable) {
+          // Drinkable observe = drink semantics.
+          s.thirst = clamp(s.thirst + NUTRITION.thirstPerDrink);
+          s.energy = clamp(s.energy + NUTRITION.energyPerDrink);
+        }
+        // Inedible-only: zero side effect, just reveal the tag below.
+
+        const tags = Array.from(new Set(truth)).sort() as typeof truth;
+        this.character.glossary[resourceType] = tags;
+        this.glossaryRepo.upsert(this.character.id, resourceType, tags, Date.now());
+        this.logEvent('observe', { target, type: resourceType, tags });
         this.evaluateDailyGoalCheck({ kind: 'inventory_changed' });
         break;
       }
@@ -1995,6 +2160,19 @@ export class GameLoop {
     const idx = this.resources.findIndex((r) => r.id === id);
     if (idx >= 0) this.resources.splice(idx, 1);
     this.resourceRepo.delete(id);
+  }
+
+  // Phase 3 — write a ResourceType's full truth to the char's glossary. Used
+  // by transformation actions (hunt → meat_raw, cook → meat_cooked) where the
+  // char produced the item themselves so they implicitly know its tags.
+  private revealGlossary(type: string): void {
+    if (!this.character) return;
+    const truth = RESOURCE_TRUTH[type];
+    if (!truth) return;
+    if (this.character.glossary[type]) return;
+    const tags = Array.from(new Set(truth)).sort() as typeof truth;
+    this.character.glossary[type] = tags;
+    this.glossaryRepo.upsert(this.character.id, type, tags, Date.now());
   }
 
   private findResource(id?: string): Resource | null {

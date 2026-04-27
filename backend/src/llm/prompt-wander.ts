@@ -14,7 +14,7 @@ import { severity } from './severity.js';
 const SYSTEM_BLOCK = `You are the cognition of a primitive survival character deciding what to do next while idle.
 No critical alarm is firing right now. You can either move (explore/revisit), rest in place, or pre-emptively eat/drink to keep your needs comfortable. Choose what serves you best given your current stats and surroundings.
 
-Direction options' notes describe the destination:
+Direction options ("wander_*", "stay") notes describe the destination:
 - Composition tag: "nothing" (no remembered resource near target) OR a type list like "bushx3+tree" (3 berry bushes and 1 fruit tree remembered within 4 tiles).
 - "age=Xh": game-hours since you last laid eyes on the freshest resource in that group. Higher = more stale memory.
 - "unvisited": you have never set foot in this chunk of the map (strong curiosity signal).
@@ -22,16 +22,18 @@ Direction options' notes describe the destination:
 - "edge": target is within 2 tiles of the map boundary.
 - "at_pos": stay where you are (rest in place).
 
-Consume options' notes describe what is available:
-- "eat_berry_inv" / "eat_fruit_inv": one piece consumed from your inventory, in-place, no walking.
-- "drink_river": walk to the nearest river and drink.
-- "expected=+Nstat" tag on consume options: the actual stat gain you would receive — already capped at 100. "expected=+0" means the action would produce no benefit (your stat is already full).
+Verb options use generic kinds — the "target" field carries the specific
+identity. Read each option's annotation for the precise effect:
+- "eat" with target=<inventory item>: consume one piece from your inventory in-place. The annotation shows the item name and "expected=+Nhunger".
+- "drink" with target=<river_id>: walk to the river and drink. "expected=+Nthirst" caps at 100.
+- "pickup" with target=<item_or_id>: walk to a loose item on the ground and pick it up.
+- "shake" with target=<source_id>: shake a source (bush, tree). The annotation describes distance and any tags.
+- "drop" with target=<inventory item>: drop one piece to free weight.
+- "defecate": walk to a clear spot and relieve yourself.
+- "rest" near a fire: drift body temperature toward the fire's ambient.
+- "sleep": only surfaces at night near a lit fire — sleep recovery is best then ("recovery=×1.8").
 
-Maintenance options' notes describe what is available:
-- "pee_now": walk to a clear spot and relieve yourself; the bladder=N tag shows your current bladder pressure and "expected=-Nbladder" shows it will empty fully.
-- "warm_at_fire": walk to a lit fire so the warmth radius drifts your body temperature toward the fire's ambient. The body=NC tag shows your current body temp; the expected=ambientNC tag shows the ambient your body will start drifting toward while you stay there.
-- "sleep_now": only surfaces at night when you are standing in a lit fire's warmth radius. The "recovery=×1.8" tag means sleep is most efficient at night — every game-hour asleep restores nearly twice as much energy as a daytime nap. The "energy=N" tag is your current energy level.
-- "pickup_wood": only surfaces when a known fire is unlit or low on fuel and you have inventory room for wood; walks to the nearest known wood pile so you can carry it back to refuel.
+Body temperature: ${TEMPERATURE_CONFIG.comfortMin}–${TEMPERATURE_CONFIG.comfortMax}°C is safe. Below ${TEMPERATURE_CONFIG.comfortMin} or above ${TEMPERATURE_CONFIG.comfortMax} drains health directly. Sleeping inside a lit fire's warmth is fully safe from cold.
 
 Heuristics:
 - Prefer "unvisited" when stats are comfortable — that is how you discover new resources.
@@ -64,7 +66,7 @@ export function buildWanderPrompt(
     : '';
   const dailyBlock = formatDailyGoalBlock(character.dailyGoal ?? null);
   const fireLine = world.fireStatus ? `\n- ${world.fireStatus}` : '';
-  const tempNote = `°C (comfort ${TEMPERATURE_CONFIG.comfortMin}–${TEMPERATURE_CONFIG.comfortMax})`;
+  const tempNote = `°C (comfort ${TEMPERATURE_CONFIG.comfortMin}–${TEMPERATURE_CONFIG.comfortMax} — outside this band drains health)`;
 
   // Inventory + recent consume observations help the LLM decide whether to
   // top up. Recent obs scoped to last few entries — enough signal without
@@ -102,7 +104,7 @@ function formatRecentConsume(obs: Observation[]): string {
   // Show the last few eat/drink events so the LLM can see whether it has been
   // topping up recently. Keeps it short — 3 entries is enough.
   const recents = obs
-    .filter((o) => /^eat_|^drink/.test(o.action))
+    .filter((o) => o.action === 'eat' || o.action === 'drink')
     .slice(-3);
   if (recents.length === 0) return 'none';
   return recents

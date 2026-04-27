@@ -285,12 +285,18 @@ export class ResourceLayer {
     for (const ent of this.entities.values()) {
       const moving = ent.fromX !== ent.toX || ent.fromY !== ent.toY || ent.fromZ !== ent.toZ;
       if (moving) {
-        const duration = ent.type === 'animal_chicken' ? MOVE_TWEEN_MS : 300;
+        // Match tween duration to broadcast cadence so animation is continuous
+        // (no idle gap between snapshots). Falling/aloft items get easeInQuad
+        // on z so the visual accelerates downward — gravity is constant accel,
+        // not the symmetric easeInOutQuad we use for x/y travel.
+        const duration = MOVE_TWEEN_MS;
         const raw = Math.min(1, (nowMs - ent.stepStartMs) / duration);
-        const t = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
-        const fx = ent.fromX + (ent.toX - ent.fromX) * t;
-        const fy = ent.fromY + (ent.toY - ent.fromY) * t;
-        const fz = ent.fromZ + (ent.toZ - ent.fromZ) * t;
+        const tXY = raw < 0.5 ? 2 * raw * raw : 1 - Math.pow(-2 * raw + 2, 2) / 2;
+        const inFlight = ent.fromZ > 0 || ent.toZ > 0;
+        const tZ = inFlight ? raw * raw : tXY;
+        const fx = ent.fromX + (ent.toX - ent.fromX) * tXY;
+        const fy = ent.fromY + (ent.toY - ent.fromY) * tXY;
+        const fz = ent.fromZ + (ent.toZ - ent.fromZ) * tZ;
         positionEntity(ent, fx, fy, fz, tileSize);
         if (ent.type === 'animal_chicken' && ent.isSprite) {
           (ent.go as Phaser.GameObjects.Sprite).setFlipX(!ent.lastFacingRight);

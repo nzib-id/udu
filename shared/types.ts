@@ -30,7 +30,20 @@ export type ActionType =
   | 'rest'
   | 'wander'
   | 'add_fuel'
-  | 'drop';
+  | 'drop'
+  | 'observe';
+
+// Phase 3 glossary: tags revealed about a ResourceType once observed.
+// edible: char can eat without sickness. poisonous: edible but causes
+// sickness (e.g. raw meat). drinkable: char can drink (e.g. river).
+// inedible: nothing consumable about it (stones, wood, animals alive).
+// A type can carry multiple tags simultaneously (meat_raw = edible+poisonous).
+export type GlossaryTag = 'edible' | 'poisonous' | 'drinkable' | 'inedible';
+
+// Per-character knowledge of which ResourceTypes have which tags. Persisted
+// in `character_glossary` table. Inherited from parent on respawn (lineage
+// progression). Gen 0 starts empty — observe is the gateway.
+export type Glossary = Record<string, GlossaryTag[]>;
 
 export type Action = {
   type: ActionType;
@@ -67,6 +80,10 @@ export type Character = {
   // life goal into 2-4 sequential sub-goals. Null between rollover and the
   // LLM call resolving, or when survival_override etc. fails validation.
   dailyGoal?: DailyGoal | null;
+  // Phase 3 glossary — known ResourceType → tag list. Gen 0 starts empty;
+  // observe + lineage inheritance fill it. LLM prompt filters resource type
+  // names through this map, masking unknown types as `unknown_thing`.
+  glossary: Glossary;
 };
 
 export type LifeGoal = {

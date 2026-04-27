@@ -84,7 +84,7 @@ export class CharacterRepo {
   recordDeath(
     characterId: number,
     deathTime: number,
-    reason: 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'admin',
+    reason: 'starvation' | 'dehydration' | 'exhaustion' | 'illness' | 'exposure' | 'admin',
     lifespanGameHours: number,
     chunksVisited: number,
     resourcesDiscovered: number,
@@ -198,6 +198,9 @@ function rowToCharacter(row: CharacterRow): Character {
     isAlive: row.is_alive === 1,
     facing: 0,
     lifeGoal,
+    // Glossary is hydrated by GameLoop.init() after the row is loaded — repo
+    // doesn't own that table. Initial empty map is just a type-required default.
+    glossary: {},
   };
 }
 

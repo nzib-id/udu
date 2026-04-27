@@ -117,7 +117,7 @@ export const VISION_CONFIG = {
 } as const;
 
 export const NUTRITION = {
-  hungerPerBerry: 2,                // segenggam buah liar
+  hungerPerBerry: 5,                // segenggam buah liar
   hungerPerFruit: 5,                // 1 buah besar
   thirstPerDrink: 25,               // ~1 cup air, cover hampir 1 game-day thirst
   hungerPerMeatRaw: 8,              // ayam kecil mentah
@@ -165,6 +165,15 @@ export const ANIMAL_CONFIG = {
   chickenFleeDistance: 8,           // flee this many tiles from char
   chickenWanderRange: 15,           // pick wander target anywhere within this range (whole map feel)
   chickenRespawnGameHours: 24,      // scarce: 1 game-day respawn
+  // Hunger stat — caps fruit consumption so chickens don't vacuum the map.
+  // Decay 2/h → ~50 game-hours full→empty (~2 game-day starvation).
+  // Chase gate at 50 + eat gain 30 → ~1 fruit per 15 real-min per chicken
+  // (cycle: 50 → eat → 80 → decay → 50). 2 chickens × 24min day = ~3 fruit/day.
+  chickenHungerMax: 100,
+  chickenHungerStart: 60,
+  chickenHungerDecayPerGameHour: 2,
+  chickenHungerPerFruit: 30,
+  chickenHungerChaseThreshold: 50,  // only chase fruit when hunger <= this
   fishCount: 2,                     // scarce
   fishRespawnGameHours: 24,
 } as const;
@@ -183,8 +192,11 @@ export const FIRE_CONFIG = {
 
 // Temperature stat — per-character body temperature. Drifts toward phase
 // ambient at `driftPerGameMinute`. Fire radius (FIRE_CONFIG.warmthRadius)
-// + lit overrides ambient to `fireWarmthAmbient`. Out-of-comfort drains
-// drives at tiered rates (cold pulls hunger+energy, hot pulls thirst).
+// + lit overrides ambient to `fireWarmthAmbient`. Out-of-comfort body temp
+// drains HP directly (see HEALTH_CONFIG.drainPerGameHour.tempCold*/tempHot*) —
+// pure HP path so the AI sees a single clear signal: temp drift → HP drop.
+// Sleep + fire-radius + lit = immunity (the single most load-bearing
+// behaviour the AI must learn).
 export const TEMPERATURE_CONFIG = {
   initial: 25,
   comfortMin: 20,
@@ -198,18 +210,8 @@ export const TEMPERATURE_CONFIG = {
     night: 16,                      // 21–5
   },
   fireWarmthAmbient: 28,            // override when char in fire radius AND fire is lit
-  // Drain rates by body-temp tier (per game-hour). Cold pulls hunger+energy
-  // (cold burns calories + tires body), hot pulls thirst (dehydration).
-  // Calibrated to 2-5x base decay so cold is punishing without overshadowing
-  // baseline starvation/dehydration.
-  drainTiers: {
-    coldMild:    { range: [10, 20] as [number, number], hunger: 0.2, energy: 0.5, thirst: 0 },
-    coldSevere:  { range: [0, 10] as [number, number],  hunger: 1,   energy: 2,   thirst: 0 },
-    coldExtreme: { range: [-Infinity, 0] as [number, number], hunger: 2, energy: 5, thirst: 0 },
-    hotMild:     { range: [30, 40] as [number, number], hunger: 0,   energy: 0,   thirst: 1 },
-    hotSevere:   { range: [40, Infinity] as [number, number], hunger: 0, energy: 0, thirst: 3 },
-  },
   // Sleep modifier — body metabolism slows during sleep; fire fully immunizes.
+  // Applied to temperature-driven HP drain only.
   sleepDrainMultiplier: 0.5,        // sleeping anywhere
   fireSleepImmunity: true,          // sleeping in fire radius AND fire lit → drain × 0
 } as const;
@@ -241,12 +243,19 @@ export const DEATH_CONFIG = {
 
 // HP — central death funnel.
 // Drain (HP/game-hour) when source condition holds:
-//   hunger=0       -15
-//   thirst=0       -20
-//   energy=0       -10
-//   sickness>=80   -10
+//   hunger=0          -15
+//   thirst=0          -20
+//   energy=0          -10
+//   sickness>=80      -10
+//   body temp <20°C    -5  (cool drift, e.g. night without fire)
+//   body temp <10°C   -15  (severe cold)
+//   body temp >30°C    -5  (mild hot)
+//   body temp >40°C   -15  (severe hot)
+// Temperature drain is multiplied by sleep modifier (×0.5) and zeroed by
+// sleeping inside a lit fire's warmth radius (full immunity). The cold/hot
+// severity tiers do NOT stack — the harsher tier replaces the milder one.
 // Regen (HP/game-hour) ONLY when all comfort conditions hold simultaneously.
-// Multiple drains stack — neglecting two drives at once kills faster.
+// Multiple drains across drives + temp stack — neglecting two at once kills faster.
 export const HEALTH_CONFIG = {
   max: 100,
   initial: 100,
@@ -255,6 +264,10 @@ export const HEALTH_CONFIG = {
     thirst0: 20,
     energy0: 10,
     sickness80: 10,
+    tempColdMild: 5,    // body < 20°C
+    tempColdSevere: 15, // body < 10°C (replaces tempColdMild, doesn't stack)
+    tempHotMild: 5,     // body > 30°C
+    tempHotSevere: 15,  // body > 40°C (replaces tempHotMild, doesn't stack)
   },
   regen: {
     perGameHour: 1,
@@ -275,7 +288,7 @@ export const CAMERA_CONFIG = {
 
 export const REGEN_CONFIG = {
   bushBerryPerDay: 1,
-  bushBerriesMax: 3,                // scarce: max 3 berry/bush
+  bushBerriesMax: 4,                // scarce but workable
   treeFruitEveryDays: 2,            // 2 game-day per fruit (locked 2026-04-27)
   treeFruitPerCycle: 1,
   treeFruitsMax: 2,                 // scarce
@@ -353,6 +366,94 @@ export const DROP_INIT = {
   hunt: { z: 0, vx: 0, vy: 0, vz: 0 },
   manual: { z: 0, vx: 0, vy: 0, vz: 0 },
 } as const;
+
+// Phase 3 glossary truth table — hidden ground-truth map of ResourceType →
+// tag set. Char glossary stays empty until observe reveals each entry. NEVER
+// expose this map to the LLM directly; it's the answer key the observe
+// mechanic decodes via "eat-and-see" outcomes (or instant inedible reveal).
+//   edible: nutrition gain, no sickness on consume.
+//   poisonous: edible but consume triggers sickness (e.g. raw meat).
+//   drinkable: consumable via drink (rivers).
+//   inedible: anything observable but non-consumable — animals alive, trees,
+//     stones, fire, etc. Char learns "this isn't food" by observing.
+// Animals are inedible (can't eat live); their meat is the consumable. Trees
+// are inedible (can't eat the tree); their fruit/vine/branch are.
+import type { Glossary, GlossaryTag } from './types.js';
+
+// Phase 3 — parent category mapping. Subtypes that share an identifiable parent
+// shape (tree/animal) display as the parent name in LLM prompts until the
+// specific subtype is observed. Acts as the "I can tell it's a tree but not
+// what kind" layer.
+export const RESOURCE_PARENT: Record<string, string> = {
+  tree_fruit: 'tree',
+  tree_wood: 'tree',
+  tree_vine: 'tree',
+  animal_chicken: 'animal',
+  animal_fish: 'animal',
+};
+
+// Parents auto-known to gen 0. Subtypes inside still need observation to lock
+// down specific identity; the parent label just bridges "unknown" → "tree".
+export const BASIC_KNOWN_PARENTS = new Set(['tree', 'animal']);
+
+// Types fully auto-known to gen 0 (full tag reveal, no mask). Seeded into the
+// glossary on first spawn and persisted so subsequent loads + lineage
+// inheritance carry them forward. Limited to permanent terrain features
+// (river, fire) — char wakes up knowing what these obvious elements are.
+export const BASIC_KNOWN_TYPES: Record<string, GlossaryTag[]> = {
+  river: ['drinkable'],
+  fire: ['inedible'],
+};
+
+// Mask a ResourceType for LLM display based on character glossary.
+// - In glossary → real type name (full reveal).
+// - Has basic-known parent → parent label (e.g. tree_fruit → 'tree').
+// - Otherwise → 'unknown_thing'.
+export function maskType(type: string, glossary: Glossary): string {
+  if (glossary[type]) return type;
+  const parent = RESOURCE_PARENT[type];
+  if (parent && BASIC_KNOWN_PARENTS.has(parent)) return parent;
+  return 'unknown_thing';
+}
+
+// Mask a target string of form `<type><_digits>+`. Strips ALL trailing
+// `_<digits>` groups so multi-segment id suffixes (`river_38_12`, `bush_15`,
+// `tree_fruit_3`) reduce to their type prefix; maskType handles the prefix and
+// the numeric tail is reattached untouched. Falls back to maskType for non-id
+// strings (bare type names like `berry`, `meat_raw`). Used for option targets
+// and observation log entries so type names never leak before observe.
+export function maskTarget(target: string, glossary: Glossary): string {
+  const m = target.match(/^(.+?)((?:_\d+)+)$/);
+  if (m) {
+    return `${maskType(m[1], glossary)}${m[2]}`;
+  }
+  return maskType(target, glossary);
+}
+
+export const RESOURCE_TRUTH: Record<string, GlossaryTag[]> = {
+  // Consumables.
+  fruit: ['edible'],
+  berry: ['edible'],
+  meat_raw: ['edible', 'poisonous'],
+  meat_cooked: ['edible'],
+  // Drinkables.
+  river: ['drinkable'],
+  // Static sources.
+  bush: ['inedible'],
+  tree_fruit: ['inedible'],
+  tree_vine: ['inedible'],
+  tree_wood: ['inedible'],
+  fire: ['inedible'],
+  boulder: ['inedible'],
+  // Animals (alive — must hunt to get meat).
+  animal_chicken: ['inedible'],
+  animal_fish: ['inedible'],
+  // Inedible items.
+  wood: ['inedible'],
+  branch: ['inedible'],
+  vine: ['inedible'],
+  stone: ['inedible'],
+};
 
 // Terrain grid is generated once at module load from the shared seed. Both
 // frontend (rendering) and backend (water/fish spawn) consume this grid so map

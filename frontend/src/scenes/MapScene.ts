@@ -119,6 +119,14 @@ export class MapScene extends Phaser.Scene {
     this.fogLayer = new FogLayer(this);
     // Allow main.ts toggle button to flip fog without poking through scene internals.
     this.game.events.on('fog:set', (on: boolean) => this.fogLayer?.setEnabled(on));
+    // bindFogToggle() in main.ts runs at module-load and emits 'fog:set'
+    // synchronously — usually before this scene's create() registers the
+    // listener above. Read localStorage directly here so the fog layer's
+    // initial enabled state matches the persisted preference on reload.
+    try {
+      const persisted = localStorage.getItem('udu-fog-enabled');
+      if (persisted !== null) this.fogLayer.setEnabled(persisted !== '0');
+    } catch { /* localStorage disabled — leave default */ }
 
     this.setupCameraControls();
 

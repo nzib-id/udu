@@ -9,10 +9,19 @@ import { RuleRepo } from './rule-repo.js';
 import { SpatialMemoryRepo } from './spatial-memory-repo.js';
 import { ChunkVisitRepo } from './chunk-visit-repo.js';
 import { DailyGoalRepo } from './daily-goal-repo.js';
+import { GlossaryRepo } from './glossary-repo.js';
 import { NETWORK_CONFIG } from '../../shared/config.js';
 import type { ClientMessage, ServerMessage } from '../../shared/types.js';
 
 const PORT = Number.parseInt(process.env.PORT ?? String(NETWORK_CONFIG.backendPort), 10);
+
+// Admin endpoints (/api/admin/*) require this token via `x-admin-token` header.
+// Fail-closed: if env unset, every admin request returns 503 — operator must
+// set ADMIN_TOKEN explicitly so the surface is never accidentally public.
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN ?? '';
+if (!ADMIN_TOKEN) {
+  console.warn('[udu-backend] ADMIN_TOKEN not set — /api/admin/* will refuse all requests');
+}
 
 const db = openDb();
 const repo = new CharacterRepo(db);
@@ -22,11 +31,29 @@ const ruleRepo = new RuleRepo(db);
 const spatialRepo = new SpatialMemoryRepo(db);
 const chunkVisitRepo = new ChunkVisitRepo(db);
 const dailyGoalRepo = new DailyGoalRepo(db);
-const loop = new GameLoop(repo, resourceRepo, eventRepo, ruleRepo, spatialRepo, chunkVisitRepo, dailyGoalRepo);
+const glossaryRepo = new GlossaryRepo(db);
+const loop = new GameLoop(repo, resourceRepo, eventRepo, ruleRepo, spatialRepo, chunkVisitRepo, dailyGoalRepo, glossaryRepo);
 loop.init();
 const clients = new Set<WebSocket>();
 
+function requireAdmin(req: IncomingMessage, res: ServerResponse): boolean {
+  if (!ADMIN_TOKEN) {
+    res.writeHead(503, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ ok: false, error: 'admin disabled (ADMIN_TOKEN unset)' }));
+    return false;
+  }
+  const supplied = req.headers['x-admin-token'];
+  const token = Array.isArray(supplied) ? supplied[0] : supplied;
+  if (token !== ADMIN_TOKEN) {
+    res.writeHead(403, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ ok: false, error: 'forbidden' }));
+    return false;
+  }
+  return true;
+}
+
 const http = createServer((req: IncomingMessage, res: ServerResponse) => {
+  if (req.url?.startsWith('/api/admin/') && !requireAdmin(req, res)) return;
   if (req.method === 'GET' && req.url === '/api/status') {
     const snap = loop.snapshot();
     res.writeHead(200, { 'content-type': 'application/json' });

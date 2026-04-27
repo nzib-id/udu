@@ -1,5 +1,5 @@
-import type { Action, Character, Position, Resource, ResourceType } from '../../shared/types.js';
-import { AI_CONFIG, FIRE_CONFIG, MAP_CONFIG, NUTRITION, REST_CONFIG, TEMPERATURE_CONFIG, THRESHOLDS, TIME_CONFIG } from '../../shared/config.js';
+import type { Action, Character, Glossary, Position, Resource, ResourceType } from '../../shared/types.js';
+import { AI_CONFIG, FIRE_CONFIG, MAP_CONFIG, NUTRITION, REST_CONFIG, TEMPERATURE_CONFIG, THRESHOLDS, TIME_CONFIG, maskType, maskTarget } from '../../shared/config.js';
 import { canCarry, weightOfItem } from '../../shared/inventory.js';
 import { CIRCADIAN, currentPhase, type Phase } from '../../shared/circadian.js';
 import { tileToChunk, chunkKey } from '../../shared/spatial.js';
@@ -225,6 +225,11 @@ export function enumerateFeedOptions(
   const s = character.stats;
   const hungerCritical = s.hunger <= DESPERATE_HUNGER;
   const start = character.position;
+  // Phase 3 — glossary gate. Only surface options whose target ResourceType is
+  // in the char's glossary. Map resources are pre-filtered so plans never
+  // target unknowns; inventory consumes gate per-item.
+  const known = (t: string): boolean => !!character.glossary[t];
+  const knownRes = resources.filter((r) => known(r.type));
 
   // Helpers — clamped gain so "expected" reflects real benefit after the 0-100
   // cap. Sickness gain is capped at the remaining headroom too so raw meat
@@ -232,46 +237,54 @@ export function enumerateFeedOptions(
   const hungerGain = (raw: number) => Math.max(0, Math.min(raw, 100 - s.hunger));
   const energyGain = (raw: number) => Math.max(0, Math.min(raw, 100 - s.energy));
   const sicknessGain = (raw: number) => Math.max(0, Math.min(raw, 100 - (s.sickness ?? 0)));
+  // capHint surfaces "(already X/100)" only when realized < raw — i.e. the cap
+  // bit. Lets the LLM see diminishing return without spoiler text.
+  const capHint = (realized: number, raw: number, current: number): string =>
+    realized < raw ? ` (already ${Math.round(current)}/100)` : '';
 
-  // From-inventory eats — distance 0, no walk.
-  if (inv.includes('meat_cooked')) {
+  // Phase 3 follow-up — generic verbs everywhere. `kind` is the universal
+  // capability ("eat", "shake"), `target` carries the specific item type or
+  // masked source id. Picker matches kind+target. Inv eat targets are bare
+  // type names (gated by glossary so always known); map source/item targets
+  // are masked via maskTarget so unknown subtypes collapse to parent label
+  // (`tree_fruit_5` → `tree_5`) before hitting the LLM.
+  const g = character.glossary;
+
+  // From-inventory eats — distance 0, no walk. Inv items are gated by known()
+  // so the type name in target is safe (LLM already knows it).
+  if (inv.includes('meat_cooked') && known('meat_cooked')) {
     const dh = hungerGain(NUTRITION.hungerPerMeatCooked);
     const de = energyGain(NUTRITION.energyPerMeatCooked);
     options.push({
-      kind: 'eat_meat_cooked',
+      kind: 'eat',
+      target: 'meat_cooked',
       path: [],
       distance: 0,
       finalAction: { type: 'eat', target: 'meat_cooked', startedAt: Date.now() },
-      annotation: `expected=+${dh.toFixed(0)}hunger,+${de.toFixed(0)}energy`,
+      annotation: `expected=+${dh.toFixed(0)}hunger,+${de.toFixed(0)}energy${capHint(dh, NUTRITION.hungerPerMeatCooked, s.hunger)}`,
     });
   }
 
-  if (inv.includes('meat_raw')) {
+  if (inv.includes('meat_raw') && known('meat_raw')) {
     const dh = hungerGain(NUTRITION.hungerPerMeatRaw);
     const ds = sicknessGain(NUTRITION.sicknessPerMeatRaw);
-    const rawAnnot = `expected=+${dh.toFixed(0)}hunger,+${ds.toFixed(0)}sickness`;
-    if (hungerCritical) {
-      options.push({
-        kind: 'eat_meat_raw_panic',
-        path: [],
-        distance: 0,
-        finalAction: { type: 'eat', target: 'meat_raw', startedAt: Date.now() },
-        annotation: rawAnnot,
-      });
-    } else {
-      options.push({
-        kind: 'eat_meat_raw_normal',
-        path: [],
-        distance: 0,
-        finalAction: { type: 'eat', target: 'meat_raw', startedAt: Date.now() },
-        annotation: rawAnnot,
-      });
-    }
+    const cap = capHint(dh, NUTRITION.hungerPerMeatRaw, s.hunger);
+    const rawAnnot = hungerCritical
+      ? `panic expected=+${dh.toFixed(0)}hunger,+${ds.toFixed(0)}sickness${cap}`
+      : `expected=+${dh.toFixed(0)}hunger,+${ds.toFixed(0)}sickness${cap}`;
+    options.push({
+      kind: 'eat',
+      target: 'meat_raw',
+      path: [],
+      distance: 0,
+      finalAction: { type: 'eat', target: 'meat_raw', startedAt: Date.now() },
+      annotation: rawAnnot,
+    });
     const cookPlan = planCook(character, resources, blocked);
     if (cookPlan) {
       options.push({
-        kind: 'cook_meat',
-        target: cookPlan.finalAction.target,
+        kind: 'cook',
+        target: cookPlan.finalAction.target ? maskTarget(cookPlan.finalAction.target, g) : undefined,
         path: cookPlan.path,
         distance: pathDistance(start, cookPlan.path),
         finalAction: cookPlan.finalAction,
@@ -279,34 +292,37 @@ export function enumerateFeedOptions(
     }
   }
 
-  if (inv.includes('berry')) {
+  if (inv.includes('berry') && known('berry')) {
     const dh = hungerGain(NUTRITION.hungerPerBerry);
     options.push({
-      kind: 'eat_berry_inv',
+      kind: 'eat',
+      target: 'berry',
       path: [],
       distance: 0,
       finalAction: { type: 'eat', target: 'berry', startedAt: Date.now() },
-      annotation: `expected=+${dh.toFixed(0)}hunger`,
+      annotation: `expected=+${dh.toFixed(0)}hunger${capHint(dh, NUTRITION.hungerPerBerry, s.hunger)}`,
     });
   }
-  if (inv.includes('fruit')) {
+  if (inv.includes('fruit') && known('fruit')) {
     const dh = hungerGain(NUTRITION.hungerPerFruit);
     options.push({
-      kind: 'eat_fruit_inv',
+      kind: 'eat',
+      target: 'fruit',
       path: [],
       distance: 0,
       finalAction: { type: 'eat', target: 'fruit', startedAt: Date.now() },
-      annotation: `expected=+${dh.toFixed(0)}hunger`,
+      annotation: `expected=+${dh.toFixed(0)}hunger${capHint(dh, NUTRITION.hungerPerFruit, s.hunger)}`,
     });
   }
 
-  // Hunt — only available with wood in inventory.
+  // Hunt — only available with wood in inventory AND at least one animal
+  // subtype the char has observed (gen 0 doesn't even know what an animal is).
   if (inv.includes('wood')) {
-    const huntPlan = planHunt(character, resources, blocked);
+    const huntPlan = planHunt(character, knownRes, blocked);
     if (huntPlan) {
       options.push({
         kind: 'hunt',
-        target: huntPlan.finalAction.target,
+        target: huntPlan.finalAction.target ? maskTarget(huntPlan.finalAction.target, g) : undefined,
         path: huntPlan.path,
         distance: pathDistance(start, huntPlan.path),
         finalAction: huntPlan.finalAction,
@@ -314,45 +330,51 @@ export function enumerateFeedOptions(
     }
   }
 
-  const fgPlan = planPickupFruitGround(character, resources, blocked);
-  if (fgPlan) {
-    options.push({
-      kind: 'pickup_fruit_ground',
-      target: fgPlan.finalAction.target,
-      path: fgPlan.path,
-      distance: pathDistance(start, fgPlan.path),
-      finalAction: fgPlan.finalAction,
-    });
+  if (known('fruit')) {
+    const fgPlan = planPickupFruitGround(character, knownRes, blocked);
+    if (fgPlan) {
+      options.push({
+        kind: 'pickup',
+        target: fgPlan.finalAction.target ? maskTarget(fgPlan.finalAction.target, g) : undefined,
+        path: fgPlan.path,
+        distance: pathDistance(start, fgPlan.path),
+        finalAction: fgPlan.finalAction,
+      });
+    }
   }
 
-  const bushPlan = planForageOf(character, resources, blocked, 'bush');
-  if (bushPlan) {
-    options.push({
-      kind: 'forage_bush',
-      target: bushPlan.finalAction.target,
-      path: bushPlan.path,
-      distance: pathDistance(start, bushPlan.path),
-      finalAction: bushPlan.finalAction,
-    });
+  if (known('bush')) {
+    const bushPlan = planForageOf(character, knownRes, blocked, 'bush');
+    if (bushPlan) {
+      options.push({
+        kind: 'shake',
+        target: bushPlan.finalAction.target ? maskTarget(bushPlan.finalAction.target, g) : undefined,
+        path: bushPlan.path,
+        distance: pathDistance(start, bushPlan.path),
+        finalAction: bushPlan.finalAction,
+      });
+    }
   }
 
-  const treePlan = planForageOf(character, resources, blocked, 'tree_fruit');
-  if (treePlan) {
-    options.push({
-      kind: 'shake_tree',
-      target: treePlan.finalAction.target,
-      path: treePlan.path,
-      distance: pathDistance(start, treePlan.path),
-      finalAction: treePlan.finalAction,
-    });
+  if (known('tree_fruit')) {
+    const treePlan = planForageOf(character, knownRes, blocked, 'tree_fruit');
+    if (treePlan) {
+      options.push({
+        kind: 'shake',
+        target: treePlan.finalAction.target ? maskTarget(treePlan.finalAction.target, g) : undefined,
+        path: treePlan.path,
+        distance: pathDistance(start, treePlan.path),
+        finalAction: treePlan.finalAction,
+      });
+    }
   }
 
-  if (!inv.includes('wood')) {
-    const wPlan = planPickupWood(character, resources, blocked);
+  if (!inv.includes('wood') && known('wood')) {
+    const wPlan = planPickupWood(character, knownRes, blocked);
     if (wPlan) {
       options.push({
-        kind: 'pickup_wood',
-        target: wPlan.finalAction.target,
+        kind: 'pickup',
+        target: wPlan.finalAction.target ? maskTarget(wPlan.finalAction.target, g) : undefined,
         path: wPlan.path,
         distance: pathDistance(start, wPlan.path),
         finalAction: wPlan.finalAction,
@@ -752,7 +774,7 @@ export function enumerateWanderOptions(
     if (dist < 2) continue;
     const path = findPath(start, [lastWalkable], blocked);
     if (!path || path.length === 0) continue;
-    const ann = annotateWanderTarget(lastWalkable, knownResources, widthTiles, heightTiles, hints);
+    const ann = annotateWanderTarget(lastWalkable, knownResources, widthTiles, heightTiles, hints, character.glossary);
     opts.push({
       kind: d.kind,
       target: lastWalkable,
@@ -782,46 +804,59 @@ export function enumerateWanderOptions(
   // is not needed... however..."), reasoning contradicting choice.
   const inv = character.inventory;
   const s = character.stats;
+  // Phase 3 — glossary gate. Pre-emptive eat/pickup/shake are only surfaced
+  // when char knows the relevant ResourceType.
+  const known = (t: string): boolean => !!character.glossary[t];
+  const knownRes = knownResources.filter((r) => known(r.type));
+  // capHint surfaces "(already X/100)" only when realized < raw. Same shape as
+  // the feed-enumerator helper.
+  const capHint = (realized: number, raw: number, current: number): string =>
+    realized < raw ? ` (already ${Math.round(current)}/100)` : '';
   const berryCount = inv.filter((i) => i === 'berry').length;
-  if (berryCount > 0) {
+  if (berryCount > 0 && known('berry')) {
     const gain = Math.max(0, Math.min(NUTRITION.hungerPerBerry, 100 - s.hunger));
     opts.push({
-      kind: 'eat_berry_inv',
+      kind: 'eat',
+      // Inv eat: target carries the bare type name. Gated by known() so always
+      // safe — if the LLM sees this option, the type is in glossary.
       target: { x: start.x, y: start.y },
       path: [],
       distance: 0,
-      annotation: `inv=${berryCount}berry expected=+${gain.toFixed(0)}hunger`,
+      annotation: `inv=${berryCount}berry expected=+${gain.toFixed(0)}hunger${capHint(gain, NUTRITION.hungerPerBerry, s.hunger)}`,
       isUnexplored: false,
       finalAction: { type: 'eat', target: 'berry', startedAt: Date.now() },
     });
   }
   const fruitCount = inv.filter((i) => i === 'fruit').length;
-  if (fruitCount > 0) {
+  if (fruitCount > 0 && known('fruit')) {
     const gain = Math.max(0, Math.min(NUTRITION.hungerPerFruit, 100 - s.hunger));
     opts.push({
-      kind: 'eat_fruit_inv',
+      kind: 'eat',
       target: { x: start.x, y: start.y },
       path: [],
       distance: 0,
-      annotation: `inv=${fruitCount}fruit expected=+${gain.toFixed(0)}hunger`,
+      annotation: `inv=${fruitCount}fruit expected=+${gain.toFixed(0)}hunger${capHint(gain, NUTRITION.hungerPerFruit, s.hunger)}`,
       isUnexplored: false,
       finalAction: { type: 'eat', target: 'fruit', startedAt: Date.now() },
     });
   }
 
-  // Drop options — surface drop_<item> for each unique inventory item so the
-  // LLM can free up weight when it wants to pick up something else (e.g.
-  // carrying max wood prevents berry pickup; drop_wood opens capacity).
-  // Drops vanish (no on-ground spawn) for now — Phase 1 simplicity. One drop
-  // = one item; LLM repeats kind to drop multiple.
+  // Drop options — surface 'drop' verb per unique inventory item so the LLM
+  // can free up weight when it wants to pick up something else (e.g. carrying
+  // max wood prevents berry pickup; drop wood opens capacity). Drops vanish
+  // (no on-ground spawn) for now. One option = one drop; LLM repeats to drop
+  // multiple.
+  // Phase 3 follow-up — generic kind 'drop'; finalAction.target carries the
+  // bare type name (gated by known() so always safe to expose).
   const seenInvTypes = new Set<string>();
   for (const item of inv) {
     if (seenInvTypes.has(item)) continue;
     seenInvTypes.add(item);
+    if (!known(item)) continue;
     const count = inv.filter((i) => i === item).length;
     const w = weightOfItem(item);
     opts.push({
-      kind: `drop_${item}`,
+      kind: 'drop',
       target: { x: start.x, y: start.y },
       path: [],
       distance: 0,
@@ -833,19 +868,20 @@ export function enumerateWanderOptions(
 
   // Drink option — surfaces whenever a river is reachable. Annotation includes
   // expected thirst gain so the LLM can self-skip when thirst is already full.
-  const drinkPlan = planForage(character, knownResources, blocked, ['river']);
+  // River is auto-known (BASIC_KNOWN_TYPES) so drink is always available.
+  const drinkPlan = planForage(character, knownRes, blocked, ['river']);
   if (drinkPlan) {
     const dist = drinkPlan.path.length;
     const gain = Math.max(0, Math.min(NUTRITION.thirstPerDrink, 100 - s.thirst));
     opts.push({
-      kind: 'drink_river',
+      kind: 'drink',
       target:
         drinkPlan.path.length > 0
           ? drinkPlan.path[drinkPlan.path.length - 1]
           : { x: start.x, y: start.y },
       path: drinkPlan.path,
       distance: dist,
-      annotation: `river dist=${dist}t expected=+${gain.toFixed(0)}thirst`,
+      annotation: `river dist=${dist}t expected=+${gain.toFixed(0)}thirst${capHint(gain, NUTRITION.thirstPerDrink, s.thirst)}`,
       isUnexplored: false,
       finalAction: drinkPlan.finalAction,
     });
@@ -857,7 +893,7 @@ export function enumerateWanderOptions(
     const peePlan = planDefecate(character, blocked, knownResources);
     if (peePlan) {
       opts.push({
-        kind: 'pee_now',
+        kind: 'defecate',
         target:
           peePlan.path.length > 0
             ? peePlan.path[peePlan.path.length - 1]
@@ -875,11 +911,12 @@ export function enumerateWanderOptions(
   // adjacent tile (inside FIRE_CONFIG.warmthRadius=3) and rests there; warmth
   // override drifts body temp toward fireWarmthAmbient. Annotation includes
   // current body temp so the LLM can self-skip when comfortable.
+  // Fire is auto-known (BASIC_KNOWN_TYPES).
   {
-    const warmPlan = planWarmAtFire(character, knownResources, blocked);
+    const warmPlan = planWarmAtFire(character, knownRes, blocked);
     if (warmPlan) {
       opts.push({
-        kind: 'warm_at_fire',
+        kind: 'rest',
         target:
           warmPlan.path.length > 0
             ? warmPlan.path[warmPlan.path.length - 1]
@@ -900,7 +937,7 @@ export function enumerateWanderOptions(
   // self-skip when fresh.
   if (hints.phase === 'night' && hints.nearLitFire) {
     opts.push({
-      kind: 'sleep_now',
+      kind: 'sleep',
       target: { x: start.x, y: start.y },
       path: [],
       distance: 0,
@@ -914,18 +951,19 @@ export function enumerateWanderOptions(
   // unlit or low AND char can carry the item. Branch is the primary fuel post-A.1
   // (lighter than wood, drops from tree_wood); legacy wood ground items survive
   // until the schema reset clears them. Listed both so the LLM picks proximity.
-  const fireNeedsFuel = knownResources.some((r) => {
+  // Phase 3 — pickup gates also require glossary on the loose-item type.
+  const fireNeedsFuel = knownRes.some((r) => {
     if (r.type !== 'fire') return false;
     const fuel = typeof r.state.fuel === 'number' ? r.state.fuel : FIRE_CONFIG.maxFuel;
     const lit = r.state.lit !== false;
     return !lit || fuel < FIRE_CONFIG.maxFuel / 2;
   });
-  if (fireNeedsFuel && canCarry(character.inventory, 'wood')) {
-    const wPlan = planPickupWood(character, knownResources, blocked);
+  if (fireNeedsFuel && canCarry(character.inventory, 'wood') && known('wood')) {
+    const wPlan = planPickupWood(character, knownRes, blocked);
     if (wPlan) {
       const dist = pathDistance(start, wPlan.path);
       opts.push({
-        kind: 'pickup_wood',
+        kind: 'pickup',
         target: wPlan.path.length > 0 ? wPlan.path[wPlan.path.length - 1] : start,
         path: wPlan.path,
         distance: dist,
@@ -935,12 +973,12 @@ export function enumerateWanderOptions(
       });
     }
   }
-  if (fireNeedsFuel && canCarry(character.inventory, 'branch')) {
-    const bPlan = planPickupBranch(character, knownResources, blocked);
+  if (fireNeedsFuel && canCarry(character.inventory, 'branch') && known('branch')) {
+    const bPlan = planPickupBranch(character, knownRes, blocked);
     if (bPlan) {
       const dist = pathDistance(start, bPlan.path);
       opts.push({
-        kind: 'pickup_branch',
+        kind: 'pickup',
         target: bPlan.path.length > 0 ? bPlan.path[bPlan.path.length - 1] : start,
         path: bPlan.path,
         distance: dist,
@@ -951,15 +989,51 @@ export function enumerateWanderOptions(
     }
   }
 
+  // Add-fuel — tend a fire that's unlit or below half fuel. Surfaces when
+  // char carries known fuel (branch or wood) AND a fire needing fuel is
+  // reachable. Walks into refuel radius and dumps one piece. Annotation
+  // surfaces only perceptual facts (lit state, fuel level, distance, item
+  // consumed) so the LLM induces cause→effect (re-lit, fuel rose) from its
+  // observation log rather than mechanic copy.
+  {
+    const fuelItem: 'branch' | 'wood' | null = inv.includes('branch')
+      ? 'branch'
+      : inv.includes('wood')
+        ? 'wood'
+        : null;
+    if (fuelItem && known(fuelItem)) {
+      const fuelPlan = planAddFuel(character, knownRes, blocked);
+      if (fuelPlan) {
+        const fireId = fuelPlan.finalAction.target;
+        const fire = knownResources.find((r) => r.id === fireId);
+        const fuel = typeof fire?.state.fuel === 'number' ? fire.state.fuel : 0;
+        const lit = fire?.state.lit !== false;
+        const dist = pathDistance(start, fuelPlan.path);
+        opts.push({
+          kind: 'add_fuel',
+          target:
+            fuelPlan.path.length > 0
+              ? fuelPlan.path[fuelPlan.path.length - 1]
+              : { x: start.x, y: start.y },
+          path: fuelPlan.path,
+          distance: dist,
+          annotation: `fire=${lit ? 'lit' : 'unlit'} fuel=${fuel}/${FIRE_CONFIG.maxFuel} dist=${Math.round(dist)}t inv=1${fuelItem}`,
+          isUnexplored: false,
+          finalAction: fuelPlan.finalAction,
+        });
+      }
+    }
+  }
+
   // Pickup-vine — always surface when reachable + carry capacity. No urgent
   // gate; vine is a future-craft material so the LLM is free to stockpile or
   // ignore as it sees fit.
-  if (canCarry(character.inventory, 'vine')) {
-    const vPlan = planPickupVine(character, knownResources, blocked);
+  if (canCarry(character.inventory, 'vine') && known('vine')) {
+    const vPlan = planPickupVine(character, knownRes, blocked);
     if (vPlan) {
       const dist = pathDistance(start, vPlan.path);
       opts.push({
-        kind: 'pickup_vine',
+        kind: 'pickup',
         target: vPlan.path.length > 0 ? vPlan.path[vPlan.path.length - 1] : start,
         path: vPlan.path,
         distance: dist,
@@ -972,12 +1046,12 @@ export function enumerateWanderOptions(
 
   // Pickup-stone — free stones lying around. No urgent gate; like vine, future
   // craft material (axe in Phase B).
-  if (canCarry(character.inventory, 'stone')) {
-    const sPlan = planPickupStone(character, knownResources, blocked);
+  if (canCarry(character.inventory, 'stone') && known('stone')) {
+    const sPlan = planPickupStone(character, knownRes, blocked);
     if (sPlan) {
       const dist = pathDistance(start, sPlan.path);
       opts.push({
-        kind: 'pickup_stone',
+        kind: 'pickup',
         target: sPlan.path.length > 0 ? sPlan.path[sPlan.path.length - 1] : start,
         path: sPlan.path,
         distance: dist,
@@ -991,31 +1065,35 @@ export function enumerateWanderOptions(
 
   // Shake tree_wood / tree_vine — non-food shake variants. Force-drop alongside
   // the passive auto-drop loop. tree_fruit shake stays in feed enumerate.
-  const shakeWoodPlan = planForageOf(character, knownResources, blocked, 'tree_wood');
-  if (shakeWoodPlan) {
-    const dist = pathDistance(start, shakeWoodPlan.path);
-    opts.push({
-      kind: 'shake_tree_wood',
-      target: shakeWoodPlan.path.length > 0 ? shakeWoodPlan.path[shakeWoodPlan.path.length - 1] : start,
-      path: shakeWoodPlan.path,
-      distance: dist,
-      annotation: `dist=${Math.round(dist)}t`,
-      isUnexplored: false,
-      finalAction: shakeWoodPlan.finalAction,
-    });
+  if (known('tree_wood')) {
+    const shakeWoodPlan = planForageOf(character, knownRes, blocked, 'tree_wood');
+    if (shakeWoodPlan) {
+      const dist = pathDistance(start, shakeWoodPlan.path);
+      opts.push({
+        kind: 'shake',
+        target: shakeWoodPlan.path.length > 0 ? shakeWoodPlan.path[shakeWoodPlan.path.length - 1] : start,
+        path: shakeWoodPlan.path,
+        distance: dist,
+        annotation: `dist=${Math.round(dist)}t`,
+        isUnexplored: false,
+        finalAction: shakeWoodPlan.finalAction,
+      });
+    }
   }
-  const shakeVinePlan = planForageOf(character, knownResources, blocked, 'tree_vine');
-  if (shakeVinePlan) {
-    const dist = pathDistance(start, shakeVinePlan.path);
-    opts.push({
-      kind: 'shake_tree_vine',
-      target: shakeVinePlan.path.length > 0 ? shakeVinePlan.path[shakeVinePlan.path.length - 1] : start,
-      path: shakeVinePlan.path,
-      distance: dist,
-      annotation: `dist=${Math.round(dist)}t`,
-      isUnexplored: false,
-      finalAction: shakeVinePlan.finalAction,
-    });
+  if (known('tree_vine')) {
+    const shakeVinePlan = planForageOf(character, knownRes, blocked, 'tree_vine');
+    if (shakeVinePlan) {
+      const dist = pathDistance(start, shakeVinePlan.path);
+      opts.push({
+        kind: 'shake',
+        target: shakeVinePlan.path.length > 0 ? shakeVinePlan.path[shakeVinePlan.path.length - 1] : start,
+        path: shakeVinePlan.path,
+        distance: dist,
+        annotation: `dist=${Math.round(dist)}t`,
+        isUnexplored: false,
+        finalAction: shakeVinePlan.finalAction,
+      });
+    }
   }
 
   return opts;
@@ -1059,17 +1137,21 @@ function annotateWanderTarget(
   w: number,
   h: number,
   hints: WanderHints,
+  glossary: Glossary,
 ): { text: string; unexplored: boolean } {
   // Composition + staleness — count remembered resources by type within
   // WANDER_NEAR_RADIUS of the target tile, take the freshest lastSeenT among
   // them as the "age" annotation. The LLM uses this to decide whether to trust
   // its memory ("seen 1h ago" vs "seen 12h ago — might've regrown/depleted").
+  // Phase 3 — type names masked via glossary so unobserved subtypes collapse
+  // to 'tree' / 'animal' / 'unknown_thing'.
   const byType: Record<string, number> = {};
   let mostRecentLastSeen = -Infinity;
   for (const r of known) {
     const d = Math.hypot(r.x - tgt.x, r.y - tgt.y);
     if (d > WANDER_NEAR_RADIUS) continue;
-    byType[r.type] = (byType[r.type] ?? 0) + 1;
+    const m = maskType(r.type, glossary);
+    byType[m] = (byType[m] ?? 0) + 1;
     const last = hints.lastSeenById.get(r.id);
     if (last !== undefined && last > mostRecentLastSeen) mostRecentLastSeen = last;
   }
@@ -1121,7 +1203,7 @@ async function wanderWithChoice(
     const w = wander(character, blocked);
     return w ? { plan: w } : null;
   }
-  const summary = summarizeRemembered(knownResources);
+  const summary = summarizeRemembered(knownResources, character.glossary);
   const world = computeWorldStatus(character, knownResources);
   const result = await picker.pickWander({ character, options, rememberedSummary: summary, world, observations });
   if (!result) {
@@ -1167,10 +1249,17 @@ async function wanderWithChoice(
   };
 }
 
-function summarizeRemembered(known: Resource[]): string {
+function summarizeRemembered(known: Resource[], glossary: Glossary): string {
   if (known.length === 0) return 'nothing (blank memory)';
+  // Phase 3 — collapse via glossary mask. Unknown subtypes group as
+  // 'unknown_thing'; tree_* / animal_* fold into 'tree' / 'animal' until
+  // observed. Char must commit to observe before the prompt can render the
+  // real type.
   const byType: Record<string, number> = {};
-  for (const r of known) byType[r.type] = (byType[r.type] ?? 0) + 1;
+  for (const r of known) {
+    const m = maskType(r.type, glossary);
+    byType[m] = (byType[m] ?? 0) + 1;
+  }
   return Object.entries(byType)
     .map(([t, n]) => `${n} ${t}${n > 1 ? 's' : ''}`)
     .join(', ');
@@ -1256,16 +1345,24 @@ export function enumerateCortexOptions(
   knownResources: Resource[],
   blocked: Set<string>,
   hints: WanderHints,
+  suppressSleep: boolean = false,
 ): CortexOption[] {
-  const seenKinds = new Set<string>();
+  // Phase 3 follow-up — kinds are generic verbs ('eat', 'shake', 'pickup'…).
+  // A single verb can have many target instances (eat berry vs eat meat_raw,
+  // shake bush_5 vs shake tree_3) so dedup keys on the (kind|target) pair —
+  // not the bare kind, which would collapse them all.
+  const g = character.glossary;
+  const seenPairs = new Set<string>();
+  const dedupKey = (kind: string, target: string | undefined) => `${kind}|${target ?? ''}`;
   const opts: CortexOption[] = [];
 
   // Feed options first — they have rich finalActions (eat / cook / hunt /
-  // forage / pickup_*). Anything that overlaps with wander (eat_berry_inv,
-  // eat_fruit_inv, pickup_wood) is deduped on second pass.
+  // shake / pickup). FeedOption.target is already masked (set by the
+  // enumerator via maskTarget), so it can flow straight to CortexOption.target.
   for (const f of enumerateFeedOptions(character, knownResources, blocked)) {
-    if (seenKinds.has(f.kind)) continue;
-    seenKinds.add(f.kind);
+    const key = dedupKey(f.kind, f.target);
+    if (seenPairs.has(key)) continue;
+    seenPairs.add(key);
     opts.push({
       kind: f.kind,
       target: f.target,
@@ -1278,23 +1375,27 @@ export function enumerateCortexOptions(
 
   // Wander options second — direction picks, plus maintenance/consume/stay.
   // Stay maps to a rest action (sit in place). Direction kinds get a synthetic
-  // 'wander' finalAction so game-loop walks the path then idles.
+  // 'idle' finalAction so game-loop walks the path then idles.
+  // WanderOption.target is a Position (movement target) so we can't reuse it
+  // for the LLM-facing identifier — derive that from finalAction.target via
+  // maskTarget so unknown subtypes collapse to the parent label.
   for (const w of enumerateWanderOptions(character, blocked, knownResources, hints)) {
-    if (seenKinds.has(w.kind)) continue;
-    seenKinds.add(w.kind);
+    const wanderTarget =
+      w.finalAction?.target !== undefined ? maskTarget(w.finalAction.target, g) : undefined;
+    const key = dedupKey(w.kind, wanderTarget);
+    if (seenPairs.has(key)) continue;
+    seenPairs.add(key);
     let finalAction: Action;
     if (w.kind === 'stay') {
       finalAction = { type: 'rest', startedAt: Date.now() };
     } else if (w.finalAction) {
       finalAction = { ...w.finalAction, startedAt: Date.now() };
     } else {
-      // Direction wander — game-loop installs walk_to during the path; no
-      // post-walk action needed. Use 'idle' as the sentinel finalAction.
       finalAction = { type: 'idle', startedAt: Date.now() };
     }
     opts.push({
       kind: w.kind,
-      target: undefined,
+      target: wanderTarget,
       path: w.path,
       distance: w.distance,
       annotation: w.annotation,
@@ -1302,11 +1403,14 @@ export function enumerateCortexOptions(
     });
   }
 
-  // Unconditional sleep — wander's 'sleep_now' surfaces only at night near a
-  // lit fire (favourable conditions). This is the always-available variant
-  // so the LLM can choose to nap whenever it wants.
-  if (!seenKinds.has('sleep')) {
-    seenKinds.add('sleep');
+  // Unconditional sleep — wander's conditional sleep surfaces only at night
+  // near a lit fire (favourable conditions). This is the always-available
+  // variant so the LLM can choose to nap whenever it wants.
+  // Suppressed during wakeForNeed cooldown so the cortex can't immediately
+  // re-pick sleep and bounce against the wake trigger (sleep⇄idle loop).
+  const sleepKey = dedupKey('sleep', undefined);
+  if (!suppressSleep && !seenPairs.has(sleepKey)) {
+    seenPairs.add(sleepKey);
     opts.push({
       kind: 'sleep',
       path: [],
@@ -1316,7 +1420,98 @@ export function enumerateCortexOptions(
     });
   }
 
+  // Phase 3 — observe options for unknown resource types. One option per
+  // unknown type the char can reach (closest reachable instance picked).
+  // Inventory unknowns get their own option (no walk required).
+  // Opaque kind/target so the type name never leaks via the prompt — picker
+  // matches on the same opaque pair, finalAction.target carries the real id
+  // for game-loop dispatch.
+  for (const obs of enumerateObserveOptions(character, knownResources, blocked)) {
+    const key = dedupKey(obs.opaqueKind, obs.opaqueTarget);
+    if (seenPairs.has(key)) continue;
+    seenPairs.add(key);
+    opts.push({
+      kind: obs.opaqueKind,
+      target: obs.opaqueTarget,
+      path: obs.path,
+      distance: obs.distance,
+      annotation: obs.annotation,
+      finalAction: { type: 'observe', target: obs.realTarget, startedAt: Date.now() },
+    });
+  }
+
   return opts;
+}
+
+// Phase 3 — pick observe targets for unknown ResourceTypes the char has seen
+// or carries. Returns at most one option per type (closest reachable instance).
+// Char's glossary determines what's "unknown". Inventory items always observable.
+// Phase 3 follow-up — kind is now the generic verb 'observe'; opaque target
+// counter (`t1`/`t2`/…) disambiguates between multiple unknown things without
+// leaking type names. Annotation surfaces only the masked label (`tree`,
+// `animal`, or `unknown_thing`). Real id stays on `realTarget` for dispatch.
+type ObserveOption = {
+  opaqueKind: string;
+  opaqueTarget: string;
+  realTarget: string;
+  path: Position[];
+  distance: number;
+  annotation: string;
+};
+function enumerateObserveOptions(
+  character: Character,
+  resources: Resource[],
+  blocked: Set<string>,
+): ObserveOption[] {
+  const known = character.glossary ?? {};
+  const out: ObserveOption[] = [];
+  const seen = new Set<string>();
+  let counter = 0;
+  const nextOpaque = (): string => `t${++counter}`;
+
+  // Inventory unknowns — instant observe (no walk).
+  for (const inv of character.inventory) {
+    if (known[inv]) continue;
+    if (seen.has(inv)) continue;
+    seen.add(inv);
+    out.push({
+      opaqueKind: 'observe',
+      opaqueTarget: nextOpaque(),
+      realTarget: inv,
+      path: [],
+      distance: 0,
+      annotation: `inv ${maskType(inv, known)}`,
+    });
+  }
+
+  // Map unknowns — group by type, pick closest reachable per type.
+  const byType = new Map<string, Resource[]>();
+  for (const r of resources) {
+    if (known[r.type]) continue;
+    if (!byType.has(r.type)) byType.set(r.type, []);
+    byType.get(r.type)!.push(r);
+  }
+  for (const [type, list] of byType) {
+    if (seen.has(type)) continue;
+    let best: { res: Resource; path: Position[] } | null = null;
+    for (const r of list) {
+      const path = findPath(character.position, [{ x: Math.floor(r.x), y: Math.floor(r.y) }], blocked);
+      if (path === null) continue;
+      if (!best || path.length < best.path.length) best = { res: r, path };
+    }
+    if (!best) continue;
+    seen.add(type);
+    out.push({
+      opaqueKind: 'observe',
+      opaqueTarget: nextOpaque(),
+      realTarget: best.res.id,
+      path: best.path,
+      distance: best.path.length,
+      annotation: `at(${Math.floor(best.res.x)},${Math.floor(best.res.y)}) ${maskType(type, known)}`,
+    });
+  }
+
+  return out;
 }
 
 export async function cortexDecide(
@@ -1329,7 +1524,13 @@ export async function cortexDecide(
   wanderHints: WanderHints,
   fallbackOptions: DecideOptions = {},
 ): Promise<DecideResult | null> {
-  const options = enumerateCortexOptions(character, knownResources, blocked, wanderHints);
+  const options = enumerateCortexOptions(
+    character,
+    knownResources,
+    blocked,
+    wanderHints,
+    fallbackOptions.suppressSleep ?? false,
+  );
   if (options.length === 0 || !picker.pickCortex) {
     // Pure-LLM mode: no fallback to utility decide(). If options are empty or
     // the picker can't run cortex, return null and let the game-loop idle one
@@ -1338,7 +1539,7 @@ export async function cortexDecide(
     return null;
   }
   const world = computeWorldStatus(character, knownResources);
-  const remembered = summarizeRemembered(knownResources);
+  const remembered = summarizeRemembered(knownResources, character.glossary);
   const phase = wanderHints.phase ?? 'afternoon';
   const gameTimeStamp = wanderHints.gameTimeStamp ?? '';
 

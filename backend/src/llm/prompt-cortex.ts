@@ -15,11 +15,11 @@
 //   immediate situation (cap behaviour) the LLM cannot derive from
 //   observation alone.
 
-import type { Character, DailyGoal } from '../../../shared/types.js';
+import type { Character, DailyGoal, Glossary } from '../../../shared/types.js';
 import type { CortexOption } from '../ai.js';
 import type { Observation, WorldStatus } from './choice-picker.js';
-import { groupInventory, totalWeight } from '../../../shared/inventory.js';
-import { MAX_INVENTORY_WEIGHT } from '../../../shared/config.js';
+import { totalWeight } from '../../../shared/inventory.js';
+import { MAX_INVENTORY_WEIGHT, maskType, maskTarget } from '../../../shared/config.js';
 import { formatDailyGoalBlock } from './prompt-feed.js';
 import { severity } from './severity.js';
 
@@ -35,8 +35,10 @@ Keep these LOW (act when they rise):
 - bladder: 0=empty, 100=urgent
 - sickness: 0=healthy, 100=very sick
 
-Other:
-- temperature: body in °C (comfort near 22°C)
+Keep this in the comfort band (drift outside drains health directly):
+- temperature: body in °C. 20–30°C is safe. Below 20 (cool/cold) hurts you.
+  Above 30 (warm/hot) hurts you. The colder or hotter, the faster the harm.
+  Sleeping inside a lit fire's warmth is fully safe from cold.
 
 Survival principles (immutable values, not tactics):
 - Health is sacred. Above all else, stay alive.
@@ -68,6 +70,11 @@ pressure. If your chosen action satisfies the active sub-goal's
 success_criteria, set "completes_subgoal" to true and "advances_subgoal_idx"
 to the active index. Otherwise omit those fields or leave them null.
 
+Strict option discipline:
+- Pick ONLY from the listed Available actions. If the option you want is not in the list right now, you cannot do it — choose something else from the list. Do not invent options based on past observations.
+- Direction options ("wander_n", "wander_ne", … "stay") have NO target. Set "target" to an empty string "". Do NOT put placeholder text like "-", "none", "null", or a position string.
+- For options with a target listed (e.g. "kind=eat target=berry"), the "target" field MUST equal that exact target string.
+
 Write "reasoning" FIRST — one short sentence (max 15 words) that grounds your
 decision in the current state (which stat is most pressing, what your last few
 observations show). THEN commit to a choice. The "choice" field MUST equal one
@@ -86,10 +93,11 @@ export function buildCortexPrompt(
   gameTimeStamp: string,
 ): string {
   const s = character.stats;
-  const invLine = formatInventoryLine(character.inventory);
+  const invLine = formatInventoryLine(character.inventory, character.glossary);
+  const knownLine = formatGlossaryLine(character.glossary);
   const opts = options.map(formatOption).join('\n');
   const obs = observations.length > 0
-    ? observations.map(formatObservation).join('\n')
+    ? observations.map((o) => formatObservation(o, character.glossary)).join('\n')
     : '(none yet — no actions taken so far)';
   const lessonsBlock = rules.length === 0
     ? ''
@@ -108,6 +116,7 @@ Current state:
 - position=(${character.position.x.toFixed(1)},${character.position.y.toFixed(1)})
 - hunger=${Math.round(s.hunger)} (${severity('hunger', s.hunger)}), thirst=${Math.round(s.thirst)} (${severity('thirst', s.thirst)}), energy=${Math.round(s.energy)} (${severity('energy', s.energy)}), bladder=${Math.round(s.bladder)} (${severity('bladder', s.bladder)}), sickness=${Math.round(s.sickness ?? 0)} (${severity('sickness', s.sickness ?? 0)}), health=${Math.round(s.health)} (${severity('health', s.health)}), temp=${Math.round(s.temperature)}°C (${severity('temperature', s.temperature)})
 - ${invLine}${fireLine}
+- ${knownLine}
 - nearby (remembered): ${rememberedSummary}
 
 Recent observations (your own actions and their effects):
@@ -119,10 +128,18 @@ ${opts}
 Output JSON only.`;
 }
 
-function formatInventoryLine(inv: readonly string[]): string {
+function formatInventoryLine(inv: readonly string[], glossary: Glossary): string {
   const w = totalWeight(inv).toFixed(1);
   if (inv.length === 0) return `inventory (0/${MAX_INVENTORY_WEIGHT}): empty`;
-  const groups = groupInventory(inv).map((g) => `${g.count} ${g.item}`).join(', ');
+  // Phase 3 — mask each item via the char's glossary so unobserved loose items
+  // collapse into 'unknown_thing'. Multiple unknown types fold into a single
+  // count. Known items render normally.
+  const counts: Record<string, number> = {};
+  for (const item of inv) {
+    const label = maskType(item, glossary);
+    counts[label] = (counts[label] ?? 0) + 1;
+  }
+  const groups = Object.entries(counts).map(([t, n]) => `${n} ${t}`).join(', ');
   return `inventory (${w}/${MAX_INVENTORY_WEIGHT}): ${groups}`;
 }
 
@@ -134,8 +151,23 @@ function formatOption(o: CortexOption): string {
   return `- ${parts.join(' ')}`;
 }
 
-function formatObservation(o: Observation): string {
-  const head = o.target ? `${o.action}(${o.target})` : o.action;
+// Phase 3 follow-up — glossary line. Surfaces the char's confirmed knowledge so
+// the LLM can reason about what it already knows vs. what remains unknown.
+// Inherited (BASIC_KNOWN_TYPES + lineage) and observed entries both flow in
+// directly. Empty glossary collapses to "(nothing learned yet)".
+function formatGlossaryLine(glossary: Glossary): string {
+  const entries = Object.entries(glossary);
+  if (entries.length === 0) return 'known: (nothing learned yet)';
+  const parts = entries.map(([type, tags]) => `${type}=${tags.join('/')}`);
+  return `known: ${parts.join(', ')} (${entries.length} ${entries.length === 1 ? 'thing' : 'things'} learned)`;
+}
+
+// Phase 3 follow-up — mask observation target prefix so unknown subtypes
+// (`tree_fruit_5`) collapse to parent label (`tree_5`) until the char observes
+// the specific identity. Inv targets that are bare type names mask via maskType.
+function formatObservation(o: Observation, glossary: Glossary): string {
+  const maskedTarget = o.target ? maskTarget(o.target, glossary) : undefined;
+  const head = maskedTarget ? `${o.action}(${maskedTarget})` : o.action;
   const effects: string[] = [];
   if (o.dHunger !== undefined) effects.push(`hunger${signed(o.dHunger)}`);
   if (o.dThirst !== undefined) effects.push(`thirst${signed(o.dThirst)}`);

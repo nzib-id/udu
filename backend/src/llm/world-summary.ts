@@ -8,7 +8,8 @@
 import type { RememberedResource } from '../spatial-memory-repo.js';
 import type { ChunkVisit } from '../chunk-visit-repo.js';
 import { chunkGridDims } from '../../../shared/spatial.js';
-import type { Character, ResourceType } from '../../../shared/types.js';
+import type { Character } from '../../../shared/types.js';
+import { maskType } from '../../../shared/config.js';
 import type { EventRepo } from '../event-repo.js';
 import type { CharacterRepo, LineageTrajectoryRow } from '../character-repo.js';
 
@@ -24,8 +25,17 @@ export function buildWorldSummary(
   eventRepo: EventRepo,
   cachedRules: string[],
 ): WorldSummary {
-  const byType: Partial<Record<ResourceType, number>> = {};
-  for (const r of knownResources) byType[r.type] = (byType[r.type] ?? 0) + 1;
+  const byType: Record<string, number> = {};
+  for (const r of knownResources) {
+    const label = maskType(r.type, character.glossary);
+    byType[label] = (byType[label] ?? 0) + 1;
+  }
+
+  const invByType: Record<string, number> = {};
+  for (const item of character.inventory) {
+    const label = maskType(item, character.glossary);
+    invByType[label] = (invByType[label] ?? 0) + 1;
+  }
 
   const { cols, rows } = chunkGridDims();
   const total = cols * rows;
@@ -38,14 +48,14 @@ export function buildWorldSummary(
   if (visited > 0) allowed.add('explored_area');
   if (visited < total) allowed.add('unexplored_area');
   for (const d of pastDeaths) allowed.add(`death_${d}`);
-  for (const item of new Set(character.inventory)) allowed.add(item);
+  for (const t of Object.keys(invByType)) allowed.add(t);
   if (cachedRules.length > 0) allowed.add('lessons');
 
   const knownLine = Object.keys(byType).length === 0
     ? '- known resources: none yet'
     : `- known resources: ${Object.entries(byType).map(([k, v]) => `${v} ${k}`).join(', ')}`;
   const exploredLine = `- explored ${visited}/${total} regions of the map`;
-  const inventoryLine = `- inventory: ${character.inventory.length === 0 ? 'empty' : Array.from(new Set(character.inventory)).join(', ')}`;
+  const inventoryLine = `- inventory: ${character.inventory.length === 0 ? 'empty' : Object.entries(invByType).map(([k, v]) => `${v} ${k}`).join(', ')}`;
   const deathLine = pastDeaths.length === 0
     ? '- no past deaths in this lineage'
     : `- past deaths in this lineage: ${pastDeaths.join(', ')}`;

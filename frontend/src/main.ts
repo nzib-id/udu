@@ -79,11 +79,43 @@ connectGameSocket({
 
 (window as any).__UDU_GAME__ = game;
 
+// Admin token: captured from `?admin=<token>` URL param, then stripped from
+// the URL bar (history.replaceState) and stashed in sessionStorage so a reload
+// keeps the bookmark holder admin without leaking the token via copy-paste.
+// Public visitors never have this set, so admin tooling stays invisible.
+const ADMIN_TOKEN_KEY = 'udu-admin-token';
+function captureAdminToken(): string | null {
+  try {
+    const url = new URL(window.location.href);
+    const fromUrl = url.searchParams.get('admin');
+    if (fromUrl) {
+      sessionStorage.setItem(ADMIN_TOKEN_KEY, fromUrl);
+      url.searchParams.delete('admin');
+      window.history.replaceState({}, '', url.toString());
+      return fromUrl;
+    }
+    return sessionStorage.getItem(ADMIN_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+const adminToken = captureAdminToken();
+const adminHeaders = (): Record<string, string> =>
+  adminToken ? { 'x-admin-token': adminToken } : {};
+
 // Speed toggle — debug-only game-time multiplier wired to /api/admin/speed.
-// Always reads server state on mount; clicking sets new speed and refreshes.
+// User pick persists in localStorage. On mount we re-assert the persisted
+// value against the backend (it resets to 1× on container restart) so a
+// reload doesn't silently revert the player's choice.
 function bindSpeedToggle(): void {
   const root = document.getElementById('speed-toggle');
   if (!root) return;
+  if (!adminToken) {
+    // Public viewers can't drive game speed — hide the control entirely.
+    (root as HTMLElement).style.display = 'none';
+    return;
+  }
+  const KEY = 'udu-speed-multiplier';
   const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-speed]'));
   const setActive = (n: number): void => {
     for (const b of buttons) {
@@ -94,27 +126,51 @@ function bindSpeedToggle(): void {
   const setDisabled = (d: boolean): void => {
     for (const b of buttons) b.disabled = d;
   };
-  fetch('/api/admin/speed')
-    .then((r) => r.json())
-    .then((data: { multiplier?: number }) => {
-      if (typeof data.multiplier === 'number') setActive(data.multiplier);
+  const persist = (n: number): void => {
+    try { localStorage.setItem(KEY, String(n)); } catch { /* ignore quota / disabled */ }
+  };
+  const post = (n: number): Promise<number | null> =>
+    fetch('/api/admin/speed', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...adminHeaders() },
+      body: JSON.stringify({ multiplier: n }),
     })
-    .catch(() => { /* backend down — leave default 1x */ });
+      .then((r) => r.json())
+      .then((data: { ok?: boolean; multiplier?: number }) =>
+        data.ok && typeof data.multiplier === 'number' ? data.multiplier : null,
+      )
+      .catch(() => null);
+  let saved: number | null = null;
+  try {
+    const raw = localStorage.getItem(KEY);
+    const parsed = raw === null ? null : Number(raw);
+    if (parsed === 1 || parsed === 2 || parsed === 3) saved = parsed;
+  } catch { /* ignore */ }
+  if (saved !== null && saved !== 1) {
+    // Persisted non-default — re-assert to backend so the active multiplier
+    // matches the visible UI even after a backend restart.
+    setActive(saved);
+    void post(saved);
+  } else {
+    fetch('/api/admin/speed', { headers: adminHeaders() })
+      .then((r) => r.json())
+      .then((data: { multiplier?: number }) => {
+        if (typeof data.multiplier === 'number') setActive(data.multiplier);
+      })
+      .catch(() => { /* backend down — leave default 1x */ });
+  }
   for (const b of buttons) {
     b.addEventListener('click', () => {
       const n = Number(b.dataset.speed);
       if (!Number.isFinite(n)) return;
       setDisabled(true);
-      fetch('/api/admin/speed', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ multiplier: n }),
-      })
-        .then((r) => r.json())
-        .then((data: { ok?: boolean; multiplier?: number }) => {
-          if (data.ok && typeof data.multiplier === 'number') setActive(data.multiplier);
+      void post(n)
+        .then((m) => {
+          if (m !== null) {
+            setActive(m);
+            persist(m);
+          }
         })
-        .catch(() => { /* swallow — UI stays on previous active */ })
         .finally(() => setDisabled(false));
     });
   }

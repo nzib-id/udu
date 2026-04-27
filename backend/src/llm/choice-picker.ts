@@ -16,18 +16,17 @@ import { buildFeedPrompt } from './prompt-feed.js';
 import { buildWanderPrompt } from './prompt-wander.js';
 import { buildCortexPrompt } from './prompt-cortex.js';
 
+// Phase 3 follow-up — feed kinds collapsed to generic verbs. Targets
+// disambiguate (eat target=meat_cooked vs eat target=berry, shake target=bush_5
+// vs shake target=tree_5). Verbs are universal capability ("law of nature"),
+// type knowledge is per-character glossary. Rule fallback sorts by distance
+// since old RULE_PRIORITY (cooked-over-raw) cannot survive the kind merge.
 export type FeedKind =
-  | 'eat_meat_cooked'
-  | 'eat_meat_raw_panic'    // hunger critical, accept sickness risk
-  | 'cook_meat'
-  | 'eat_berry_inv'
-  | 'eat_fruit_inv'
-  | 'eat_meat_raw_normal'
-  | 'hunt'
-  | 'pickup_fruit_ground'
-  | 'forage_bush'
-  | 'shake_tree'
-  | 'pickup_wood';
+  | 'eat'
+  | 'cook'
+  | 'pickup'
+  | 'shake'
+  | 'hunt';
 
 export type FeedOption = {
   kind: FeedKind;
@@ -96,6 +95,9 @@ export type FeedChoiceResult = {
 // spatial memory, and the picker chooses one. Annotations are perceptual
 // hints — "unexplored" / "near_tree(age=4h)" / "near_edge" / "at_pos" — so
 // the LLM (or rule fallback) can reason about exploration vs revisit.
+// Phase 3 follow-up — wander kinds split into direction kinds (still keyed,
+// since they're spatial choice signals not type leaks) and generic verbs
+// (eat / drink / pickup / shake / drop / etc) where target disambiguates.
 export type WanderKind =
   | 'wander_n'
   | 'wander_ne'
@@ -106,38 +108,18 @@ export type WanderKind =
   | 'wander_w'
   | 'wander_nw'
   | 'stay'
-  // Pre-emptive consumption — LLM full agency. Char can pick these
-  // even when hunger/thirst haven't crossed the safety-net threshold.
-  | 'eat_berry_inv'
-  | 'eat_fruit_inv'
-  | 'drink_river'
-  // Pre-emptive maintenance — relieve bladder before sickness funnel kicks in,
-  // or move into the fire warmth radius before body temp slips out of comfort.
-  | 'pee_now'
-  | 'warm_at_fire'
-  // Pre-emptive resource fetch — grab wood before fire dies (surfaced when
-  // fire unlit OR fuel < maxFuel/2 AND char can carry wood).
-  | 'pickup_wood'
-  // Pickup branch / vine / stone off the ground (Phase A resource overhaul).
-  // branch = primary fire fuel (lighter than wood), vine = future crafting,
-  // stone = future axe craft (Phase B). Stone is one-shot scatter only;
-  // boulder mining is deferred until craft system lands.
-  | 'pickup_branch'
-  | 'pickup_vine'
-  | 'pickup_stone'
-  // Shake tree_wood / tree_vine — non-food shakes surfaced from wander side
-  // since they don't satisfy hunger. tree_fruit shake stays in FeedKind as
-  // 'shake_tree'. All three dispatch the same `shake_tree` action; engine
-  // branches by tree.type.
-  | 'shake_tree_wood'
-  | 'shake_tree_vine'
-  // Pre-emptive sleep — surfaced at night when char is near a lit fire.
-  // Encourages "sleep at night by the fire" instead of letting energy crash
-  // into the reactive sleep trigger during the day.
-  | 'sleep_now'
-  // Drop one item of the named type from inventory. Frees weight so char can
-  // pick up something else (e.g. drop wood to make room for berry).
-  | `drop_${string}`;
+  // Generic verbs — target disambiguates the specific item/source/inv-type.
+  // Targets carry masked type names (e.g. 'unknown_thing_5' for an unobserved
+  // bush) so the kind label cannot leak knowledge the char hasn't earned.
+  | 'eat'
+  | 'drink'
+  | 'pickup'
+  | 'shake'
+  | 'drop'
+  | 'defecate'   // formerly 'pee_now'
+  | 'rest'       // formerly 'warm_at_fire'
+  | 'sleep'      // formerly 'sleep_now'
+  | 'add_fuel';
 
 export type WanderOption = {
   kind: WanderKind;
@@ -197,46 +179,24 @@ export interface ChoicePicker {
   pickCortex?(ctx: CortexContext): Promise<CortexChoiceResult | null>;
 }
 
-const RULE_PRIORITY: FeedKind[] = [
-  'eat_meat_cooked',
-  'eat_meat_raw_panic',
-  'cook_meat',
-  'eat_berry_inv',
-  'eat_fruit_inv',
-  'eat_meat_raw_normal',
-  'hunt',
-  'pickup_fruit_ground',
-  'forage_bush',
-  'shake_tree',
-  'pickup_wood',
-];
-
 export class RuleBasedChoicePicker implements ChoicePicker {
+  // Rule fallback — fires when LLM is down. With kinds collapsed to generic
+  // verbs the old priority ladder (cooked-over-raw, etc) is gone; survival
+  // mode now sorts by distance only. Acceptable degradation since the LLM is
+  // primary brain and threshold gates handle critical drops independently.
   async pickFeed(ctx: FeedContext): Promise<FeedChoiceResult | null> {
     if (ctx.options.length === 0) return null;
-    for (const kind of RULE_PRIORITY) {
-      const matches = ctx.options.filter((o) => o.kind === kind);
-      if (matches.length === 0) continue;
-      matches.sort((a, b) => a.distance - b.distance);
-      return { option: matches[0], source: 'rule' };
-    }
-    return null;
+    const sorted = [...ctx.options].sort((a, b) => a.distance - b.distance);
+    return { option: sorted[0], source: 'rule' };
   }
 
   async pickWander(ctx: WanderContext): Promise<WanderChoiceResult | null> {
     if (ctx.options.length === 0) return null;
-    // Rule fallback never picks pre-emptive consume/maintenance options —
-    // those are LLM-only. Threshold gates handle survival when LLM is down.
+    // Rule fallback never picks pre-emptive consume/maintenance verbs — those
+    // are LLM-only. Threshold gates handle survival when LLM is down. Filter
+    // to direction kinds + 'stay' so the rule only walks.
     const dirs = ctx.options.filter(
-      (o) =>
-        o.kind !== 'eat_berry_inv' &&
-        o.kind !== 'eat_fruit_inv' &&
-        o.kind !== 'drink_river' &&
-        o.kind !== 'pee_now' &&
-        o.kind !== 'warm_at_fire' &&
-        o.kind !== 'pickup_wood' &&
-        o.kind !== 'pickup_stone' &&
-        o.kind !== 'sleep_now',
+      (o) => o.kind.startsWith('wander_') || o.kind === 'stay',
     );
     const unexplored = dirs.filter((o) => o.isUnexplored && o.kind !== 'stay');
     const pool = unexplored.length > 0 ? unexplored : dirs.filter((o) => o.kind !== 'stay');

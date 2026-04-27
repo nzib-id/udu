@@ -34,6 +34,14 @@ from pathlib import Path
 
 UDU_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = UDU_DIR / "data" / "udu.db"
+ADMIN_TOKEN = os.environ.get("UDU_ADMIN_TOKEN", "")
+
+
+def admin_request(url: str, timeout: float):
+    req = urllib.request.Request(url)
+    if ADMIN_TOKEN:
+        req.add_header("x-admin-token", ADMIN_TOKEN)
+    return urllib.request.urlopen(req, timeout=timeout)
 
 CORTEX_RE = re.compile(
     r"\[llm\] cortex pick=(?P<pick>[a-z_]+)"
@@ -48,7 +56,7 @@ DEATH_RE = re.compile(
 
 def fetch_rules(port: int) -> dict:
     try:
-        with urllib.request.urlopen(f"http://localhost:{port}/api/admin/rules", timeout=3) as r:
+        with admin_request(f"http://localhost:{port}/api/admin/rules", timeout=3) as r:
             return json.loads(r.read())
     except Exception as e:
         return {"error": str(e), "rules": []}
@@ -60,7 +68,7 @@ def fetch_character(port: int) -> dict:
     nearly always reflects the moment the pick was made. Returns empty dict
     on failure (script keeps running)."""
     try:
-        with urllib.request.urlopen(f"http://localhost:{port}/api/admin/character", timeout=2) as r:
+        with admin_request(f"http://localhost:{port}/api/admin/character", timeout=2) as r:
             return json.loads(r.read())
     except Exception:
         return {}

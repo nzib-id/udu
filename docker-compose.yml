@@ -13,6 +13,7 @@ services:
       UDU_AI_MODE: "llm"
       OLLAMA_URL: "http://172.21.160.1:11434"
       OLLAMA_MODEL: "qwen3:8b"
+      ADMIN_TOKEN: "${UDU_ADMIN_TOKEN:-}"
     volumes:
       - ./data:/app/data
     networks:

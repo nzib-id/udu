@@ -119,6 +119,10 @@
         padding: 0;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        /* Suppresses mobile double-tap zoom and the 300ms tap delay so a fast
+           double-tap registers as two clean clicks instead of triggering
+           browser gestures that can leak into the canvas drag handler. */
+        touch-action: manipulation;
       }
       .cam-btn:hover {
         background: rgba(0, 0, 0, 0.75);
@@ -638,7 +642,10 @@
       (function () {
         var PANEL_KEY = 'udu-hud-panel-state';
         var panel = document.getElementById('hud-panel');
-        var handle = document.getElementById('hud-handle');
+        // Renamed from `handle` to avoid collision with `var handle` further
+        // down in this same IIFE — that re-declaration leaked through closure
+        // and broke pointer-capture / tap detection on the panel handle.
+        var panelHandle = document.getElementById('hud-handle');
         function setPanelState(state) {
           panel.classList.remove('panel-open', 'panel-collapsed');
           panel.classList.add('panel-' + state);
@@ -656,7 +663,7 @@
           var collapsedX = -(width - 32);
           return Math.abs(x) < Math.abs(collapsedX - x) ? 'open' : 'collapsed';
         }
-        handle.addEventListener('pointerdown', function (e) {
+        panelHandle.addEventListener('pointerdown', function (e) {
           var rect = panel.getBoundingClientRect();
           var startState = panel.classList.contains('panel-collapsed') ? 'collapsed' : 'open';
           var collapsedX = -(rect.width - 32);
@@ -669,9 +676,9 @@
             moved: false,
           };
           panel.classList.add('dragging');
-          handle.setPointerCapture(e.pointerId);
+          panelHandle.setPointerCapture(e.pointerId);
         });
-        handle.addEventListener('pointermove', function (e) {
+        panelHandle.addEventListener('pointermove', function (e) {
           if (!pdrag) return;
           var dx = e.clientX - pdrag.startX;
           if (Math.abs(dx) > 4) pdrag.moved = true;
@@ -691,11 +698,11 @@
           }
           panel.classList.remove('dragging');
           setPanelState(snap);
-          handle.releasePointerCapture(pdrag.pointerId);
+          panelHandle.releasePointerCapture(pdrag.pointerId);
           pdrag = null;
         }
-        handle.addEventListener('pointerup', endPanelDrag);
-        handle.addEventListener('pointercancel', endPanelDrag);
+        panelHandle.addEventListener('pointerup', endPanelDrag);
+        panelHandle.addEventListener('pointercancel', endPanelDrag);
 
         function scene() {
           var g = window.__UDU_GAME__;
@@ -723,7 +730,7 @@
         // Pointer events handle touch + mouse uniformly.
         var DRAWER_KEY = 'udu-drawer-state';
         var drawer = document.getElementById('log-drawer');
-        var handle = document.getElementById('drawer-handle');
+        var drawerHandle = document.getElementById('drawer-handle');
         function drawerOffsetPx(state) {
           if (state === 'expanded') return Math.round(window.innerHeight * 0.5);
           if (state === 'collapsed') return 32;
@@ -770,7 +777,7 @@
           }
           return best[0];
         }
-        handle.addEventListener('pointerdown', function (e) {
+        drawerHandle.addEventListener('pointerdown', function (e) {
           var pts = snapPoints();
           var startState = drawer.classList.contains('drawer-collapsed')
             ? 'collapsed'
@@ -783,9 +790,9 @@
             pointerId: e.pointerId,
           };
           drawer.classList.add('dragging');
-          handle.setPointerCapture(e.pointerId);
+          drawerHandle.setPointerCapture(e.pointerId);
         });
-        handle.addEventListener('pointermove', function (e) {
+        drawerHandle.addEventListener('pointermove', function (e) {
           if (!drag) return;
           var dy = e.clientY - drag.startY;
           var pts = snapPoints();
@@ -805,11 +812,11 @@
             : nearestSnap(y);
           drawer.classList.remove('dragging');
           setDrawerState(snap);
-          handle.releasePointerCapture(drag.pointerId);
+          drawerHandle.releasePointerCapture(drag.pointerId);
           drag = null;
         }
-        handle.addEventListener('pointerup', endDrag);
-        handle.addEventListener('pointercancel', endDrag);
+        drawerHandle.addEventListener('pointerup', endDrag);
+        drawerHandle.addEventListener('pointercancel', endDrag);
       })();
     </script>
     <script type="module" src="/src/main.ts"></script>
